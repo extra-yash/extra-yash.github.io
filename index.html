@@ -1,45 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Extra Collective</title>
-    <style>
-        body {
-            background-color: #000000; /* Deep Black */
-            color: #ffffff;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 {
-            font-size: 3rem;
-            letter-spacing: -2px;
-            margin-bottom: 10px;
-        }
-        .tagline {
-            color: #FF4500; /* That Fire Red color */
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .footer {
-            position: absolute;
-            bottom: 20px;
-            color: #666;
-            font-size: 0.8rem;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXTRA | Average is Invisible</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <h1>EXTRA COLLECTIVE*</h1>
-    
-    <div class="tagline">Nomadic Design Unit</div>
+    <div class="cursor" id="cursor"></div>
 
-    <div class="footer">MAURITIUS / GLOBAL</div>
+    <main class="app-container">
+        
+        <nav class="top-nav">
+            <div class="logo" id="brand-name">EXTRA</div>
+            <div class="menu-items">
+                <a href="#work">Work</a>
+                <a href="#agency">Agency</a>
+                <a href="mailto:hello@extracollective.com" class="cta-btn">Contact</a>
+            </div>
+        </nav>
 
+        <header class="hero-section">
+            <h1 class="glitch-text" id="motto">AVERAGE IS INVISIBLE</h1>
+            <p class="hero-sub">EST. 2026 // PORT LOUIS // MAURITIUS</p>
+        </header>
+
+        <section class="filters" id="work">
+            <button class="filter-btn active" data-filter="all">ALL</button>
+            <button class="filter-btn" data-filter="branding">BRANDING</button>
+            <button class="filter-btn" data-filter="print">PRINT</button>
+            <button class="filter-btn" data-filter="digital">DIGITAL</button>
+            <button class="filter-btn" data-filter="corporate">CORPORATE</button>
+        </section>
+
+        <section class="grid-container" id="project-grid">
+            </section>
+
+        <footer>
+            <div class="footer-content">
+                <span>© EXTRA COLLECTIVE</span>
+                <span id="contact-display"></span>
+            </div>
+        </footer>
+
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
