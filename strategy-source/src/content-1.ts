@@ -139,7 +139,7 @@ Extra's position is defined by two axes:
                            │
                            │
       Independent          │              Legacy Giants
-      Masters              │         (Circus, Moris Pub Ogilvy, Grey)
+      Masters              │         (Circus, Moris Pub, Grey)
       (Solo Freelancers)   │
                            │
                       ★ EXTRA ★
