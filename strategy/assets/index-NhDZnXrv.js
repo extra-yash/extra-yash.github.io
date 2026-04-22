@@ -93,7 +93,7 @@ Error generating stack: `+o.message+`
 
 ## Document Purpose & Usage
 
-This is Extra's foundational brand strategy document—the brand bible. It defines who we are, why we exist, and how we operate. Every decision about the brand should trace back to this document.
+This is Extra's foundational brand strategy document: The Brand Bible. It defines who we are, why we exist, and how we operate. Every decision about the brand should trace back to this document.
 
 **Intended Audiences:**
 - Founder & leadership team (strategic decisions)
@@ -122,7 +122,11 @@ Each section is marked with a status indicator:
 
 ## What is Extra?
 
-Extra is a Creative Collective — a distributed, project-based network of skilled creative freelancers who come together under a unified agency structure to take on briefs that would be out of reach for any single individual. Extra does not replace agencies; it integrates with them. It does not replace freelancers; it amplifies them.
+Extra is a Creative Collective: a distributed, project-based network of skilled creative freelancers who come together under a unified agency structure to take on briefs that would be out of reach for any single individual.
+
+Extra does not replace agencies; it integrates with them.
+
+It does not replace freelancers; it amplifies them.
 
 ### The Symbol: Brand Origin
 
@@ -223,7 +227,7 @@ Extra's position is defined by two axes:
                            │
                            │
       Independent          │              Legacy Giants
-      Masters              │         (Circus, Moris Pub Ogilvy, Grey)
+      Masters              │         (Circus, Moris Pub, Grey)
       (Solo Freelancers)   │
                            │
                       ★ EXTRA ★
