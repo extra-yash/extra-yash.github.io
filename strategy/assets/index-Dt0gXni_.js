@@ -122,11 +122,11 @@ Each section is marked with a status indicator:
 
 ## What is Extra?
 
-Extra is a Creative Collective: a distributed, project-based network of skilled creative freelancers who come together under a unified agency structure to take on briefs that would be out of reach for any single individual.
+> Extra is a Creative Collective: a distributed, project-based network of skilled creative freelancers who come together under a unified agency structure to take on briefs that would be out of reach for any single individual.
 
 Extra does not replace agencies; it integrates with them.
 
-It does not replace freelancers; it amplifies them.
+Extra does not replace freelancers; it amplifies them.
 
 ### The Symbol: Brand Origin
 
@@ -136,7 +136,9 @@ The Extra logo carries a deliberately chosen symbol. Its origins are dual:
 
 - **The Kanji character 大 (pronounced "Dai")** — meaning "Big" or "Great" — a figure with arms spread wide, signifying scale and ambition.
 
-The symbol is therefore both a human figure and a representation of scale and significance. It marks something exceptional, something that needs to be noted, something extra. The brand name and mark are inseparable from this idea. A "Fil Rouge" (red thread) runs through the logo — the connecting line that ties everything together, representing Extra's role as the connective tissue between talent and opportunity.
+The symbol is therefore both a human figure and a representation of scale and significance. It marks something exceptional, something that needs to be noted, something extra. The brand name and mark are inseparable from this idea.
+
+A "Fil Rouge" (red thread) runs through the logo — the connecting line that ties everything together, representing Extra's role as the connective tissue between talent and opportunity.
 
 ---
 
