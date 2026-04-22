@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-mono: "Space Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-extra-light: #FFFFF0;
+  --color-extra-dark: #1A1A2E;
+  --color-extra-bright: #00ff00;
+  --color-extra-violet: #9D00FF;
+  --color-extra-crisp: #5766ED;
+  --color-extra-contrast: #27E700;
+
+  --shadow-brutal: 4px 4px 0px 0px var(--color-extra-dark);
+  --shadow-brutal-lg: 8px 8px 0px 0px var(--color-extra-dark);
+  --shadow-hard: 8px 8px 0px 0px var(--color-extra-dark);
+}
+
+@layer base {
+  body {
+    @apply bg-extra-light text-extra-dark font-mono cursor-none overflow-x-hidden;
+  }
+  
+  *, ::before, ::after {
+    border-color: currentColor;
+    outline-color: currentColor;
+    text-decoration-color: currentColor;
+    background-color: transparent;  /* Optional safety */
+  }
+
+  /* Specifically override Tailwind's OKLCH fallbacks for html2canvas */
+  *, ::before, ::after, ::backdrop, ::file-selector-button {
+    --tw-ring-color: rgba(26,26,46,0.5);   
+    --tw-shadow-color: rgba(26,26,46,0.1); 
+  }
+
+  ::selection {
+    background-color: var(--color-extra-contrast);
+    color: var(--color-extra-violet);
+  }
+}
+
+@layer utilities {
+  .brutalist-border {
+    @apply border border-extra-dark;
+  }
+
+  .dot-grid {
+    background-image: radial-gradient(circle, var(--color-extra-crisp) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+  }
+
+  .sticker-shadow {
+    filter: drop-shadow(0 2px 0 #1A1A2E) drop-shadow(0 -2px 0 #1A1A2E) drop-shadow(2px 0 0 #1A1A2E) drop-shadow(-2px 0 0 #1A1A2E);
+  }
+  
+  .grainy-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+  }
+}
