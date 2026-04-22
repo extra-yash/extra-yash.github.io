@@ -161,7 +161,7 @@ These are non-negotiable principles that guide every decision, project, and part
 
 **The Principle:** Output over attendance.
 
-**The Standard:** We value the finished thought over the hours spent. Our creatives are unbound by location or schedule, held together only by the work produced and the clarity of their communication. While we never watch the clock, the deadline is absolute—it is our only non-negotiable metric of time. If the result is iconic, the updates are constant, and the timeline is honored, the venue is irrelevant.
+**The Standard:** We value the finished thought over the hours spent. Our creatives are unbound by location or schedule, held together only by the work produced and the clarity of their communication. While we never watch the clock, the deadline is absolute. It is our only non-negotiable metric of time. If the result is iconic, the updates are constant, and the timeline is honored, the venue is irrelevant.
 
 ### II. Radical Fairness
 
@@ -179,7 +179,7 @@ These are non-negotiable principles that guide every decision, project, and part
 
 **The Principle:** Human reality over creative ego.
 
-**The Standard:** We look past the wrapper. A beautiful object that is frustrating to handle is a failure of restraint, but a purely functional object that fails to inspire is just as invisible. We design for how things feel, function, and resonate in the real world. We use our mastery to build work that demands attention and evokes pride—serving the purpose, but always pushing for the iconic.
+**The Standard:** We look past the wrapper. A beautiful object that is frustrating to handle is a failure of restraint, but a purely functional object that fails to inspire is just as invisible. We design for how things feel, function, and resonate in the real world. We use our mastery to build work that demands attention and evokes pride. Serving the purpose, but always pushing for the iconic.
 
 ---
 
@@ -196,7 +196,7 @@ The collective does not compete with established agencies. It integrates with th
 
 ## Tagline
 
-**Average is invisible.**
+> **Average is invisible.**
 
 ## Brand Promise
 
@@ -213,7 +213,9 @@ Specialist execution without the agency bloat. You don't pay for empty desks or 
 # 04. Competitive Positioning
 **Status: ✓ COMPLETE**
 
-This section articulates exactly where Extra sits in the market ecosystem and how we differentiate from every alternative a prospect might consider. It answers one question: *Why Extra?* Every sales conversation will encounter comparison questions. This section arms the team with clear, confident, grounded answers.
+This section articulates exactly where Extra sits in the market ecosystem and how we differentiate from every alternative a prospect might consider.
+
+It answers one question: *Why Extra?* Every sales conversation will encounter comparison questions. This section arms the team with clear, confident, grounded answers.
 
 ## 4.1 Positioning Map
 
@@ -266,7 +268,7 @@ This is the position the market has left open. The Legacy Giants cannot reach it
 
 ### The Position in One Line
 
-**Deep specialist mastery at sub-agency pricing, delivered through a zero-overhead collective model.**
+> **Deep specialist mastery at sub-agency pricing, delivered through a zero-overhead collective model.**
 
 ---
 
