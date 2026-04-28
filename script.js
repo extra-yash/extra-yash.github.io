@@ -1,135 +1,274 @@
+/* ═══════════════════════════════════════════════════════════════
+   EXTRA COLLECTIVE — script.js
+   ═══════════════════════════════════════════════════════════════
+
+   GOOGLE SHEETS CMS SETUP
+   ─────────────────────────────────────────────────────────────
+   1. Create a Google Sheet with these exact column headers:
+      title | client | category | image_url | tags | tab | visible
+
+   2. Go to Extensions > Apps Script. Paste this code:
+
+      function doGet() {
+        const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        const [headers, ...rows] = sheet.getDataRange().getValues();
+        const data = rows
+          .filter(row => row[headers.indexOf('visible')] === true)
+          .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
+        return ContentService
+          .createTextOutput(JSON.stringify(data))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+   3. Deploy > New deployment > Web app
+      - Execute as: Me
+      - Who has access: Anyone
+      Copy the /exec URL and paste it below as SHEETS_ENDPOINT.
+
+   4. To update the portfolio: edit the Google Sheet. Done.
+      To swap a placeholder image for real work: change the
+      image_url value in the Sheet. No code changes needed.
+   ═══════════════════════════════════════════════════════════════ */
+
+// ─── PORTFOLIO DATA SOURCE ────────────────────────────────────────
+// Paste your Google Apps Script /exec URL here when ready.
+// Leave as empty string to use the fallback placeholder data below.
+const SHEETS_ENDPOINT = '';
+
+// ─── PER-TAB COLOR CONFIGURATION ─────────────────────────────────
+const TAB_COLORS = {
+  brands: {
+    primary:   '#CCFF00',   // Acid Lime
+    secondary: '#556600',   // deep lime shadow
+    accent:    '#CCFF00',
+  },
+  agencies: {
+    primary:   '#00C8FF',   // Crisp Blue
+    secondary: '#005566',   // deep blue shadow
+    accent:    '#00C8FF',
+  },
+  creatives: {
+    primary:   '#7B61FF',   // Violet
+    secondary: '#3B1F88',   // deep violet shadow
+    accent:    '#7B61FF',
+  },
+};
+
+// ─── FALLBACK PORTFOLIO DATA ──────────────────────────────────────
+// These placeholder items use Unsplash photo IDs.
+// SWAP: Change image_url in your Google Sheet to replace any item.
+// The image_url format: https://images.unsplash.com/photo-{ID}?w=800&q=80&fit=crop
+const FALLBACK_PORTFOLIO = [
+  {
+    title: 'Brand Identity',
+    client: 'Client Name',
+    category: 'Branding',
+    image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80&fit=crop',
+    tags: 'Art Direction, Visual Identity',
+    tab: 'all',
+    visible: true,
+  },
+  {
+    title: 'Campaign Direction',
+    client: 'Client Name',
+    category: 'Art Direction',
+    image_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&fit=crop',
+    tags: 'Photography, Styling',
+    tab: 'all',
+    visible: true,
+  },
+  {
+    title: 'Digital Experience',
+    client: 'Client Name',
+    category: 'Digital',
+    image_url: 'https://images.unsplash.com/photo-1545235617-9465d2a55698?w=800&q=80&fit=crop',
+    tags: 'UX, Web Design',
+    tab: 'all',
+    visible: true,
+  },
+  {
+    title: 'Product Visualization',
+    client: 'Client Name',
+    category: '3D',
+    image_url: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800&q=80&fit=crop',
+    tags: '3D Rendering, CGI',
+    tab: 'all',
+    visible: true,
+  },
+];
+
+// ─── STATE ────────────────────────────────────────────────────────
+let portfolioData = [];
+let activeTab = 'brands';
+
+// ─── INIT ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // --- 1. THE CONFIG "BACKEND" ---
-    // We moved the data here so it loads instantly without a server.
-    const siteData = {
-        siteConfig: {
-            brandName: "extra",
-            motto: "Average is invisible.",
-            contactEmail: "hello@extracollective.com"
-        },
-        projects: [
-            {
-                id: 1,
-                title: "Neon Horizon",
-                category: "branding",
-                // Placeholder image 1
-                image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1000&auto=format&fit=crop", 
-                tags: ["Identity", "Strategy"]
-            },
-            {
-                id: 2,
-                title: "Cyber Core",
-                category: "digital",
-                // Placeholder image 2
-                image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop",
-                tags: ["Web", "UI/UX"]
-            },
-            {
-                id: 3,
-                title: "Analog Soul",
-                category: "print",
-                // Placeholder image 3
-                image: "https://images.unsplash.com/photo-1579548122080-c35fd6820ecb?q=80&w=1000&auto=format&fit=crop",
-                tags: ["Editorial", "Layout"]
-            },
-            {
-                id: 4,
-                title: "Corp Future",
-                category: "corporate",
-                // Placeholder image 4
-                image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000&auto=format&fit=crop",
-                tags: ["Annual Report", "B2B"]
-            }
-        ]
-    };
-
-    // --- 2. INITIALIZATION ---
-    const grid = document.getElementById('project-grid');
-    const filters = document.querySelectorAll('.filter-btn');
-    const brandName = document.getElementById('brand-name');
-    const motto = document.getElementById('motto');
-    const contactDisplay = document.getElementById('contact-display');
-
-    // Load Config
-    if(brandName) brandName.innerText = siteData.siteConfig.brandName.toUpperCase();
-    if(motto) motto.innerText = siteData.siteConfig.motto.toUpperCase();
-    if(contactDisplay) contactDisplay.innerText = siteData.siteConfig.contactEmail;
-
-    // Load Projects
-    renderProjects(siteData.projects);
-    setupFilters(siteData.projects);
-
-    // --- 3. RENDER LOGIC ---
-    function renderProjects(projects) {
-        grid.innerHTML = ''; // Clear current content
-        
-        projects.forEach(project => {
-            const card = document.createElement('div');
-            card.className = 'project-card';
-            
-            const tagsHtml = project.tags.join(' // ');
-
-            card.innerHTML = `
-                <div class="img-container">
-                    <img src="${project.image}" alt="${project.title}">
-                </div>
-                <div class="card-info">
-                    <div class="card-cat">${project.category}</div>
-                    <h3 class="card-title">${project.title}</h3>
-                    <div class="card-tags">${tagsHtml}</div>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    // --- 4. FILTER LOGIC ---
-    function setupFilters(allProjects) {
-        filters.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filters.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                const filterValue = btn.getAttribute('data-filter');
-
-                if (filterValue === 'all') {
-                    renderProjects(allProjects);
-                } else {
-                    const filtered = allProjects.filter(p => p.category.toLowerCase() === filterValue);
-                    renderProjects(filtered);
-                }
-            });
-        });
-    }
-
-    // --- 5. CURSOR LOGIC ---
-    const cursor = document.getElementById('cursor');
-    
-    // Only run if cursor element exists
-    if (cursor) {
-        document.addEventListener('mousemove', (e) => {
-            // Update cursor position
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-        });
-
-        // Add hover effects
-        addCursorEffects();
-    }
-
-    function addCursorEffects() {
-        const clickableElements = document.querySelectorAll('a, button, .project-card');
-        clickableElements.forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                cursor.style.transform = 'translate(-50%, -50%) scale(2.5)';
-                cursor.style.background = '#ffffff'; // Turn white on hover
-                cursor.style.mixBlendMode = 'difference';
-            });
-            el.addEventListener('mouseleave', () => {
-                cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-                cursor.style.background = 'var(--accent)'; // Back to neon
-                cursor.style.mixBlendMode = 'normal';
-            });
-        });
-    }
+  initCursor();
+  initTabs();
+  loadPortfolio();
 });
+
+// ─── TAB SYSTEM ───────────────────────────────────────────────────
+function initTabs() {
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  // Read hash on load — deep linking support
+  const hashTab = window.location.hash.replace('#', '');
+  if (hashTab && TAB_COLORS[hashTab]) {
+    activeTab = hashTab;
+  }
+
+  activateTab(activeTab, tabs, panels, false);
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      if (tab === activeTab) return;
+      activeTab = tab;
+      activateTab(tab, tabs, panels, true);
+    });
+  });
+}
+
+function activateTab(tab, tabs, panels, animate) {
+  // Update tab buttons
+  tabs.forEach(btn => {
+    const isActive = btn.dataset.tab === tab;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive);
+  });
+
+  // Update panels
+  panels.forEach(panel => {
+    const isActive = panel.id === `panel-${tab}`;
+    panel.classList.toggle('active', isActive);
+    panel.hidden = !isActive;
+  });
+
+  // Update URL hash
+  history.replaceState(null, '', `#${tab}`);
+
+  // Update CSS colors
+  const colors = TAB_COLORS[tab];
+  const root = document.documentElement;
+  root.style.setProperty('--accent',         colors.accent);
+  root.style.setProperty('--glow-primary',   colors.primary);
+  root.style.setProperty('--glow-secondary', colors.secondary);
+
+  // Re-render portfolio for new tab
+  if (portfolioData.length > 0) {
+    renderPortfolio(tab);
+  }
+}
+
+// ─── PORTFOLIO ────────────────────────────────────────────────────
+async function loadPortfolio() {
+  if (!SHEETS_ENDPOINT) {
+    // No endpoint configured — use fallback data
+    portfolioData = FALLBACK_PORTFOLIO.filter(item => item.visible);
+    renderPortfolio(activeTab);
+    return;
+  }
+
+  try {
+    const res = await fetch(SHEETS_ENDPOINT);
+    if (!res.ok) throw new Error('Sheet fetch failed');
+    portfolioData = await res.json();
+    renderPortfolio(activeTab);
+  } catch (err) {
+    console.warn('Portfolio: Sheet unreachable, using fallback data.', err);
+    portfolioData = FALLBACK_PORTFOLIO.filter(item => item.visible);
+    renderPortfolio(activeTab);
+  }
+}
+
+function renderPortfolio(tab) {
+  const grid = document.getElementById('portfolio-brands');
+  if (!grid) return;
+
+  // Filter: show items matching this tab or tagged 'all'
+  const filtered = portfolioData.filter(item => {
+    const itemTab = (item.tab || 'all').toLowerCase().trim();
+    return itemTab === 'all' || itemTab === tab;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<p class="loading-state">Portfolio coming soon — contact us for the full deck.</p>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map((item, i) => `
+    <article class="portfolio-card" id="portfolio-card-${i}">
+      <div class="portfolio-card-img">
+        <img
+          src="${escapeHtml(item.image_url)}"
+          alt="${escapeHtml(item.title)} — ${escapeHtml(item.client)}"
+          loading="lazy"
+        >
+      </div>
+      <div class="portfolio-card-info">
+        <p class="portfolio-card-cat">${escapeHtml(item.category)}</p>
+        <h3 class="portfolio-card-title">Extra × ${escapeHtml(item.client)}</h3>
+        <p class="portfolio-card-tags">${escapeHtml(item.tags)}</p>
+      </div>
+    </article>
+  `).join('');
+}
+
+// ─── CUSTOM CURSOR ────────────────────────────────────────────────
+function initCursor() {
+  const cursor = document.getElementById('cursor');
+  if (!cursor) return;
+
+  // Hide on touch devices
+  if ('ontouchstart' in window) {
+    cursor.style.display = 'none';
+    return;
+  }
+
+  let mouseX = 0, mouseY = 0;
+  let curX = 0, curY = 0;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  // Smooth cursor tracking
+  function animateCursor() {
+    curX += (mouseX - curX) * 0.12;
+    curY += (mouseY - curY) * 0.12;
+    cursor.style.left = `${curX}px`;
+    cursor.style.top  = `${curY}px`;
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  // Expand on interactive elements
+  const interactiveSelector = 'a, button, .tab-btn, .info-card, .portfolio-card, details summary';
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest(interactiveSelector)) {
+      cursor.classList.add('hovered');
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest(interactiveSelector)) {
+      cursor.classList.remove('hovered');
+    }
+  });
+
+  // Hide when leaving window
+  document.addEventListener('mouseleave', () => cursor.style.opacity = '0');
+  document.addEventListener('mouseenter', () => cursor.style.opacity = '1');
+}
+
+// ─── UTILITY ──────────────────────────────────────────────────────
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}

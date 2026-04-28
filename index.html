@@ -1,53 +1,322 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-tab="brands">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EXTRA | Average is Invisible</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Extra is a creative collective that assembles specialist teams on demand — for the briefs that can't afford to be ignored.">
+
+    <!-- Space Mono — primary font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!--
+      ═══════════════════════════════════════════════════════════
+      DISPLAY FONT EXPERIMENT ZONE
+      To try a new title font, uncomment one line below and
+      update --font-display in style.css to match.
+      ═══════════════════════════════════════════════════════════
+      <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+      ═══════════════════════════════════════════════════════════
+    -->
+
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="cursor" id="cursor"></div>
+    <!-- SVG grain filter — embedded once, referenced by CSS -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+        <filter id="grain" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise"/>
+            <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+            <feBlend in="SourceGraphic" in2="grayNoise" mode="overlay" result="blended"/>
+            <feComposite in="blended" in2="SourceGraphic" operator="in"/>
+        </filter>
+    </svg>
 
-    <main class="app-container">
-        
-        <nav class="top-nav">
-            <div class="logo" id="brand-name">EXTRA</div>
-            <div class="menu-items">
-                <a href="#work">Work</a>
-                <a href="#agency">Agency</a>
-                <a href="mailto:hello@extracollective.com" class="cta-btn">Contact</a>
-            </div>
-        </nav>
+    <!-- Custom cursor -->
+    <div class="cursor" id="cursor" aria-hidden="true"></div>
 
+    <!-- ═══════ NAVIGATION ═══════ -->
+    <nav class="top-nav" role="navigation" aria-label="Main navigation">
+        <div class="logo" id="brand-logo">EXTRA</div>
+
+        <div class="tab-nav" role="tablist" aria-label="Audience tabs">
+            <button class="tab-btn active" data-tab="brands" role="tab" aria-selected="true" id="tab-brands" aria-controls="panel-brands">
+                FOR BRANDS
+            </button>
+            <button class="tab-btn" data-tab="agencies" role="tab" aria-selected="false" id="tab-agencies" aria-controls="panel-agencies">
+                FOR AGENCIES
+            </button>
+            <button class="tab-btn" data-tab="creatives" role="tab" aria-selected="false" id="tab-creatives" aria-controls="panel-creatives">
+                FOR CREATIVES
+            </button>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════
+         TAB 01 — FOR BRANDS
+         ═══════════════════════════════════════════════════ -->
+    <section class="tab-panel active" id="panel-brands" role="tabpanel" aria-labelledby="tab-brands">
+
+        <!-- Hero -->
         <header class="hero-section">
-            <h1 class="glitch-text" id="motto">AVERAGE IS INVISIBLE</h1>
-            <p class="hero-sub">EST. 2026 // PORT LOUIS // MAURITIUS</p>
+            <h1 class="display-heading">AVERAGE IS<br>INVISIBLE.</h1>
+            <p class="hero-sub">A creative collective that assembles specialist teams on demand —<br>for the briefs that can't afford to be ignored.</p>
+            <a href="mailto:hello@extracollective.com" class="cta-btn" id="brands-cta-hero">Start a Conversation →</a>
+            <p class="location-tag">EST. 2026 // PORT LOUIS // MAURITIUS</p>
         </header>
 
-        <section class="filters" id="work">
-            <button class="filter-btn active" data-filter="all">ALL</button>
-            <button class="filter-btn" data-filter="branding">BRANDING</button>
-            <button class="filter-btn" data-filter="print">PRINT</button>
-            <button class="filter-btn" data-filter="digital">DIGITAL</button>
-            <button class="filter-btn" data-filter="corporate">CORPORATE</button>
+        <!-- How We Work -->
+        <section class="content-section" aria-labelledby="brands-model-heading">
+            <h2 class="section-label" id="brands-model-heading">HOW WE WORK</h2>
+            <div class="card-grid three-col">
+                <article class="info-card" id="brands-card-brief">
+                    <span class="card-num">01</span>
+                    <h3 class="card-heading">You bring the brief.</h3>
+                    <p>We assess it, assemble the exact team it needs, and deliver at the standard your market demands. No juniors. No bait-and-switch.</p>
+                </article>
+                <article class="info-card" id="brands-card-team">
+                    <span class="card-num">02</span>
+                    <h3 class="card-heading">Hand-picked specialists.</h3>
+                    <p>Every Extra project is staffed with masters — art directors, strategists, 3D artists, copywriters — chosen for your brief, not whoever's available.</p>
+                </article>
+                <article class="info-card" id="brands-card-price">
+                    <span class="card-num">03</span>
+                    <h3 class="card-heading">You pay for the work.</h3>
+                    <p>No office. No bench. No overhead tax. Our pricing sits between freelancer rates and agency premiums — because none of your budget goes to infrastructure.</p>
+                </article>
+            </div>
         </section>
 
-        <section class="grid-container" id="project-grid">
-            </section>
-
-        <footer>
-            <div class="footer-content">
-                <span>© EXTRA COLLECTIVE</span>
-                <span id="contact-display"></span>
+        <!-- Comparison -->
+        <section class="content-section" aria-labelledby="brands-compare-heading">
+            <h2 class="section-label" id="brands-compare-heading">WHY NOT JUST HIRE AN AGENCY?</h2>
+            <div class="comparison-grid" id="brands-comparison">
+                <div class="compare-col compare-them">
+                    <p class="compare-col-label">TRADITIONAL AGENCY</p>
+                    <p>You pay for empty desks.</p>
+                    <p>Junior staff, senior pitch.</p>
+                    <p>Opaque pricing.</p>
+                    <p>Weeks to mobilise.</p>
+                </div>
+                <div class="compare-arrows" aria-hidden="true">
+                    <p>→</p>
+                    <p>→</p>
+                    <p>→</p>
+                    <p>→</p>
+                </div>
+                <div class="compare-col compare-us">
+                    <p class="compare-col-label">EXTRA COLLECTIVE</p>
+                    <p>Every cent funds the craft.</p>
+                    <p>Masters on every brief.</p>
+                    <p>Open books, always.</p>
+                    <p>Teams assembled in days.</p>
+                </div>
             </div>
-        </footer>
+        </section>
 
-    </main>
+        <!-- Portfolio -->
+        <section class="content-section" aria-labelledby="brands-work-heading">
+            <h2 class="section-label" id="brands-work-heading">SELECTED WORK</h2>
+            <div class="portfolio-grid" id="portfolio-brands">
+                <p class="loading-state">Loading work...</p>
+            </div>
+        </section>
+
+        <!-- CTA Strip -->
+        <div class="cta-strip" id="brands-cta-strip">
+            <p class="cta-strip-text">The cost of being ignored<br>exceeds the cost of getting it right.</p>
+            <a href="mailto:hello@extracollective.com" class="cta-btn cta-btn--dark" id="brands-cta-bottom">Start a Conversation →</a>
+        </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         TAB 02 — FOR AGENCIES
+         ═══════════════════════════════════════════════════ -->
+    <section class="tab-panel" id="panel-agencies" role="tabpanel" aria-labelledby="tab-agencies" hidden>
+
+        <!-- Hero -->
+        <header class="hero-section">
+            <h1 class="display-heading">WE PLUG IN.<br>YOU TAKE<br>THE CREDIT.</h1>
+            <p class="hero-sub">Extra is a white-label creative collective. We work under your flag, invisibly, on the briefs your team can't take alone.</p>
+            <a href="mailto:hello@extracollective.com" class="cta-btn" id="agencies-cta-hero">Let's Talk →</a>
+            <p class="location-tag">EST. 2026 // PORT LOUIS // MAURITIUS</p>
+        </header>
+
+        <!-- How the Partnership Works -->
+        <section class="content-section" aria-labelledby="agencies-model-heading">
+            <h2 class="section-label" id="agencies-model-heading">HOW THE PARTNERSHIP WORKS</h2>
+            <div class="card-grid three-col">
+                <article class="info-card" id="agencies-card-invisible">
+                    <span class="card-num">—</span>
+                    <h3 class="card-heading">Invisible.</h3>
+                    <p>Your client never knows we exist. No Extra branding, no cross-promotion, no contact with your client relationships. Our work ships under your flag.</p>
+                </article>
+                <article class="info-card" id="agencies-card-specialist">
+                    <span class="card-num">—</span>
+                    <h3 class="card-heading">Specialist.</h3>
+                    <p>3D visualization, motion, photography, brand strategy — disciplines that require deep investment to maintain in-house. We hold them so you don't have to.</p>
+                </article>
+                <article class="info-card" id="agencies-card-conflict">
+                    <span class="card-num">—</span>
+                    <h3 class="card-heading">Conflict-free.</h3>
+                    <p>Extra doesn't pursue agency clients. We don't build our own bridge to your accounts. We earn your trust through delivery, not by circumventing your relationships.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- FAQ Accordion -->
+        <section class="content-section" aria-labelledby="agencies-faq-heading">
+            <h2 class="section-label" id="agencies-faq-heading">THE QUESTIONS EVERY MD ASKS</h2>
+            <div class="accordion" id="agencies-faq">
+                <details class="accordion-item" id="faq-clients">
+                    <summary class="accordion-trigger">
+                        "How do we know you won't approach our clients?"
+                        <span class="accordion-icon" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="accordion-body">
+                        <p>We operate under NDA and non-solicitation clauses as standard. Your client relationship is yours — in conversation and in writing. Our business model depends on agencies trusting us with repeat work, not on burning bridges for a single project.</p>
+                    </div>
+                </details>
+                <details class="accordion-item" id="faq-quality">
+                    <summary class="accordion-trigger">
+                        "What if the quality doesn't match our standards?"
+                        <span class="accordion-icon" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="accordion-body">
+                        <p>Every Extra partner is a proven specialist — not a generalist on a good day. Before we accept any brief, we assess whether we have the exact match. If we don't, we say so upfront rather than compromising. You'll see the work in progress, not just at final delivery.</p>
+                    </div>
+                </details>
+                <details class="accordion-item" id="faq-margin">
+                    <summary class="accordion-trigger">
+                        "Can we justify the cost and still make margin?"
+                        <span class="accordion-icon" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="accordion-body">
+                        <p>Our pricing sits between freelancer rates and agency premiums. Run it against the cost of a permanent specialist hire, or against the cost of turning down the brief entirely. In most cases, Extra is the highest-margin option available for specialist work you can't deliver in-house.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Disciplines -->
+        <section class="content-section" aria-labelledby="agencies-disciplines-heading">
+            <h2 class="section-label" id="agencies-disciplines-heading">WHAT WE BRING TO YOUR BENCH</h2>
+            <div class="discipline-tags" id="agencies-disciplines">
+                <span class="tag">Art Direction</span>
+                <span class="tag">3D Visualization</span>
+                <span class="tag">Brand Strategy</span>
+                <span class="tag">Motion Design</span>
+                <span class="tag">Photography</span>
+                <span class="tag">Copywriting</span>
+                <span class="tag">UX / Digital</span>
+                <span class="tag">Print & Publication</span>
+                <span class="tag">Illustration</span>
+                <span class="tag">Architectural Rendering</span>
+                <span class="tag">Video Production</span>
+                <span class="tag">Data Visualization</span>
+            </div>
+            <p class="discipline-note">Our reach is dictated by the mastery of our collective. If we don't have the match for a brief, we say so.</p>
+        </section>
+
+        <!-- CTA Strip -->
+        <div class="cta-strip" id="agencies-cta-strip">
+            <p class="cta-strip-text">The first conversation is straightforward.<br>No pitch deck. Just a clear look at whether Extra fits your next brief.</p>
+            <a href="mailto:hello@extracollective.com" class="cta-btn cta-btn--dark" id="agencies-cta-bottom">Start the Conversation →</a>
+        </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         TAB 03 — FOR CREATIVES
+         ═══════════════════════════════════════════════════ -->
+    <section class="tab-panel" id="panel-creatives" role="tabpanel" aria-labelledby="tab-creatives" hidden>
+
+        <!-- Hero -->
+        <header class="hero-section">
+            <h1 class="display-heading">BIGGER BRIEFS.<br>OPEN BOOKS.<br>YOUR TIME IS YOURS.</h1>
+            <p class="hero-sub">Extra is a collective of creative specialists. We bring you briefs you couldn't take alone, at rates you can see in full — before you agree to anything.</p>
+            <a href="mailto:hello@extracollective.com?subject=Partnership%20Enquiry%20%E2%80%94%20Extra%20Collective" class="cta-btn" id="creatives-cta-hero">Tell Us About Your Work →</a>
+            <p class="location-tag">EST. 2026 // PORT LOUIS // MAURITIUS</p>
+        </header>
+
+        <!-- The Four Pillars -->
+        <section class="content-section" aria-labelledby="creatives-pillars-heading">
+            <h2 class="section-label" id="creatives-pillars-heading">WHAT JOINING EXTRA ACTUALLY MEANS</h2>
+            <div class="card-grid four-col">
+                <article class="info-card" id="creatives-card-freedom">
+                    <span class="card-num pillar-num">I</span>
+                    <h3 class="card-heading">Unbound Freedom.</h3>
+                    <p>No timesheets. No check-ins. The deadline is absolute — how you structure your day to meet it is entirely your business.</p>
+                </article>
+                <article class="info-card" id="creatives-card-fairness">
+                    <span class="card-num pillar-num">II</span>
+                    <h3 class="card-heading">Radical Fairness.</h3>
+                    <p>You see the client quote. You see Extra's cut. You see your split. Before you say yes. Always.</p>
+                </article>
+                <article class="info-card" id="creatives-card-intent">
+                    <span class="card-num pillar-num">III</span>
+                    <h3 class="card-heading">Absolute Intent.</h3>
+                    <p>We only accept briefs worth your craft. Your portfolio doesn't get diluted by filler work. If a brief is beneath the standard, we decline it.</p>
+                </article>
+                <article class="info-card" id="creatives-card-consideration">
+                    <span class="card-num pillar-num">IV</span>
+                    <h3 class="card-heading">Deep Consideration.</h3>
+                    <p>You work alongside peers who operate at the same level. No management layer. No permission culture. Just the work.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Who We're Looking For -->
+        <section class="content-section" aria-labelledby="creatives-criteria-heading">
+            <h2 class="section-label" id="creatives-criteria-heading">THE HONEST CRITERIA</h2>
+            <div class="prose-block" id="creatives-criteria-text">
+                <p>Your portfolio gets you in the door. Your workflow keeps you here.</p>
+                <p>We build project teams on the fly and hand files between partners constantly. That means clean layers, organised logic, and clear naming — because it respects the next specialist in the chain.</p>
+                <p>We're not looking for generalists hoping to stretch. We're looking for people who've already found their lane and want to go faster in it.</p>
+                <p>If you've outgrown an agency, you're in the right place. If you're freelancing but tired of fighting for every rate and chasing every lead — same.</p>
+            </div>
+        </section>
+
+        <!-- The Economics -->
+        <section class="content-section" aria-labelledby="creatives-economics-heading">
+            <h2 class="section-label" id="creatives-economics-heading">WHAT YOU EARN</h2>
+            <div class="mono-block" id="creatives-economics-block">
+                <p class="mono-block-title">HOW YOUR RATE IS SET</p>
+                <div class="mono-block-rule"></div>
+                <p><span class="mono-label">01</span> You submit your Daily Output Rate.</p>
+                <p><span class="mono-label">02</span> We quote the client using that rate as the base.</p>
+                <p><span class="mono-label">03</span> You see the full quote before we send it.</p>
+                <p><span class="mono-label">04</span> You see Extra's margin. Clearly.</p>
+                <p><span class="mono-label">05</span> You agree before the brief starts.</p>
+                <div class="mono-block-rule"></div>
+                <p class="mono-block-footer">No surprises. No adjustments after the fact.</p>
+            </div>
+        </section>
+
+        <!-- CTA Strip -->
+        <div class="cta-strip" id="creatives-cta-strip">
+            <p class="cta-strip-text">We're not hiring.<br>We're recruiting peers.</p>
+            <a href="mailto:hello@extracollective.com?subject=Partnership%20Enquiry%20%E2%80%94%20Extra%20Collective" class="cta-btn cta-btn--dark" id="creatives-cta-bottom">Tell Us About Your Work →</a>
+        </div>
+
+    </section>
+
+    <!-- ═══════ FOOTER ═══════ -->
+    <footer class="site-footer" role="contentinfo">
+        <span>© EXTRA COLLECTIVE</span>
+        <span class="footer-divider" aria-hidden="true">//</span>
+        <span>EST. 2026</span>
+        <span class="footer-divider" aria-hidden="true">//</span>
+        <span>PORT LOUIS, MAURITIUS</span>
+        <a href="mailto:hello@extracollective.com" class="footer-email" id="footer-email">hello@extracollective.com</a>
+    </footer>
 
     <script src="script.js"></script>
 </body>
