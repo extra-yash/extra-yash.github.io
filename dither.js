@@ -30,7 +30,7 @@ const DitherBG = (() => {
   const CELL_SIZE = 20.0;   // grid pitch — controls density (larger = fewer symbols)
   const STAMP_SIZE = 12.0;  // symbol size within each cell (must be ≤ CELL_SIZE)
   const CURSOR_VOID_PX = 72.0; // hard void radius around cursor in pixels
-  const WAVE_MOUSE_RADIUS = 0.15; // subtle wave distortion radius (UV 0–1)
+  const WAVE_MOUSE_RADIUS = 0.5; // subtle wave distortion radius (UV 0–1)
 
   // ─── STAMP ────────────────────────────────────────────────────────────────
   // The Extra symbol, embedded directly — no external file dependency.
@@ -38,7 +38,7 @@ const DitherBG = (() => {
   // To use an external file instead, set STAMP_URL = './your-mark.svg' and
   // clear STAMP_SVG (set to empty string '').
   const STAMP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 201.92 177.09"><path fill="white" d="M18.56,165.97c12.01-14.32,22.09-26.48,30.59-37.31l30.94-39.42L1.5,96.12l-1.5-17.19,85.01-7.44.79-19.08c.55-13.22-1.28-28.02-4.84-49.43l17.01-2.99c2.98,17.89,5.04,33.06,5.2,46.45l.27,23.43,96.98-8.49,1.5,17.19-81.4,7.12,67.21,80.25-13.23,11.08-75.63-90.3-15.97,24.8c-11.2,17.38-27.59,37.49-51.13,65.55l-13.2-11.12Z"/></svg>`;
-  const STAMP_URL  = ''; // only used if STAMP_SVG is empty
+  const STAMP_URL = ''; // only used if STAMP_SVG is empty
 
   // ─── VERTEX SHADER ───────────────────────────────────────────────────────
   const VERT_SRC = `#version 300 es
@@ -289,7 +289,7 @@ const DitherBG = (() => {
   function resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    canvas.width  = w;
+    canvas.width = w;
     canvas.height = h;
     // Don't call gl.viewport here — it's set per-pass in render()
     waveW = Math.max(1, Math.ceil(w * WAVE_SCALE));
@@ -333,7 +333,7 @@ const DitherBG = (() => {
 
   // Core: draws any image src onto a 128px transparent canvas → WebGL texture
   function drawToStamp(src, cleanup) {
-    const sz  = 128;
+    const sz = 128;
     const img = new Image();
     img.onload = () => {
       if (cleanup) cleanup();
@@ -427,13 +427,13 @@ const DitherBG = (() => {
     gl.uniform1i(ditherUniforms.stamp, 1);
 
     gl.uniform2f(ditherUniforms.resolution, w, h);
-    gl.uniform1f(ditherUniforms.colorNum,   COLOR_NUM);
-    gl.uniform1f(ditherUniforms.cellSize,   CELL_SIZE);
-    gl.uniform1f(ditherUniforms.stampSize,  STAMP_SIZE);
+    gl.uniform1f(ditherUniforms.colorNum, COLOR_NUM);
+    gl.uniform1f(ditherUniforms.cellSize, CELL_SIZE);
+    gl.uniform1f(ditherUniforms.stampSize, STAMP_SIZE);
     gl.uniform1i(ditherUniforms.enableMouse, 1);
-    gl.uniform2f(ditherUniforms.mousePos,   mouseX, mouseY);
+    gl.uniform2f(ditherUniforms.mousePos, mouseX, mouseY);
     gl.uniform1f(ditherUniforms.cursorVoid, CURSOR_VOID_PX);
-    gl.uniform3f(ditherUniforms.bgColor,    0.102, 0.102, 0.180); // #1A1A2E
+    gl.uniform3f(ditherUniforms.bgColor, 0.102, 0.102, 0.180); // #1A1A2E
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     rafId = requestAnimationFrame(render);
@@ -472,16 +472,16 @@ const DitherBG = (() => {
       mouseRadius: gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
     };
     ditherUniforms = {
-      texture:     gl.getUniformLocation(ditherProgram, 'u_texture'),
-      stamp:       gl.getUniformLocation(ditherProgram, 'u_stamp'),
-      resolution:  gl.getUniformLocation(ditherProgram, 'u_resolution'),
-      colorNum:    gl.getUniformLocation(ditherProgram, 'u_colorNum'),
-      cellSize:    gl.getUniformLocation(ditherProgram, 'u_cellSize'),
-      stampSize:   gl.getUniformLocation(ditherProgram, 'u_stampSize'),
+      texture: gl.getUniformLocation(ditherProgram, 'u_texture'),
+      stamp: gl.getUniformLocation(ditherProgram, 'u_stamp'),
+      resolution: gl.getUniformLocation(ditherProgram, 'u_resolution'),
+      colorNum: gl.getUniformLocation(ditherProgram, 'u_colorNum'),
+      cellSize: gl.getUniformLocation(ditherProgram, 'u_cellSize'),
+      stampSize: gl.getUniformLocation(ditherProgram, 'u_stampSize'),
       enableMouse: gl.getUniformLocation(ditherProgram, 'u_enableMouse'),
-      mousePos:    gl.getUniformLocation(ditherProgram, 'u_mousePos'),
-      cursorVoid:  gl.getUniformLocation(ditherProgram, 'u_cursorVoid'),
-      bgColor:     gl.getUniformLocation(ditherProgram, 'u_bgColor'),
+      mousePos: gl.getUniformLocation(ditherProgram, 'u_mousePos'),
+      cursorVoid: gl.getUniformLocation(ditherProgram, 'u_cursorVoid'),
+      bgColor: gl.getUniformLocation(ditherProgram, 'u_bgColor'),
     };
 
     quadVAO_wave = createQuadBuffer(waveProgram);
@@ -489,7 +489,7 @@ const DitherBG = (() => {
 
     // Stamp — prefer the embedded SVG string; fall back to STAMP_URL file.
     if (STAMP_SVG) {
-      const blob    = new Blob([STAMP_SVG], { type: 'image/svg+xml' });
+      const blob = new Blob([STAMP_SVG], { type: 'image/svg+xml' });
       const blobUrl = URL.createObjectURL(blob);
       loadSVGStamp(blobUrl, () => URL.revokeObjectURL(blobUrl));
     } else if (STAMP_URL) {
