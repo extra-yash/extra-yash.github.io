@@ -1,14 +1,16 @@
 /**
  * EXTRA COLLECTIVE — Dither Background
  *
- * Vanilla WebGL port of the ReactBits Dither component.
+ * Vanilla WebGL2 port of the ReactBits Dither component.
  * Original shaders by DavidHDev (reactbits.dev), ported to plain JS.
  *
+ * Requires WebGL2 (supported by all modern browsers).
+ * Uses GLSL ES 3.0 — necessary for float[64](...) Bayer matrix syntax.
+ *
  * Usage:
- *   import / include this file, then call:
- *   DitherBG.init();          — start the canvas
- *   DitherBG.setColor(r,g,b) — update wave color (0–1 floats)
- *   DitherBG.stop();          — pause animation
+ *   DitherBG.init();        — create canvas and start animation loop
+ *   DitherBG.setColor(hex)  — update wave color on tab change
+ *   DitherBG.stop();        — pause animation
  */
 
 const DitherBG = (() => {
@@ -16,22 +18,24 @@ const DitherBG = (() => {
   const WAVE_SPEED      = 0.04;
   const WAVE_FREQUENCY  = 3.0;
   const WAVE_AMPLITUDE  = 0.3;
-  const COLOR_NUM       = 4.0;   // dither palette steps
-  const PIXEL_SIZE      = 2.0;   // dither pixel block size
-  const MOUSE_RADIUS    = 0.8;
+  const COLOR_NUM       = 6.0;   // dither palette steps (higher = more shades)
+  const PIXEL_SIZE      = 4.0;   // dither pixel block size (larger = more pixelated)
+  const MOUSE_RADIUS    = 0.4;
 
-  // ─── WAVE VERTEX SHADER (pass-through) ─────────────────────────
-  const VERT_SRC = `
-    attribute vec2 a_position;
-    varying vec2 vUv;
+  // ─── VERTEX SHADER — GLSL ES 3.0 ──────────────────────────────
+  // Both programs share this vertex shader.
+  const VERT_SRC = `#version 300 es
+    in vec2 a_position;
+    out vec2 vUv;
     void main() {
       vUv = a_position * 0.5 + 0.5;
       gl_Position = vec4(a_position, 0.0, 1.0);
     }
   `;
 
-  // ─── WAVE FRAGMENT SHADER (FBM noise → animated colour field) ──
-  const WAVE_FRAG_SRC = `
+  // ─── WAVE FRAGMENT SHADER — GLSL ES 3.0 ───────────────────────
+  // FBM (fractal Brownian motion) noise → animated colour field.
+  const WAVE_FRAG_SRC = `#version 300 es
     precision highp float;
     uniform vec2  u_resolution;
     uniform float u_time;
@@ -42,6 +46,7 @@ const DitherBG = (() => {
     uniform vec2  u_mousePos;
     uniform int   u_enableMouse;
     uniform float u_mouseRadius;
+    out vec4 fragColor;
 
     vec4 mod289v4(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
     vec4 permute(vec4 x)  { return mod289v4(((x * 34.0) + 1.0) * x); }
@@ -100,17 +105,21 @@ const DitherBG = (() => {
         f -= 0.5 * effect;
       }
       vec3 col = mix(vec3(0.0), u_waveColor, f);
-      gl_FragColor = vec4(col, 1.0);
+      fragColor = vec4(col, 1.0);
     }
   `;
 
-  // ─── DITHER FRAGMENT SHADER (Bayer 8×8 ordered dither) ─────────
-  const DITHER_FRAG_SRC = `
+  // ─── DITHER FRAGMENT SHADER — GLSL ES 3.0 ──────────────────────
+  // Bayer 8×8 ordered dither post-process.
+  // NOTE: float[64](...) array initializer requires GLSL ES 3.0 / WebGL2.
+  //       This is why we cannot use WebGL1 here.
+  const DITHER_FRAG_SRC = `#version 300 es
     precision highp float;
     uniform sampler2D u_texture;
     uniform vec2  u_resolution;
     uniform float u_colorNum;
     uniform float u_pixelSize;
+    out vec4 fragColor;
 
     const float bayer[64] = float[64](
        0.0/64.0, 48.0/64.0, 12.0/64.0, 60.0/64.0,  3.0/64.0, 51.0/64.0, 15.0/64.0, 63.0/64.0,
@@ -138,34 +147,34 @@ const DitherBG = (() => {
       vec2 uv = gl_FragCoord.xy / u_resolution;
       vec2 npx = u_pixelSize / u_resolution;
       vec2 uvPixel = npx * floor(uv / npx);
-      vec3 color = texture2D(u_texture, uvPixel).rgb;
+      vec3 color = texture(u_texture, uvPixel).rgb;
       color = dither(uv, color);
-      gl_FragColor = vec4(color, 1.0);
+      fragColor = vec4(color, 1.0);
     }
   `;
 
   // ─── INTERNAL STATE ─────────────────────────────────────────────
   let canvas, gl, rafId;
   let waveProgram, ditherProgram;
-  let waveUniforms  = {};
+  let waveUniforms = {};
   let ditherUniforms = {};
   let offscreenFBO, offscreenTex;
   let quadVAO_wave, quadVAO_dither;
-  let startTime     = 0;
+  let startTime = 0;
   let mouseX = 0, mouseY = 0;
 
   // Current wave colour (mutable) — starts as EXTRA CONTRAST green
   let waveColor = hexToVec3('#27E700');
 
   // ─── TARGET colour for smooth interpolation ─────────────────────
-  let targetColor   = [...waveColor];
-  let currentColor  = [...waveColor];
+  let targetColor = [...waveColor];
+  let currentColor = [...waveColor];
 
   // ─── HELPERS ────────────────────────────────────────────────────
   function hexToVec3(hex) {
-    const r = parseInt(hex.slice(1,3), 16) / 255;
-    const g = parseInt(hex.slice(3,5), 16) / 255;
-    const b = parseInt(hex.slice(5,7), 16) / 255;
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
     return [r, g, b];
   }
 
@@ -191,8 +200,8 @@ const DitherBG = (() => {
   }
 
   function createQuadBuffer(prog) {
-    const verts = new Float32Array([-1,-1, 1,-1, -1,1, 1,1]);
-    const buf   = gl.createBuffer();
+    const verts = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+    const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(prog, 'a_position');
@@ -217,7 +226,7 @@ const DitherBG = (() => {
   function resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    canvas.width  = w;
+    canvas.width = w;
     canvas.height = h;
     gl.viewport(0, 0, w, h);
 
@@ -255,14 +264,14 @@ const DitherBG = (() => {
 
     // Update uniforms
     gl.uniform2f(waveUniforms.resolution, w, h);
-    gl.uniform1f(waveUniforms.time,          t);
-    gl.uniform1f(waveUniforms.waveSpeed,     WAVE_SPEED);
+    gl.uniform1f(waveUniforms.time, t);
+    gl.uniform1f(waveUniforms.waveSpeed, WAVE_SPEED);
     gl.uniform1f(waveUniforms.waveFrequency, WAVE_FREQUENCY);
     gl.uniform1f(waveUniforms.waveAmplitude, WAVE_AMPLITUDE);
-    gl.uniform3fv(waveUniforms.waveColor,    currentColor);
-    gl.uniform2f(waveUniforms.mousePos,      mouseX, mouseY);
-    gl.uniform1i(waveUniforms.enableMouse,   1);
-    gl.uniform1f(waveUniforms.mouseRadius,   MOUSE_RADIUS);
+    gl.uniform3fv(waveUniforms.waveColor, currentColor);
+    gl.uniform2f(waveUniforms.mousePos, mouseX, mouseY);
+    gl.uniform1i(waveUniforms.enableMouse, 1);
+    gl.uniform1f(waveUniforms.mouseRadius, MOUSE_RADIUS);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -279,10 +288,10 @@ const DitherBG = (() => {
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, offscreenTex);
-    gl.uniform1i(ditherUniforms.texture,    0);
+    gl.uniform1i(ditherUniforms.texture, 0);
     gl.uniform2f(ditherUniforms.resolution, w, h);
-    gl.uniform1f(ditherUniforms.colorNum,   COLOR_NUM);
-    gl.uniform1f(ditherUniforms.pixelSize,  PIXEL_SIZE);
+    gl.uniform1f(ditherUniforms.colorNum, COLOR_NUM);
+    gl.uniform1f(ditherUniforms.pixelSize, PIXEL_SIZE);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -300,34 +309,41 @@ const DitherBG = (() => {
     ].join(';');
     document.body.prepend(canvas);
 
-    gl = canvas.getContext('webgl', { antialias: false, alpha: false });
-    if (!gl) { console.warn('DitherBG: WebGL not supported.'); return; }
+    // WebGL2 required — GLSL ES 3.0 float[64](...) array initializer
+    // is not supported in WebGL1/GLSL ES 1.0.
+    gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
+    if (!gl) {
+      // Graceful fallback: hide canvas, let the dark body background show.
+      console.warn('DitherBG: WebGL2 not supported in this browser. Background disabled.');
+      canvas.style.display = 'none';
+      return;
+    }
 
     // Compile programs
-    waveProgram   = createProgram(VERT_SRC, WAVE_FRAG_SRC);
+    waveProgram = createProgram(VERT_SRC, WAVE_FRAG_SRC);
     ditherProgram = createProgram(VERT_SRC, DITHER_FRAG_SRC);
 
     // Cache uniform locations
     waveUniforms = {
-      resolution:    gl.getUniformLocation(waveProgram, 'u_resolution'),
-      time:          gl.getUniformLocation(waveProgram, 'u_time'),
-      waveSpeed:     gl.getUniformLocation(waveProgram, 'u_waveSpeed'),
+      resolution: gl.getUniformLocation(waveProgram, 'u_resolution'),
+      time: gl.getUniformLocation(waveProgram, 'u_time'),
+      waveSpeed: gl.getUniformLocation(waveProgram, 'u_waveSpeed'),
       waveFrequency: gl.getUniformLocation(waveProgram, 'u_waveFrequency'),
       waveAmplitude: gl.getUniformLocation(waveProgram, 'u_waveAmplitude'),
-      waveColor:     gl.getUniformLocation(waveProgram, 'u_waveColor'),
-      mousePos:      gl.getUniformLocation(waveProgram, 'u_mousePos'),
-      enableMouse:   gl.getUniformLocation(waveProgram, 'u_enableMouse'),
-      mouseRadius:   gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
+      waveColor: gl.getUniformLocation(waveProgram, 'u_waveColor'),
+      mousePos: gl.getUniformLocation(waveProgram, 'u_mousePos'),
+      enableMouse: gl.getUniformLocation(waveProgram, 'u_enableMouse'),
+      mouseRadius: gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
     };
     ditherUniforms = {
-      texture:    gl.getUniformLocation(ditherProgram, 'u_texture'),
+      texture: gl.getUniformLocation(ditherProgram, 'u_texture'),
       resolution: gl.getUniformLocation(ditherProgram, 'u_resolution'),
-      colorNum:   gl.getUniformLocation(ditherProgram, 'u_colorNum'),
-      pixelSize:  gl.getUniformLocation(ditherProgram, 'u_pixelSize'),
+      colorNum: gl.getUniformLocation(ditherProgram, 'u_colorNum'),
+      pixelSize: gl.getUniformLocation(ditherProgram, 'u_pixelSize'),
     };
 
     // Quad buffers for each program
-    quadVAO_wave   = createQuadBuffer(waveProgram);
+    quadVAO_wave = createQuadBuffer(waveProgram);
     quadVAO_dither = createQuadBuffer(ditherProgram);
 
     // Size up and start
