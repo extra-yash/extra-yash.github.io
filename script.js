@@ -225,23 +225,12 @@ function initCursor() {
     return;
   }
 
-  let mouseX = 0, mouseY = 0;
-  let curX = 0, curY = 0;
-
+  // Move cursor dot directly to raw mouse position — no lag.
+  // Size/color transitions are handled by CSS, not JS lerp.
   document.addEventListener('mousemove', e => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+    cursor.style.left = `${e.clientX}px`;
+    cursor.style.top  = `${e.clientY}px`;
   });
-
-  // Smooth cursor tracking
-  function animateCursor() {
-    curX += (mouseX - curX) * 0.12;
-    curY += (mouseY - curY) * 0.12;
-    cursor.style.left = `${curX}px`;
-    cursor.style.top  = `${curY}px`;
-    requestAnimationFrame(animateCursor);
-  }
-  animateCursor();
 
   // Expand on interactive elements
   const interactiveSelector = 'a, button, .tab-btn, .info-card, .portfolio-card, details summary';

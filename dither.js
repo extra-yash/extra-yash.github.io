@@ -193,7 +193,7 @@ const DitherBG = (() => {
       vec2 offset   = gl_FragCoord.xy - cellCentreGL;
       float halfSt  = u_stampSize * 0.5;
       if (abs(offset.x) > halfSt || abs(offset.y) > halfSt) {
-        fragColor = vec4(0.0);
+        fragColor = vec4(u_bgColor, 1.0);
         return;
       }
 
@@ -206,7 +206,7 @@ const DitherBG = (() => {
       if (quantized > threshold && stampMask > 0.5) {
         fragColor = vec4(cellColor, 1.0);
       } else {
-        fragColor = vec4(0.0); // transparent — CSS body bg (#1A1A2E) shows through
+        fragColor = vec4(u_bgColor, 1.0); // Extra Dark — matches CSS --bg
       }
     }
   `;
