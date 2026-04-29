@@ -1,0 +1,17 @@
+# ── macOS metadata ─────────────────────────────────────────────────
+# AppleDouble resource-fork files created on non-HFS+ volumes (exFAT, NTFS)
+._*
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Spotlight index
+.Spotlight-V100
+
+# Trashes
+.Trashes
+.fseventsd
+
+# ── Node / build artefacts (strategy-source) ───────────────────────
+strategy-source/node_modules/
+strategy-source/dist/
