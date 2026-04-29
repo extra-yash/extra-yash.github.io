@@ -147,7 +147,8 @@ const DitherBG = (() => {
     uniform float     u_stampSize;  // symbol size in pixels within each cell
     uniform int       u_enableMouse;
     uniform vec2      u_mousePos;   // raw clientX/clientY
-    uniform float     u_cursorVoid; // hard void radius in pixels
+    uniform float     u_cursorVoid; // squared before comparing — no sqrt
+    uniform vec3      u_bgColor;    // #1A1A2E — rendered for off-cells (no alpha compositing)
     out vec4 fragColor;
 
     const float bayer[64] = float[64](
@@ -162,28 +163,27 @@ const DitherBG = (() => {
     );
 
     void main() {
-      // ── Which cell are we in? ──────────────────────────────────────────
-      vec2 cellIdx    = floor(gl_FragCoord.xy / u_cellSize);
+      // ── Which cell are we in? ────────────────────────────────────
+      vec2 cellIdx     = floor(gl_FragCoord.xy / u_cellSize);
       vec2 cellCentreGL = cellIdx * u_cellSize + u_cellSize * 0.5;
 
-      // ── Hard cursor void ───────────────────────────────────────────────
-      // Cells whose centre is within CURSOR_VOID_PX of the mouse are forced
-      // transparent — clean edge, no Bayer pixels leaking through.
+      // ── Hard cursor void (squared-distance — no sqrt) ────────────────
       if (u_enableMouse == 1) {
         vec2 mouseGL = vec2(u_mousePos.x, u_resolution.y - u_mousePos.y);
-        if (length(cellCentreGL - mouseGL) < u_cursorVoid) {
-          fragColor = vec4(0.0);
+        vec2 diff    = cellCentreGL - mouseGL;
+        if (dot(diff, diff) < u_cursorVoid * u_cursorVoid) {
+          fragColor = vec4(u_bgColor, 1.0);
           return;
         }
       }
 
-      // ── Sample wave at cell centre ─────────────────────────────────────
+      // ── Sample wave at cell centre ─────────────────────────────
       vec2 cellCentreUV = cellCentreGL / u_resolution;
       vec3 cellColor = texture(u_texture, cellCentreUV).rgb;
       float brightness = dot(cellColor, vec3(0.299, 0.587, 0.114));
 
-      // ── Quantise + Bayer threshold ────────────────────────────────────
-      float stp      = 1.0 / (u_colorNum - 1.0);
+      // ── Quantise + Bayer threshold ──────────────────────────────
+      float stp       = 1.0 / (u_colorNum - 1.0);
       float quantized = floor(brightness / stp + 0.5) * stp;
       int bx = int(mod(cellIdx.x, 8.0));
       int by = int(mod(cellIdx.y, 8.0));
@@ -433,6 +433,7 @@ const DitherBG = (() => {
     gl.uniform1i(ditherUniforms.enableMouse, 1);
     gl.uniform2f(ditherUniforms.mousePos,   mouseX, mouseY);
     gl.uniform1f(ditherUniforms.cursorVoid, CURSOR_VOID_PX);
+    gl.uniform3f(ditherUniforms.bgColor,    0.102, 0.102, 0.180); // #1A1A2E
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     rafId = requestAnimationFrame(render);
@@ -445,14 +446,16 @@ const DitherBG = (() => {
     canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block;pointer-events:none';
     document.body.prepend(canvas);
 
-    // alpha:true + premultipliedAlpha:false → off-cells are transparent,
-    // letting the CSS body background (#1A1A2E) show through cleanly.
-    gl = canvas.getContext('webgl2', { antialias: false, alpha: true, premultipliedAlpha: false });
+    // alpha:false = compositor copies pixels without blending — faster.
+    // Off-cells render #1A1A2E directly via u_bgColor uniform.
+    gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
     if (!gl) {
       console.warn('DitherBG: WebGL2 not supported. Background disabled.');
       canvas.style.display = 'none';
       return;
     }
+    // Set clear color to Extra Dark so any unrendered area matches the design
+    gl.clearColor(0.102, 0.102, 0.180, 1.0); // #1A1A2E
 
     waveProgram = createProgram(VERT_SRC, WAVE_FRAG_SRC);
     ditherProgram = createProgram(VERT_SRC, DITHER_FRAG_SRC);
@@ -478,6 +481,7 @@ const DitherBG = (() => {
       enableMouse: gl.getUniformLocation(ditherProgram, 'u_enableMouse'),
       mousePos:    gl.getUniformLocation(ditherProgram, 'u_mousePos'),
       cursorVoid:  gl.getUniformLocation(ditherProgram, 'u_cursorVoid'),
+      bgColor:     gl.getUniformLocation(ditherProgram, 'u_bgColor'),
     };
 
     quadVAO_wave = createQuadBuffer(waveProgram);
