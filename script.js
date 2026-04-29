@@ -40,16 +40,22 @@ const SHEETS_ENDPOINT = '';
 // Each tab drives the dither wave color AND the CSS --accent token.
 const TAB_COLORS = {
   brands: {
-    wave:   '#FF2C00',  // EXTRA BRIGHT — red-orange
+    wave:   '#FF2C00',  // EXTRA BRIGHT
     accent: '#FF2C00',
+    bg:     '#1A1A2E',  // EXTRA DARK
+    theme:  'dark',
   },
   agencies: {
-    wave:   '#5766ED',  // EXTRA CRISP — blue
+    wave:   '#5766ED',  // EXTRA CRISP — blue symbols on dark
     accent: '#5766ED',
+    bg:     '#1A1A2E',  // EXTRA DARK
+    theme:  'dark',
   },
   creatives: {
-    wave:   '#9D00FF',  // EXTRA VIOLET — purple
+    wave:   '#9D00FF',  // EXTRA VIOLET
     accent: '#9D00FF',
+    bg:     '#1A1A2E',  // EXTRA DARK
+    theme:  'dark',
   },
 };
 
@@ -149,10 +155,12 @@ function activateTab(tab, tabs, panels, animate) {
   // Update URL hash
   history.replaceState(null, '', `#${tab}`);
 
-  // Update dither wave color and CSS accent token
+  // Update dither wave colour, bg colour, CSS accent token, and body theme
   const colors = TAB_COLORS[tab];
   DitherBG.setColor(colors.wave);
+  DitherBG.setBgColor(colors.bg);
   document.documentElement.style.setProperty('--accent', colors.accent);
+  document.body.dataset.theme = colors.theme;
 
   // Re-render portfolio for new tab
   if (portfolioData.length > 0) {

@@ -24,21 +24,37 @@ const DitherBG = (() => {
 
   // ─── CONFIG ──────────────────────────────────────────────────────────────
   const WAVE_SPEED = 0.05;
-  const WAVE_FREQUENCY = 2.0;
-  const WAVE_AMPLITUDE = 0.4;
-  const COLOR_NUM = 4.0;     // tonal steps in the dither
-  const CELL_SIZE = 20.0;   // grid pitch — controls density (larger = fewer symbols)
-  const STAMP_SIZE = 12.0;  // symbol size within each cell (must be ≤ CELL_SIZE)
-  const CURSOR_VOID_PX = 150.0; // hard void radius around cursor in pixels
-  const WAVE_MOUSE_RADIUS = 0.5; // subtle wave distortion radius (UV 0–1)
+  const WAVE_FREQUENCY = 5.0;
+  const WAVE_AMPLITUDE = 0.5;
+  const COLOR_NUM = 3.0;   // tonal steps in the dither
+  const CELL_SIZE = 30.0;  // grid pitch in px — controls symbol density
+  const STAMP_SIZE = 16.0;  // symbol size within each cell (≤ CELL_SIZE)
+  const CURSOR_VOID_PX = 70.0;      // inner void radius — fully clear (px)
+  const CURSOR_VOID_FALLOFF = 140.0; // falloff width beyond void — symbols fade in over this (px)
+  const HERO_VOID_PX = -20.0;        // inset from text rect (negative = tighter, positive = expand)
+  const HERO_VOID_FALLOFF = 60.0;   // feather width outside ellipse — symbols fade in over this (px)
+  const HERO_VOID_X_SCALE = 0.5;    // 0–1: scales ellipse x-radius from text block half-width (lower = narrower oval)
+  const WAVE_MOUSE_RADIUS = 0.5; // wave distortion radius (UV 0–1)
+  const BIAS = 0.4;   // darkness bias — higher = fewer lit cells
+  const PARALLAX_SPEED = 0.0002; // wave UV shift per scroll pixel — 0 = off, ~0.0003 = noticeable
 
-  // ─── STAMP ────────────────────────────────────────────────────────────────
-  // The Extra symbol, embedded directly — no external file dependency.
-  // To swap: replace the path d="..." with your own SVG path data.
-  // To use an external file instead, set STAMP_URL = './your-mark.svg' and
-  // clear STAMP_SVG (set to empty string '').
+  // ─── STAMP CONFIG ─────────────────────────────────────────────────────────
+  // ENABLED  false → plain square pixel blocks (pure ordered-dither, no symbol)
+  // SHAPE    'svg'      — uses the embedded Extra × logo below
+  //          'circle'   — circular dot
+  //          'diamond'  — rotated square
+  //          'cross'    — plus sign
+  //          'ring'     — hollow circle
+  //          'triangle' — upward triangle
+  //          'square'   — plain square (same as ENABLED:false but centred)
+  const STAMP_CONFIG = {
+    ENABLED: true,
+    SHAPE: 'svg',
+  };
+
+  // ─── STAMP SVG ────────────────────────────────────────────────────────────
   const STAMP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 201.92 177.09"><path fill="white" d="M18.56,165.97c12.01-14.32,22.09-26.48,30.59-37.31l30.94-39.42L1.5,96.12l-1.5-17.19,85.01-7.44.79-19.08c.55-13.22-1.28-28.02-4.84-49.43l17.01-2.99c2.98,17.89,5.04,33.06,5.2,46.45l.27,23.43,96.98-8.49,1.5,17.19-81.4,7.12,67.21,80.25-13.23,11.08-75.63-90.3-15.97,24.8c-11.2,17.38-27.59,37.49-51.13,65.55l-13.2-11.12Z"/></svg>`;
-  const STAMP_URL = ''; // only used if STAMP_SVG is empty
+  const STAMP_URL = ''; // only used when STAMP_CONFIG.SHAPE === 'svg' and STAMP_SVG is ''
 
   // ─── VERTEX SHADER ───────────────────────────────────────────────────────
   const VERT_SRC = `#version 300 es
@@ -62,6 +78,7 @@ const DitherBG = (() => {
     uniform vec2  u_mousePos;
     uniform int   u_enableMouse;
     uniform float u_mouseRadius;
+    uniform float u_scrollOffset; // parallax: wave UV shift driven by scroll position
     out vec4 fragColor;
 
     vec4 mod289v4(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
@@ -113,6 +130,7 @@ const DitherBG = (() => {
       vec2 uv = gl_FragCoord.xy / u_resolution;
       uv -= 0.5;
       uv.x *= u_resolution.x / u_resolution.y;
+      uv.y += u_scrollOffset;  // parallax: shifts wave pattern with scroll
       float f = pattern(uv);
 
       if (u_enableMouse == 1) {
@@ -137,18 +155,34 @@ const DitherBG = (() => {
   // This makes your SVG symbol the shape of every dither dot.
   //
   // NOTE: float[64](...) requires GLSL ES 3.0 / WebGL2 — cannot use WebGL1.
+  // ─── DITHER + STAMP FRAGMENT SHADER ─────────────────────────────────────
+  //
+  // True ordered dithering (ReactBits algorithm):
+  //   threshold is ADDED to the colour before quantising, not used as a gate.
+  //   This produces the authentic halftone/print-dither look.
+  //   The stamp texture shapes each "dot" — disable via u_stampEnabled = 0.
+  //
   const DITHER_FRAG_SRC = `#version 300 es
     precision highp float;
-    uniform sampler2D u_texture;   // wave pass output
-    uniform sampler2D u_stamp;     // pixel shape mask (white = visible)
+    uniform sampler2D u_texture;      // wave pass output
+    uniform sampler2D u_stamp;        // dot shape mask (alpha = visible)
+    uniform sampler2D u_fluidVel;     // fluid velocity (FluidSim)
     uniform vec2      u_resolution;
-    uniform float     u_colorNum;
-    uniform float     u_cellSize;   // grid pitch in pixels (controls density)
-    uniform float     u_stampSize;  // symbol size in pixels within each cell
+    uniform float     u_colorNum;     // quantisation steps
+    uniform float     u_cellSize;     // grid pitch in px
+    uniform float     u_stampSize;    // dot size in px (≤ u_cellSize)
+    uniform float     u_bias;         // darkness bias (0.2 = ReactBits default)
+    uniform float     u_stampEnabled; // 1.0 = use stamp mask, 0.0 = full square
+    uniform float     u_fluidAmp;
+    uniform float     u_fluidStr;
     uniform int       u_enableMouse;
-    uniform vec2      u_mousePos;   // raw clientX/clientY
-    uniform float     u_cursorVoid; // squared before comparing — no sqrt
-    uniform vec3      u_bgColor;    // #1A1A2E — rendered for off-cells (no alpha compositing)
+    uniform vec2      u_mousePos;
+    uniform float     u_cursorVoid;    // inner void radius (px)
+    uniform float     u_cursorFalloff; // soft falloff width (px)
+    uniform vec2      u_heroCenter;    // hero text ellipse centre (GL px coords)
+    uniform vec2      u_heroR;         // ellipse radii x,y (px)
+    uniform float     u_heroFalloff;   // feather width outside ellipse (px)
+    uniform vec3      u_bgColor;
     out vec4 fragColor;
 
     const float bayer[64] = float[64](
@@ -163,51 +197,84 @@ const DitherBG = (() => {
     );
 
     void main() {
-      // ── Which cell are we in? ────────────────────────────────────
-      vec2 cellIdx     = floor(gl_FragCoord.xy / u_cellSize);
+      // ── Cell index & centre ───────────────────────────────────────
+      vec2 cellIdx      = floor(gl_FragCoord.xy / u_cellSize);
       vec2 cellCentreGL = cellIdx * u_cellSize + u_cellSize * 0.5;
 
-      // ── Hard cursor void (squared-distance — no sqrt) ────────────────
+      // ── Cursor void with soft falloff ───────────────────────────────
+      // voidFactor 0=clear, 1=full. Dimming cellColor before dithering causes
+      // fewer cells to survive the threshold near the edge — organic fade.
+      float voidFactor = 1.0;
       if (u_enableMouse == 1) {
         vec2 mouseGL = vec2(u_mousePos.x, u_resolution.y - u_mousePos.y);
-        vec2 diff    = cellCentreGL - mouseGL;
-        if (dot(diff, diff) < u_cursorVoid * u_cursorVoid) {
-          fragColor = vec4(u_bgColor, 1.0);
-          return;
-        }
+        float dist   = length(cellCentreGL - mouseGL);
+        voidFactor   = smoothstep(u_cursorVoid, u_cursorVoid + u_cursorFalloff, dist);
+        if (voidFactor <= 0.001) { fragColor = vec4(u_bgColor, 1.0); return; }
       }
 
-      // ── Sample wave at cell centre ─────────────────────────────
+      // ── Hero text void ────────────────────────────────────────────
+      // Soft ellipse centred on the hero text block. Only the oval clears;
+      // the full-width container rect is ignored.
+      if (u_heroR.x > 0.0) {
+        vec2 p = cellCentreGL - u_heroCenter;
+        // Normalised ellipse distance: <1 inside, >1 outside
+        float e = length(p / u_heroR);
+        // Approximate pixel distance from ellipse boundary
+        float pxDist = (e - 1.0) * min(u_heroR.x, u_heroR.y);
+        float heroFactor = smoothstep(0.0, u_heroFalloff, pxDist);
+        if (heroFactor <= 0.001) { fragColor = vec4(u_bgColor, 1.0); return; }
+        voidFactor *= heroFactor;
+      }
+
+      // ── Sample wave at cell centre ────────────────────────────────
       vec2 cellCentreUV = cellCentreGL / u_resolution;
-      vec3 cellColor = texture(u_texture, cellCentreUV).rgb;
-      float brightness = dot(cellColor, vec3(0.299, 0.587, 0.114));
+      // Dim by voidFactor so dither naturally thins symbols near cursor edge
+      vec3 cellColor    = texture(u_texture, cellCentreUV).rgb * voidFactor;
 
-      // ── Quantise + Bayer threshold ──────────────────────────────
+      // ── True ordered dithering (ReactBits algorithm) ──────────────
+      // Add the centred Bayer threshold to the colour, apply bias,
+      // then quantise. The result decides on/off — not a raw gate.
+      int   bx        = int(mod(cellIdx.x, 8.0));
+      int   by        = int(mod(cellIdx.y, 8.0));
+      float thr       = bayer[by * 8 + bx] - 0.25;
       float stp       = 1.0 / (u_colorNum - 1.0);
-      float quantized = floor(brightness / stp + 0.5) * stp;
-      int bx = int(mod(cellIdx.x, 8.0));
-      int by = int(mod(cellIdx.y, 8.0));
-      float threshold = bayer[by * 8 + bx];
+      vec3  dithered  = cellColor + thr * stp;
+      dithered        = clamp(dithered - u_bias, 0.0, 1.0);
+      dithered        = floor(dithered * (u_colorNum - 1.0) + 0.5)
+                        / (u_colorNum - 1.0);
+      bool cellOn     = dot(dithered, vec3(0.299, 0.587, 0.114)) > 0.001;
 
-      // ── Is this pixel inside the STAMP_SIZE box centred in the cell? ──
-      vec2 offset   = gl_FragCoord.xy - cellCentreGL;
-      float halfSt  = u_stampSize * 0.5;
+      if (!cellOn) { fragColor = vec4(u_bgColor, 1.0); return; }
+
+      // Restore full wave colour — visible symbols are never dimmed
+      cellColor = texture(u_texture, cellCentreUV).rgb;
+
+      // ── Pixel offset from cell centre ─────────────────────────────
+      vec2 offset = gl_FragCoord.xy - cellCentreGL;
+
+      // ── Fluid velocity size modulation ────────────────────────────
+      float sizeScale = 1.0;
+      if (u_fluidStr > 0.0) {
+        vec2 fvel = texture(u_fluidVel, cellCentreUV).rg;
+        sizeScale = 1.0 + u_fluidAmp * clamp(length(fvel) * u_fluidStr, 0.0, 1.0);
+      }
+      float halfSt = u_stampSize * sizeScale * 0.5;
       if (abs(offset.x) > halfSt || abs(offset.y) > halfSt) {
         fragColor = vec4(u_bgColor, 1.0);
         return;
       }
 
-      // ── Sample stamp mask (alpha channel) ─────────────────────────────
-      vec2 posInStamp = offset / u_stampSize + 0.5;
-      posInStamp.y    = 1.0 - posInStamp.y;
-      float stampMask = texture(u_stamp, posInStamp).a;
-
-      // ── Output ────────────────────────────────────────────────────────
-      if (quantized > threshold && stampMask > 0.5) {
-        fragColor = vec4(cellColor, 1.0);
-      } else {
-        fragColor = vec4(u_bgColor, 1.0); // Extra Dark — matches CSS --bg
+      // ── Stamp mask — skipped when u_stampEnabled == 0 ─────────────
+      float stampMask = 1.0;
+      if (u_stampEnabled > 0.5) {
+        vec2 posInStamp = offset / (u_stampSize * sizeScale) + 0.5;
+        posInStamp.y    = 1.0 - posInStamp.y;
+        stampMask       = texture(u_stamp, posInStamp).a;
       }
+
+      fragColor = stampMask > 0.5
+        ? vec4(cellColor, 1.0)
+        : vec4(u_bgColor, 1.0);
     }
   `;
 
@@ -218,14 +285,20 @@ const DitherBG = (() => {
   let waveUniforms = {};
   let ditherUniforms = {};
   let offscreenFBO, offscreenTex;
-  let waveW = 1, waveH = 1;         // wave FBO dimensions (quarter-res)
+  let waveW = 1, waveH = 1;
   let quadVAO_wave, quadVAO_dither;
   let stampTex = null;
   let startTime = 0;
   let mouseX = 0, mouseY = 0;
+  let scrollY = 0; // raw window.scrollY — scaled by PARALLAX_SPEED in render
+  // Placeholder 1×1 black texture used when fluid sim is disabled / not yet ready
+  let fallbackVelTex = null;
 
   let targetColor = [1.0, 0.173, 0.0]; // EXTRA BRIGHT #FF2C00
   let currentColor = [...targetColor];
+
+  let targetBgColor = [0.102, 0.102, 0.180]; // EXTRA DARK #1A1A2E
+  let currentBgColor = [...targetBgColor];
 
   // ─── HELPERS ─────────────────────────────────────────────────────────────
   function hexToVec3(hex) {
@@ -317,17 +390,57 @@ const DitherBG = (() => {
     return tex;
   }
 
-  function buildDefaultStamp() {
-    // Built-in: circle, drawn on transparent background.
-    // Alpha channel is used as the mask — no black fill needed.
-    const sz = 64;
-    const c = document.createElement('canvas');
+  // ─── BUILT-IN SHAPES ─────────────────────────────────────────────────────
+  // All shapes are drawn white-on-transparent at 128×128 and used as alpha masks.
+  function buildShapeStamp(shape) {
+    const sz = 128, c = document.createElement('canvas');
     c.width = c.height = sz;
     const ctx = c.getContext('2d');
+    const cx = sz / 2, cy = sz / 2, r = sz * 0.42;
     ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(sz / 2, sz / 2, sz * 0.42, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    switch (shape) {
+      case 'circle':
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'square':
+        ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+        break;
+      case 'diamond': {
+        const h = r;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - h); ctx.lineTo(cx + h, cy);
+        ctx.lineTo(cx, cy + h); ctx.lineTo(cx - h, cy);
+        ctx.closePath(); ctx.fill();
+        break;
+      }
+      case 'cross': {
+        const arm = r * 0.35;
+        ctx.fillRect(cx - r, cy - arm, r * 2, arm * 2); // horizontal
+        ctx.fillRect(cx - arm, cy - r, arm * 2, r * 2); // vertical
+        break;
+      }
+      case 'ring':
+        ctx.lineWidth = sz * 0.12;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.7, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      case 'triangle':
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - r);
+        ctx.lineTo(cx + r, cy + r * 0.7);
+        ctx.lineTo(cx - r, cy + r * 0.7);
+        ctx.closePath(); ctx.fill();
+        break;
+      default:
+        // fallback: circle
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+    }
     return uploadCanvasAsStamp(c);
   }
 
@@ -383,10 +496,15 @@ const DitherBG = (() => {
     const t = (ts - startTime) / 1000;
     const w = canvas.width, h = canvas.height;
 
-    // Smooth colour lerp
+    // Smooth wave colour + bg colour lerp
     for (let i = 0; i < 3; i++) {
       currentColor[i] = lerp(currentColor[i], targetColor[i], 0.03);
+      currentBgColor[i] = lerp(currentBgColor[i], targetBgColor[i], 0.04);
     }
+    gl.clearColor(currentBgColor[0], currentBgColor[1], currentBgColor[2], 1.0);
+
+    // ── Pass 0: Fluid sim step (invisible — updates velocity FBOs) ────────
+    FluidSim.step();
 
     // ── Pass 1: Wave → quarter-res offscreen FBO ─────────────────────────
     // Running at 1/4 resolution cuts shader cost ~16×. The wave is smooth
@@ -407,6 +525,7 @@ const DitherBG = (() => {
     gl.uniform2f(waveUniforms.mousePos, mouseX * WAVE_SCALE, mouseY * WAVE_SCALE);
     gl.uniform1i(waveUniforms.enableMouse, 1);
     gl.uniform1f(waveUniforms.mouseRadius, WAVE_MOUSE_RADIUS);
+    gl.uniform1f(waveUniforms.scrollOffset, scrollY * PARALLAX_SPEED);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     // ── Pass 2: Dither → screen (full resolution) ─────────────────────────
@@ -426,15 +545,59 @@ const DitherBG = (() => {
     gl.bindTexture(gl.TEXTURE_2D, stampTex);
     gl.uniform1i(ditherUniforms.stamp, 1);
 
+    // Unit 2 = fluid velocity
+    const velTex = FluidSim.getVelTexture() || fallbackVelTex;
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, velTex);
+    gl.uniform1i(ditherUniforms.fluidVel, 2);
+    gl.uniform1f(ditherUniforms.fluidAmp, FluidSim.CONFIG.ENABLED ? FluidSim.CONFIG.WAVE_AMPLITUDE : 0.0);
+    gl.uniform1f(ditherUniforms.fluidStr, FluidSim.CONFIG.ENABLED ? FluidSim.CONFIG.WAVE_STRENGTH : 0.0);
+
     gl.uniform2f(ditherUniforms.resolution, w, h);
     gl.uniform1f(ditherUniforms.colorNum, COLOR_NUM);
     gl.uniform1f(ditherUniforms.cellSize, CELL_SIZE);
     gl.uniform1f(ditherUniforms.stampSize, STAMP_SIZE);
+    gl.uniform1f(ditherUniforms.bias, BIAS);
+    gl.uniform1f(ditherUniforms.stampEnabled, STAMP_CONFIG.ENABLED ? 1.0 : 0.0);
     gl.uniform1i(ditherUniforms.enableMouse, 1);
     gl.uniform2f(ditherUniforms.mousePos, mouseX, mouseY);
     gl.uniform1f(ditherUniforms.cursorVoid, CURSOR_VOID_PX);
-    gl.uniform3f(ditherUniforms.bgColor, 0.102, 0.102, 0.180); // #1A1A2E
+    gl.uniform1f(ditherUniforms.cursorFalloff, CURSOR_VOID_FALLOFF);
+
+    // Hero text void — soft ellipse centred on the visible text, not the full container
+    {
+      const panel = document.querySelector('.tab-panel.active');
+      const els = panel
+        ? [panel.querySelector('.display-heading'), panel.querySelector('.hero-sub')].filter(Boolean)
+        : [];
+      if (els.length) {
+        let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+        els.forEach(el => {
+          const r = el.getBoundingClientRect();
+          x1 = Math.min(x1, r.left);
+          y1 = Math.min(y1, r.top);
+          x2 = Math.max(x2, r.right);
+          y2 = Math.max(y2, r.bottom);
+        });
+        // Ellipse centre in GL coords (Y-flipped)
+        const cx = (x1 + x2) / 2;
+        const cy = h - (y1 + y2) / 2;
+        // x-radius: scaled fraction of half-width (text is centred, not full-width)
+        const rx = (x2 - x1) / 2 * HERO_VOID_X_SCALE;
+        const ry = (y2 - y1) / 2;  // y-radius: actual half-height of text block
+        gl.uniform2f(ditherUniforms.heroCenter, cx, cy);
+        gl.uniform2f(ditherUniforms.heroR, rx, ry);
+        gl.uniform1f(ditherUniforms.heroFalloff, HERO_VOID_FALLOFF);
+      } else {
+        gl.uniform2f(ditherUniforms.heroCenter, 0, 0);
+        gl.uniform2f(ditherUniforms.heroR, 0, 0); // disabled
+        gl.uniform1f(ditherUniforms.heroFalloff, 0.0);
+      }
+    }
+
+    gl.uniform3fv(ditherUniforms.bgColor, currentBgColor);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
 
     rafId = requestAnimationFrame(render);
   }
@@ -470,33 +633,59 @@ const DitherBG = (() => {
       mousePos: gl.getUniformLocation(waveProgram, 'u_mousePos'),
       enableMouse: gl.getUniformLocation(waveProgram, 'u_enableMouse'),
       mouseRadius: gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
+      scrollOffset: gl.getUniformLocation(waveProgram, 'u_scrollOffset'),
     };
     ditherUniforms = {
       texture: gl.getUniformLocation(ditherProgram, 'u_texture'),
       stamp: gl.getUniformLocation(ditherProgram, 'u_stamp'),
+      fluidVel: gl.getUniformLocation(ditherProgram, 'u_fluidVel'),
       resolution: gl.getUniformLocation(ditherProgram, 'u_resolution'),
       colorNum: gl.getUniformLocation(ditherProgram, 'u_colorNum'),
       cellSize: gl.getUniformLocation(ditherProgram, 'u_cellSize'),
       stampSize: gl.getUniformLocation(ditherProgram, 'u_stampSize'),
+      bias: gl.getUniformLocation(ditherProgram, 'u_bias'),
+      stampEnabled: gl.getUniformLocation(ditherProgram, 'u_stampEnabled'),
+      fluidAmp: gl.getUniformLocation(ditherProgram, 'u_fluidAmp'),
+      fluidStr: gl.getUniformLocation(ditherProgram, 'u_fluidStr'),
       enableMouse: gl.getUniformLocation(ditherProgram, 'u_enableMouse'),
       mousePos: gl.getUniformLocation(ditherProgram, 'u_mousePos'),
       cursorVoid: gl.getUniformLocation(ditherProgram, 'u_cursorVoid'),
+      cursorFalloff: gl.getUniformLocation(ditherProgram, 'u_cursorFalloff'),
+      heroCenter: gl.getUniformLocation(ditherProgram, 'u_heroCenter'),
+      heroR: gl.getUniformLocation(ditherProgram, 'u_heroR'),
+      heroFalloff: gl.getUniformLocation(ditherProgram, 'u_heroFalloff'),
       bgColor: gl.getUniformLocation(ditherProgram, 'u_bgColor'),
     };
 
     quadVAO_wave = createQuadBuffer(waveProgram);
     quadVAO_dither = createQuadBuffer(ditherProgram);
 
-    // Stamp — prefer the embedded SVG string; fall back to STAMP_URL file.
-    if (STAMP_SVG) {
-      const blob = new Blob([STAMP_SVG], { type: 'image/svg+xml' });
-      const blobUrl = URL.createObjectURL(blob);
-      loadSVGStamp(blobUrl, () => URL.revokeObjectURL(blobUrl));
-    } else if (STAMP_URL) {
-      loadExternalStamp(STAMP_URL);
+    // Stamp — load based on STAMP_CONFIG
+    if (!STAMP_CONFIG.ENABLED || STAMP_CONFIG.SHAPE === 'svg') {
+      // SVG path: embedded string takes priority, then STAMP_URL file
+      if (STAMP_SVG) {
+        const blob = new Blob([STAMP_SVG], { type: 'image/svg+xml' });
+        const blobUrl = URL.createObjectURL(blob);
+        loadSVGStamp(blobUrl, () => URL.revokeObjectURL(blobUrl));
+      } else if (STAMP_URL) {
+        loadExternalStamp(STAMP_URL);
+      } else {
+        stampTex = buildShapeStamp('circle'); // final fallback
+      }
     } else {
-      stampTex = buildDefaultStamp();
+      // Built-in geometric shape
+      stampTex = buildShapeStamp(STAMP_CONFIG.SHAPE);
     }
+
+    // Fallback 1×1 black texture for when FluidSim has no data yet
+    fallbackVelTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, fallbackVelTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    // Init fluid sim on the same WebGL2 context
+    FluidSim.init(gl, canvas);
 
     resize();
     window.addEventListener('resize', resize);
@@ -507,17 +696,20 @@ const DitherBG = (() => {
       mouseY = e.clientY; // NO JS flip — shader converts to GL space
     });
 
+    // ── Scroll: drive wave parallax offset ————————————————————————
+    window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
+
     startTime = performance.now();
     rafId = requestAnimationFrame(render);
   }
 
-  function setColor(hex) {
-    targetColor = hexToVec3(hex);
-  }
+  function setColor(hex) { targetColor = hexToVec3(hex); }
+  function setBgColor(hex) { targetBgColor = hexToVec3(hex); }
 
   function stop() {
     cancelAnimationFrame(rafId);
   }
 
-  return { init, setColor, stop, hexToVec3 };
+  return { init, setColor, setBgColor, stop, hexToVec3 };
 })();
+
