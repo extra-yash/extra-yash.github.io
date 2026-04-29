@@ -218,6 +218,7 @@ const DitherBG = (() => {
   let waveUniforms = {};
   let ditherUniforms = {};
   let offscreenFBO, offscreenTex;
+  let waveW = 1, waveH = 1;         // wave FBO dimensions (quarter-res)
   let quadVAO_wave, quadVAO_dither;
   let stampTex = null;
   let startTime = 0;
@@ -280,15 +281,22 @@ const DitherBG = (() => {
     return { fbo, tex };
   }
 
+  // Wave FBO scale factor. 0.25 = 1/4 res.
+  // The dither only samples the wave once per cell centre (~20px), so even
+  // 1/8 resolution is more than sufficient. 1/4 gives a comfortable margin.
+  const WAVE_SCALE = 0.25;
+
   function resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    canvas.width = w;
+    canvas.width  = w;
     canvas.height = h;
-    gl.viewport(0, 0, w, h);
+    // Don't call gl.viewport here — it's set per-pass in render()
+    waveW = Math.max(1, Math.ceil(w * WAVE_SCALE));
+    waveH = Math.max(1, Math.ceil(h * WAVE_SCALE));
     if (offscreenFBO) gl.deleteFramebuffer(offscreenFBO);
     if (offscreenTex) gl.deleteTexture(offscreenTex);
-    const r = createFBO(w, h);
+    const r = createFBO(waveW, waveH);
     offscreenFBO = r.fbo;
     offscreenTex = r.tex;
   }
@@ -380,25 +388,31 @@ const DitherBG = (() => {
       currentColor[i] = lerp(currentColor[i], targetColor[i], 0.03);
     }
 
-    // ── Pass 1: Wave → offscreen FBO ─────────────────────────────────────
+    // ── Pass 1: Wave → quarter-res offscreen FBO ─────────────────────────
+    // Running at 1/4 resolution cuts shader cost ~16×. The wave is smooth
+    // noise so quality is identical; the dither samples it once per cell.
     gl.useProgram(waveProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, offscreenFBO);
+    gl.viewport(0, 0, waveW, waveH);
     gl.clear(gl.COLOR_BUFFER_BIT);
     bindQuad(quadVAO_wave);
-    gl.uniform2f(waveUniforms.resolution, w, h);
+    // Pass wave-FBO dimensions as u_resolution so UV math stays correct.
+    // Scale mouse to wave-FBO space so the distortion stays centred on cursor.
+    gl.uniform2f(waveUniforms.resolution, waveW, waveH);
     gl.uniform1f(waveUniforms.time, t);
     gl.uniform1f(waveUniforms.waveSpeed, WAVE_SPEED);
     gl.uniform1f(waveUniforms.waveFrequency, WAVE_FREQUENCY);
     gl.uniform1f(waveUniforms.waveAmplitude, WAVE_AMPLITUDE);
     gl.uniform3fv(waveUniforms.waveColor, currentColor);
-    gl.uniform2f(waveUniforms.mousePos, mouseX, mouseY);
+    gl.uniform2f(waveUniforms.mousePos, mouseX * WAVE_SCALE, mouseY * WAVE_SCALE);
     gl.uniform1i(waveUniforms.enableMouse, 1);
     gl.uniform1f(waveUniforms.mouseRadius, WAVE_MOUSE_RADIUS);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    // ── Pass 2: Dither → screen ───────────────────────────────────────────
+    // ── Pass 2: Dither → screen (full resolution) ─────────────────────────
     gl.useProgram(ditherProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, w, h);
     gl.clear(gl.COLOR_BUFFER_BIT);
     bindQuad(quadVAO_dither);
 
