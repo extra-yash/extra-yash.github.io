@@ -225,11 +225,9 @@ function initCursor() {
     return;
   }
 
-  // Move cursor dot directly to raw mouse position — no lag.
-  // Size/color transitions are handled by CSS, not JS lerp.
+  // Use transform for positioning — runs on GPU compositor, zero layout lag.
   document.addEventListener('mousemove', e => {
-    cursor.style.left = `${e.clientX}px`;
-    cursor.style.top  = `${e.clientY}px`;
+    cursor.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
   });
 
   // Expand on interactive elements

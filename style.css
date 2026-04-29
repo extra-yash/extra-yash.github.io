@@ -94,17 +94,21 @@ body {
   background: var(--accent);
   border-radius: 50%;
   position: fixed;
+  top: 0;
+  left: 0;
   pointer-events: none;
   z-index: 9999;
+  /* transform is set entirely by JS — no positional transition so it
+     stays frame-perfect with the native pointer. Only size/color animate. */
   transform: translate(-50%, -50%);
   box-shadow: 0 0 16px var(--accent);
   transition:
-    transform 0.08s ease,
     background-color 0.5s ease,
     box-shadow 0.5s ease,
     width 0.2s ease,
     height 0.2s ease;
   mix-blend-mode: difference;
+  will-change: transform;
 }
 
 .cursor.hovered {
