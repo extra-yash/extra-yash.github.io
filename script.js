@@ -40,8 +40,8 @@ const SHEETS_ENDPOINT = '';
 // Each tab drives the dither wave color AND the CSS --accent token.
 const TAB_COLORS = {
   brands: {
-    wave:   '#27E700',  // EXTRA CONTRAST — green
-    accent: '#27E700',
+    wave:   '#FF2C00',  // EXTRA BRIGHT — red-orange
+    accent: '#FF2C00',
   },
   agencies: {
     wave:   '#5766ED',  // EXTRA CRISP — blue

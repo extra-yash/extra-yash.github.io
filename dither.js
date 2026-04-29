@@ -26,9 +26,11 @@ const DitherBG = (() => {
   const WAVE_SPEED = 0.05;
   const WAVE_FREQUENCY = 2.0;
   const WAVE_AMPLITUDE = 0.4;
-  const COLOR_NUM = 4.0;  // tonal steps in the dither (higher = more gradation)
-  const PIXEL_SIZE = 12.0;  // cell size in screen pixels (min 8 for SVG to read)
-  const MOUSE_RADIUS = 0.2;
+  const COLOR_NUM = 4.0;     // tonal steps in the dither
+  const CELL_SIZE = 20.0;   // grid pitch — controls density (larger = fewer symbols)
+  const STAMP_SIZE = 12.0;  // symbol size within each cell (must be ≤ CELL_SIZE)
+  const CURSOR_VOID_PX = 72.0; // hard void radius around cursor in pixels
+  const WAVE_MOUSE_RADIUS = 0.15; // subtle wave distortion radius (UV 0–1)
 
   // ─── STAMP ────────────────────────────────────────────────────────────────
   // The Extra symbol, embedded directly — no external file dependency.
@@ -93,7 +95,8 @@ const DitherBG = (() => {
 
     float fbm(vec2 p) {
       float value = 0.0, amp = 1.0, freq = u_waveFrequency;
-      for (int i = 0; i < 4; i++) {
+      // 2 octaves (was 4) — halves shader cost, imperceptible quality difference
+      for (int i = 0; i < 2; i++) {
         value += amp * abs(cnoise(p));
         p    *= freq;
         amp  *= u_waveAmplitude;
@@ -113,14 +116,12 @@ const DitherBG = (() => {
       float f = pattern(uv);
 
       if (u_enableMouse == 1) {
-        // u_mousePos is raw clientX/clientY — convert to same space as uv.
-        // clientY=0 is top; gl_FragCoord.y=0 is bottom — flip Y only here.
         vec2 m = vec2(u_mousePos.x, u_resolution.y - u_mousePos.y) / u_resolution;
         m -= 0.5;
         m.x *= u_resolution.x / u_resolution.y;
         float dist   = length(uv - m);
         float effect = 1.0 - smoothstep(0.0, u_mouseRadius, dist);
-        f -= 0.5 * effect;
+        f -= 0.4 * effect; // subtle wave distortion near cursor
       }
 
       vec3 col = mix(vec3(0.0), u_waveColor, f);
@@ -142,7 +143,11 @@ const DitherBG = (() => {
     uniform sampler2D u_stamp;     // pixel shape mask (white = visible)
     uniform vec2      u_resolution;
     uniform float     u_colorNum;
-    uniform float     u_pixelSize;
+    uniform float     u_cellSize;   // grid pitch in pixels (controls density)
+    uniform float     u_stampSize;  // symbol size in pixels within each cell
+    uniform int       u_enableMouse;
+    uniform vec2      u_mousePos;   // raw clientX/clientY
+    uniform float     u_cursorVoid; // hard void radius in pixels
     out vec4 fragColor;
 
     const float bayer[64] = float[64](
@@ -158,37 +163,54 @@ const DitherBG = (() => {
 
     void main() {
       // ── Which cell are we in? ──────────────────────────────────────────
-      vec2 cellIdx = floor(gl_FragCoord.xy / u_pixelSize);
+      vec2 cellIdx    = floor(gl_FragCoord.xy / u_cellSize);
+      vec2 cellCentreGL = cellIdx * u_cellSize + u_cellSize * 0.5;
+
+      // ── Hard cursor void ───────────────────────────────────────────────
+      // Cells whose centre is within CURSOR_VOID_PX of the mouse are forced
+      // transparent — clean edge, no Bayer pixels leaking through.
+      if (u_enableMouse == 1) {
+        vec2 mouseGL = vec2(u_mousePos.x, u_resolution.y - u_mousePos.y);
+        if (length(cellCentreGL - mouseGL) < u_cursorVoid) {
+          fragColor = vec4(0.0);
+          return;
+        }
+      }
 
       // ── Sample wave at cell centre ─────────────────────────────────────
-      vec2 cellCentreUV = (cellIdx * u_pixelSize + u_pixelSize * 0.5) / u_resolution;
+      vec2 cellCentreUV = cellCentreGL / u_resolution;
       vec3 cellColor = texture(u_texture, cellCentreUV).rgb;
       float brightness = dot(cellColor, vec3(0.299, 0.587, 0.114));
 
-      // ── Quantise brightness to COLOR_NUM steps ─────────────────────────
-      float step = 1.0 / (u_colorNum - 1.0);
-      float quantized = floor(brightness / step + 0.5) * step;
-
-      // ── Bayer threshold at cell level ──────────────────────────────────
+      // ── Quantise + Bayer threshold ────────────────────────────────────
+      float stp      = 1.0 / (u_colorNum - 1.0);
+      float quantized = floor(brightness / stp + 0.5) * stp;
       int bx = int(mod(cellIdx.x, 8.0));
       int by = int(mod(cellIdx.y, 8.0));
       float threshold = bayer[by * 8 + bx];
 
-      // ── Stamp mask — position within this cell (0..1) ─────────────────
-      // Flip Y so the stamp reads top-to-bottom as drawn.
-      vec2 posInCell = fract(gl_FragCoord.xy / u_pixelSize);
-      posInCell.y = 1.0 - posInCell.y;
-      float stampMask = texture(u_stamp, posInCell).a; // alpha: works with any SVG fill colour
+      // ── Is this pixel inside the STAMP_SIZE box centred in the cell? ──
+      vec2 offset   = gl_FragCoord.xy - cellCentreGL;
+      float halfSt  = u_stampSize * 0.5;
+      if (abs(offset.x) > halfSt || abs(offset.y) > halfSt) {
+        fragColor = vec4(0.0);
+        return;
+      }
 
-      // ── Output: on = cell colour (opaque); off = transparent ───────────
-      // Transparent off-cells let the CSS body background (#1A1A2E) show through.
+      // ── Sample stamp mask (alpha channel) ─────────────────────────────
+      vec2 posInStamp = offset / u_stampSize + 0.5;
+      posInStamp.y    = 1.0 - posInStamp.y;
+      float stampMask = texture(u_stamp, posInStamp).a;
+
+      // ── Output ────────────────────────────────────────────────────────
       if (quantized > threshold && stampMask > 0.5) {
         fragColor = vec4(cellColor, 1.0);
       } else {
-        fragColor = vec4(0.0, 0.0, 0.0, 0.0); // transparent — body bg visible
+        fragColor = vec4(0.0); // transparent — CSS body bg (#1A1A2E) shows through
       }
     }
   `;
+
 
   // ─── INTERNAL STATE ───────────────────────────────────────────────────────
   let canvas, gl, rafId;
@@ -201,7 +223,7 @@ const DitherBG = (() => {
   let startTime = 0;
   let mouseX = 0, mouseY = 0;
 
-  let targetColor = [0.153, 0.906, 0.0]; // EXTRA CONTRAST #27E700
+  let targetColor = [1.0, 0.173, 0.0]; // EXTRA BRIGHT #FF2C00
   let currentColor = [...targetColor];
 
   // ─── HELPERS ─────────────────────────────────────────────────────────────
@@ -371,7 +393,7 @@ const DitherBG = (() => {
     gl.uniform3fv(waveUniforms.waveColor, currentColor);
     gl.uniform2f(waveUniforms.mousePos, mouseX, mouseY);
     gl.uniform1i(waveUniforms.enableMouse, 1);
-    gl.uniform1f(waveUniforms.mouseRadius, MOUSE_RADIUS);
+    gl.uniform1f(waveUniforms.mouseRadius, WAVE_MOUSE_RADIUS);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     // ── Pass 2: Dither → screen ───────────────────────────────────────────
@@ -391,8 +413,12 @@ const DitherBG = (() => {
     gl.uniform1i(ditherUniforms.stamp, 1);
 
     gl.uniform2f(ditherUniforms.resolution, w, h);
-    gl.uniform1f(ditherUniforms.colorNum, COLOR_NUM);
-    gl.uniform1f(ditherUniforms.pixelSize, PIXEL_SIZE);
+    gl.uniform1f(ditherUniforms.colorNum,   COLOR_NUM);
+    gl.uniform1f(ditherUniforms.cellSize,   CELL_SIZE);
+    gl.uniform1f(ditherUniforms.stampSize,  STAMP_SIZE);
+    gl.uniform1i(ditherUniforms.enableMouse, 1);
+    gl.uniform2f(ditherUniforms.mousePos,   mouseX, mouseY);
+    gl.uniform1f(ditherUniforms.cursorVoid, CURSOR_VOID_PX);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     rafId = requestAnimationFrame(render);
@@ -429,11 +455,15 @@ const DitherBG = (() => {
       mouseRadius: gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
     };
     ditherUniforms = {
-      texture: gl.getUniformLocation(ditherProgram, 'u_texture'),
-      stamp: gl.getUniformLocation(ditherProgram, 'u_stamp'),
-      resolution: gl.getUniformLocation(ditherProgram, 'u_resolution'),
-      colorNum: gl.getUniformLocation(ditherProgram, 'u_colorNum'),
-      pixelSize: gl.getUniformLocation(ditherProgram, 'u_pixelSize'),
+      texture:     gl.getUniformLocation(ditherProgram, 'u_texture'),
+      stamp:       gl.getUniformLocation(ditherProgram, 'u_stamp'),
+      resolution:  gl.getUniformLocation(ditherProgram, 'u_resolution'),
+      colorNum:    gl.getUniformLocation(ditherProgram, 'u_colorNum'),
+      cellSize:    gl.getUniformLocation(ditherProgram, 'u_cellSize'),
+      stampSize:   gl.getUniformLocation(ditherProgram, 'u_stampSize'),
+      enableMouse: gl.getUniformLocation(ditherProgram, 'u_enableMouse'),
+      mousePos:    gl.getUniformLocation(ditherProgram, 'u_mousePos'),
+      cursorVoid:  gl.getUniformLocation(ditherProgram, 'u_cursorVoid'),
     };
 
     quadVAO_wave = createQuadBuffer(waveProgram);
