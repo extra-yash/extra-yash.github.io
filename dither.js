@@ -29,7 +29,7 @@ const DitherBG = (() => {
   const COLOR_NUM = 4.0;     // tonal steps in the dither
   const CELL_SIZE = 20.0;   // grid pitch — controls density (larger = fewer symbols)
   const STAMP_SIZE = 12.0;  // symbol size within each cell (must be ≤ CELL_SIZE)
-  const CURSOR_VOID_PX = 72.0; // hard void radius around cursor in pixels
+  const CURSOR_VOID_PX = 150.0; // hard void radius around cursor in pixels
   const WAVE_MOUSE_RADIUS = 0.5; // subtle wave distortion radius (UV 0–1)
 
   // ─── STAMP ────────────────────────────────────────────────────────────────
