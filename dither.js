@@ -27,8 +27,8 @@ const DitherBG = (() => {
   const WAVE_FREQUENCY = 2.0;
   const WAVE_AMPLITUDE = 0.4;
   const COLOR_NUM = 4.0;  // tonal steps in the dither (higher = more gradation)
-  const PIXEL_SIZE = 6.0;  // cell size in screen pixels (min 8 for SVG to read)
-  const MOUSE_RADIUS = 0.9;
+  const PIXEL_SIZE = 12.0;  // cell size in screen pixels (min 8 for SVG to read)
+  const MOUSE_RADIUS = 0.2;
 
   // Path to your SVG symbol. '' = built-in circle.
   const STAMP_URL = 'assets/EXTRA_SYMBOL.svg';
@@ -175,11 +175,12 @@ const DitherBG = (() => {
       posInCell.y = 1.0 - posInCell.y;
       float stampMask = texture(u_stamp, posInCell).a; // alpha: works with any SVG fill colour
 
-      // ── Output: on = cell colour × stamp; off = black ─────────────────
+      // ── Output: on = cell colour (opaque); off = transparent ───────────
+      // Transparent off-cells let the CSS body background (#1A1A2E) show through.
       if (quantized > threshold && stampMask > 0.5) {
         fragColor = vec4(cellColor, 1.0);
       } else {
-        fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        fragColor = vec4(0.0, 0.0, 0.0, 0.0); // transparent — body bg visible
       }
     }
   `;
@@ -296,34 +297,39 @@ const DitherBG = (() => {
   }
 
   function loadSVGStamp(url) {
-    // Use fetch → Blob URL to avoid canvas tainting on file:// protocol.
-    // The canvas is left transparent — alpha channel drives the stamp mask.
-    // This means the SVG can be ANY colour (black, dark, anything) — as long
-    // as the shapes are opaque, they will show up in the dither.
+    // Draws the SVG onto a transparent canvas — alpha channel is the stamp mask.
+    // The SVG can be any colour; opaque pixels = "on", transparent = "off".
+    //
+    // Loading strategy:
+    //   1. fetch() → Blob URL  — avoids canvas taint, works on HTTP (GitHub Pages)
+    //   2. Direct Image.src    — fallback for file:// where fetch is blocked
+    function drawToStamp(src, cleanup) {
+      const sz = 128;
+      const img = new Image();
+      img.onload = () => {
+        if (cleanup) cleanup();
+        const c = document.createElement('canvas');
+        c.width = c.height = sz;
+        c.getContext('2d').drawImage(img, 0, 0, sz, sz);
+        if (stampTex) gl.deleteTexture(stampTex);
+        stampTex = uploadCanvasAsStamp(c);
+        console.log('DitherBG: stamp loaded —', url);
+      };
+      img.onerror = () => console.warn('DitherBG: stamp failed to render:', src);
+      img.src = src;
+    }
+
     fetch(url)
-      .then(r => {
-        if (!r.ok) throw new Error(r.status);
-        return r.blob();
-      })
+      .then(r => { if (!r.ok) throw r.status; return r.blob(); })
       .then(blob => {
         const blobUrl = URL.createObjectURL(blob);
-        const sz = 64;
-        const img = new Image();
-        img.onload = () => {
-          URL.revokeObjectURL(blobUrl);
-          const c = document.createElement('canvas');
-          c.width = c.height = sz;
-          const ctx = c.getContext('2d');
-          // NO black fill — transparent background so alpha = 0 outside shape
-          ctx.drawImage(img, 0, 0, sz, sz);
-          if (stampTex) gl.deleteTexture(stampTex);
-          stampTex = uploadCanvasAsStamp(c);
-          console.log('DitherBG: stamp loaded —', url);
-        };
-        img.onerror = () => console.warn('DitherBG: stamp image render failed:', url);
-        img.src = blobUrl;
+        drawToStamp(blobUrl, () => URL.revokeObjectURL(blobUrl));
       })
-      .catch(err => console.warn('DitherBG: could not fetch stamp SVG:', url, err));
+      .catch(() => {
+        // fetch blocked (file:// protocol) — try direct Image load as fallback
+        console.log('DitherBG: fetch blocked, trying direct Image for', url);
+        drawToStamp(url, null);
+      });
   }
 
   // ─── RENDER LOOP ──────────────────────────────────────────────────────────
@@ -393,7 +399,9 @@ const DitherBG = (() => {
     canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block;pointer-events:none';
     document.body.prepend(canvas);
 
-    gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
+    // alpha:true + premultipliedAlpha:false → off-cells are transparent,
+    // letting the CSS body background (#1A1A2E) show through cleanly.
+    gl = canvas.getContext('webgl2', { antialias: false, alpha: true, premultipliedAlpha: false });
     if (!gl) {
       console.warn('DitherBG: WebGL2 not supported. Background disabled.');
       canvas.style.display = 'none';
