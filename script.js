@@ -35,22 +35,21 @@
 // Leave as empty string to use the fallback placeholder data below.
 const SHEETS_ENDPOINT = '';
 
-// ─── PER-TAB COLOR CONFIGURATION ─────────────────────────────────
+// ─── OFFICIAL EXTRA PALETTE — TAB COLOR MAP ─────────────────────────
+// Only colors from the Brand Starter Kit (Slide 10/23) are used.
+// Each tab drives the dither wave color AND the CSS --accent token.
 const TAB_COLORS = {
   brands: {
-    primary:   '#CCFF00',   // Acid Lime
-    secondary: '#556600',   // deep lime shadow
-    accent:    '#CCFF00',
+    wave:   '#27E700',  // EXTRA CONTRAST — green
+    accent: '#27E700',
   },
   agencies: {
-    primary:   '#00C8FF',   // Crisp Blue
-    secondary: '#005566',   // deep blue shadow
-    accent:    '#00C8FF',
+    wave:   '#5766ED',  // EXTRA CRISP — blue
+    accent: '#5766ED',
   },
   creatives: {
-    primary:   '#7B61FF',   // Violet
-    secondary: '#3B1F88',   // deep violet shadow
-    accent:    '#7B61FF',
+    wave:   '#9D00FF',  // EXTRA VIOLET — purple
+    accent: '#9D00FF',
   },
 };
 
@@ -101,8 +100,9 @@ const FALLBACK_PORTFOLIO = [
 let portfolioData = [];
 let activeTab = 'brands';
 
-// ─── INIT ─────────────────────────────────────────────────────────
+// ─── INIT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  DitherBG.init();
   initCursor();
   initTabs();
   loadPortfolio();
@@ -149,12 +149,10 @@ function activateTab(tab, tabs, panels, animate) {
   // Update URL hash
   history.replaceState(null, '', `#${tab}`);
 
-  // Update CSS colors
+  // Update dither wave color and CSS accent token
   const colors = TAB_COLORS[tab];
-  const root = document.documentElement;
-  root.style.setProperty('--accent',         colors.accent);
-  root.style.setProperty('--glow-primary',   colors.primary);
-  root.style.setProperty('--glow-secondary', colors.secondary);
+  DitherBG.setColor(colors.wave);
+  document.documentElement.style.setProperty('--accent', colors.accent);
 
   // Re-render portfolio for new tab
   if (portfolioData.length > 0) {

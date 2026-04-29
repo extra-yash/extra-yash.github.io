@@ -16,32 +16,37 @@
   /* Body/UI/label font — Space Mono everywhere else. Do not change. */
   --font-body: 'Space Mono', monospace;
 
-  /* ─── BASE COLORS ─── */
-  --bg:           #050505;
-  --card-bg:      #111111;
-  --card-border:  #1e1e1e;
-  --text:         #eeeeee;
-  --text-muted:   #888888;
-  --text-dim:     #444444;
-
-  /* ─── BRAND ACCENT COLORS ─────────────────────────────────────
-     Acid Lime  #CCFF00  →  FOR BRANDS (default)
-     Crisp Blue #00C8FF  →  FOR AGENCIES
-     Violet     #7B61FF  →  FOR CREATIVES
+  /* ─── OFFICIAL EXTRA PALETTE ─────────────────────────────────────
+     Source: Brand Starter Kit, Slide 10/23.
+     These are the ONLY six colors used on this site.
      ────────────────────────────────────────────────────────────── */
-  --lime:   #CCFF00;
-  --blue:   #00C8FF;
-  --violet: #7B61FF;
+  --extra-light:    #FFFFF0;  /* EXTRA LIGHT    — off-white/cream  */
+  --extra-dark:     #1A1A2E;  /* EXTRA DARK     — base background  */
+  --extra-bright:   #FF2C00;  /* EXTRA BRIGHT   — red-orange       */
+  --extra-violet:   #9D00FF;  /* EXTRA VIOLET   — purple           */
+  --extra-crisp:    #5766ED;  /* EXTRA CRISP    — blue             */
+  --extra-contrast: #27E700;  /* EXTRA CONTRAST — green            */
 
-  /* Active accent — controlled by JS on tab switch */
-  --accent:           #CCFF00;
-  --glow-primary:     #CCFF00;
-  --glow-secondary:   #888800;
+  /* ─── SEMANTIC ALIASES ───────────────────────────────────────────
+     Tab accent mapping:
+       FOR BRANDS    → --extra-contrast  (#27E700)
+       FOR AGENCIES  → --extra-crisp     (#5766ED)
+       FOR CREATIVES → --extra-violet    (#9D00FF)
+     ────────────────────────────────────────────────────────────── */
+  --bg:          var(--extra-dark);
+  --card-bg:     #0f0f1e;
+  --card-border: #252540;
+  --text:        var(--extra-light);
+  --text-muted:  rgba(255,255,240,0.55);
+  --text-dim:    rgba(255,255,240,0.25);
+
+  /* Active accent — JS updates on tab switch */
+  --accent: var(--extra-contrast);
 
   /* ─── SPACING & SHAPE ─── */
-  --radius:     20px;
-  --radius-sm:  10px;
-  --nav-h:      80px;
+  --radius:      20px;
+  --radius-sm:   10px;
+  --nav-h:       80px;
   --section-gap: 100px;
   --cursor-size: 18px;
 }
@@ -72,46 +77,6 @@ body {
   align-items: center;
   position: relative;
   overflow-x: hidden;
-
-  /* Smooth accent color transitions */
-  transition:
-    --accent 0.8s ease,
-    --glow-primary 0.8s ease,
-    --glow-secondary 0.8s ease;
-}
-
-/* ─── GRAINY GRADIENT BACKGROUND: LAYER 1 — radial glow ───────── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 30%, var(--glow-primary) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 50% at 80% 70%, var(--glow-secondary) 0%, transparent 50%);
-  opacity: 0.12;
-  pointer-events: none;
-  z-index: 0;
-  animation: gradientDrift 14s ease-in-out infinite alternate;
-  transition: opacity 0.8s ease;
-}
-
-/* ─── GRAINY GRADIENT BACKGROUND: LAYER 2 — noise grain ──────── */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.055;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 200px 200px;
-}
-
-@keyframes gradientDrift {
-  0%   { background-position: 0% 0%; opacity: 0.10; }
-  50%  { opacity: 0.14; }
-  100% { background-position: 100% 100%; opacity: 0.10; }
 }
 
 /* ─── CUSTOM CURSOR ──────────────────────────────────────────── */
