@@ -141,13 +141,18 @@ body {
 }
 
 .logo {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.6rem;
-  color: var(--accent);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  transition: color 0.5s ease;
+  display: block;
+  height: 28px;         /* controls the rendered height of the logo */
+  width: auto;
+  flex-shrink: 0;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.logo svg {
+  display: block;
+  height: 100%;
+  width: auto;
 }
 
 /* ─── TAB NAVIGATION ─────────────────────────────────────────── */
