@@ -30,8 +30,13 @@ const DitherBG = (() => {
   const PIXEL_SIZE = 12.0;  // cell size in screen pixels (min 8 for SVG to read)
   const MOUSE_RADIUS = 0.2;
 
-  // Path to your SVG symbol. '' = built-in circle.
-  const STAMP_URL = 'assets/EXTRA_SYMBOL.svg';
+  // ─── STAMP ────────────────────────────────────────────────────────────────
+  // The Extra symbol, embedded directly — no external file dependency.
+  // To swap: replace the path d="..." with your own SVG path data.
+  // To use an external file instead, set STAMP_URL = './your-mark.svg' and
+  // clear STAMP_SVG (set to empty string '').
+  const STAMP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 201.92 177.09"><path fill="white" d="M18.56,165.97c12.01-14.32,22.09-26.48,30.59-37.31l30.94-39.42L1.5,96.12l-1.5-17.19,85.01-7.44.79-19.08c.55-13.22-1.28-28.02-4.84-49.43l17.01-2.99c2.98,17.89,5.04,33.06,5.2,46.45l.27,23.43,96.98-8.49,1.5,17.19-81.4,7.12,67.21,80.25-13.23,11.08-75.63-90.3-15.97,24.8c-11.2,17.38-27.59,37.49-51.13,65.55l-13.2-11.12Z"/></svg>`;
+  const STAMP_URL  = ''; // only used if STAMP_SVG is empty
 
   // ─── VERTEX SHADER ───────────────────────────────────────────────────────
   const VERT_SRC = `#version 300 es
@@ -296,29 +301,30 @@ const DitherBG = (() => {
     return uploadCanvasAsStamp(c);
   }
 
-  function loadSVGStamp(url) {
-    // Draws the SVG onto a transparent canvas — alpha channel is the stamp mask.
-    // The SVG can be any colour; opaque pixels = "on", transparent = "off".
-    //
-    // Loading strategy:
-    //   1. fetch() → Blob URL  — avoids canvas taint, works on HTTP (GitHub Pages)
-    //   2. Direct Image.src    — fallback for file:// where fetch is blocked
-    function drawToStamp(src, cleanup) {
-      const sz = 128;
-      const img = new Image();
-      img.onload = () => {
-        if (cleanup) cleanup();
-        const c = document.createElement('canvas');
-        c.width = c.height = sz;
-        c.getContext('2d').drawImage(img, 0, 0, sz, sz);
-        if (stampTex) gl.deleteTexture(stampTex);
-        stampTex = uploadCanvasAsStamp(c);
-        console.log('DitherBG: stamp loaded —', url);
-      };
-      img.onerror = () => console.warn('DitherBG: stamp failed to render:', src);
-      img.src = src;
-    }
+  // Core: draws any image src onto a 128px transparent canvas → WebGL texture
+  function drawToStamp(src, cleanup) {
+    const sz  = 128;
+    const img = new Image();
+    img.onload = () => {
+      if (cleanup) cleanup();
+      const c = document.createElement('canvas');
+      c.width = c.height = sz;
+      c.getContext('2d').drawImage(img, 0, 0, sz, sz);
+      if (stampTex) gl.deleteTexture(stampTex);
+      stampTex = uploadCanvasAsStamp(c);
+      console.log('DitherBG: stamp ready');
+    };
+    img.onerror = () => console.warn('DitherBG: stamp render failed:', src);
+    img.src = src;
+  }
 
+  // For embedded SVG: caller creates the Blob URL and passes cleanup fn.
+  function loadSVGStamp(blobUrl, cleanup) {
+    drawToStamp(blobUrl, cleanup);
+  }
+
+  // For external SVG files: fetch → blob (GitHub Pages) with Image fallback (file://).
+  function loadExternalStamp(url) {
     fetch(url)
       .then(r => { if (!r.ok) throw r.status; return r.blob(); })
       .then(blob => {
@@ -326,11 +332,11 @@ const DitherBG = (() => {
         drawToStamp(blobUrl, () => URL.revokeObjectURL(blobUrl));
       })
       .catch(() => {
-        // fetch blocked (file:// protocol) — try direct Image load as fallback
         console.log('DitherBG: fetch blocked, trying direct Image for', url);
         drawToStamp(url, null);
       });
   }
+
 
   // ─── RENDER LOOP ──────────────────────────────────────────────────────────
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -433,9 +439,16 @@ const DitherBG = (() => {
     quadVAO_wave = createQuadBuffer(waveProgram);
     quadVAO_dither = createQuadBuffer(ditherProgram);
 
-    // Build stamp texture — default first, then swap if STAMP_URL is set
-    stampTex = buildDefaultStamp();
-    if (STAMP_URL) loadSVGStamp(STAMP_URL);
+    // Stamp — prefer the embedded SVG string; fall back to STAMP_URL file.
+    if (STAMP_SVG) {
+      const blob    = new Blob([STAMP_SVG], { type: 'image/svg+xml' });
+      const blobUrl = URL.createObjectURL(blob);
+      loadSVGStamp(blobUrl, () => URL.revokeObjectURL(blobUrl));
+    } else if (STAMP_URL) {
+      loadExternalStamp(STAMP_URL);
+    } else {
+      stampTex = buildDefaultStamp();
+    }
 
     resize();
     window.addEventListener('resize', resize);
