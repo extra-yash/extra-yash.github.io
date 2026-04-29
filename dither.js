@@ -23,15 +23,15 @@
 const DitherBG = (() => {
 
   // ─── CONFIG ──────────────────────────────────────────────────────────────
-  const WAVE_SPEED     = 0.03;
+  const WAVE_SPEED = 0.05;
   const WAVE_FREQUENCY = 2.0;
   const WAVE_AMPLITUDE = 0.4;
-  const COLOR_NUM      = 5.0;  // tonal steps in the dither (higher = more gradation)
-  const PIXEL_SIZE     = 8.0;  // cell size in screen pixels (min 8 for SVG to read)
-  const MOUSE_RADIUS   = 0.3;
+  const COLOR_NUM = 4.0;  // tonal steps in the dither (higher = more gradation)
+  const PIXEL_SIZE = 6.0;  // cell size in screen pixels (min 8 for SVG to read)
+  const MOUSE_RADIUS = 0.9;
 
   // Path to your SVG symbol. '' = built-in circle.
-  const STAMP_URL = '';
+  const STAMP_URL = 'assets/EXTRA_SYMBOL.svg';
 
   // ─── VERTEX SHADER ───────────────────────────────────────────────────────
   const VERT_SRC = `#version 300 es
@@ -173,7 +173,7 @@ const DitherBG = (() => {
       // Flip Y so the stamp reads top-to-bottom as drawn.
       vec2 posInCell = fract(gl_FragCoord.xy / u_pixelSize);
       posInCell.y = 1.0 - posInCell.y;
-      float stampMask = texture(u_stamp, posInCell).r;
+      float stampMask = texture(u_stamp, posInCell).a; // alpha: works with any SVG fill colour
 
       // ── Output: on = cell colour × stamp; off = black ─────────────────
       if (quantized > threshold && stampMask > 0.5) {
@@ -187,15 +187,15 @@ const DitherBG = (() => {
   // ─── INTERNAL STATE ───────────────────────────────────────────────────────
   let canvas, gl, rafId;
   let waveProgram, ditherProgram;
-  let waveUniforms  = {};
+  let waveUniforms = {};
   let ditherUniforms = {};
   let offscreenFBO, offscreenTex;
   let quadVAO_wave, quadVAO_dither;
-  let stampTex      = null;
-  let startTime     = 0;
+  let stampTex = null;
+  let startTime = 0;
   let mouseX = 0, mouseY = 0;
 
-  let targetColor  = [0.153, 0.906, 0.0]; // EXTRA CONTRAST #27E700
+  let targetColor = [0.153, 0.906, 0.0]; // EXTRA CONTRAST #27E700
   let currentColor = [...targetColor];
 
   // ─── HELPERS ─────────────────────────────────────────────────────────────
@@ -229,8 +229,8 @@ const DitherBG = (() => {
   }
 
   function createQuadBuffer(prog) {
-    const verts = new Float32Array([-1,-1, 1,-1, -1,1, 1,1]);
-    const buf   = gl.createBuffer();
+    const verts = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+    const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(prog, 'a_position');
@@ -255,7 +255,7 @@ const DitherBG = (() => {
   function resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    canvas.width  = w;
+    canvas.width = w;
     canvas.height = h;
     gl.viewport(0, 0, w, h);
     if (offscreenFBO) gl.deleteFramebuffer(offscreenFBO);
@@ -282,13 +282,12 @@ const DitherBG = (() => {
   }
 
   function buildDefaultStamp() {
-    // Built-in: filled circle, white on black.
-    const sz  = 64;
-    const c   = document.createElement('canvas');
-    c.width   = c.height = sz;
+    // Built-in: circle, drawn on transparent background.
+    // Alpha channel is used as the mask — no black fill needed.
+    const sz = 64;
+    const c = document.createElement('canvas');
+    c.width = c.height = sz;
     const ctx = c.getContext('2d');
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, sz, sz);
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.arc(sz / 2, sz / 2, sz * 0.42, 0, Math.PI * 2);
@@ -297,20 +296,34 @@ const DitherBG = (() => {
   }
 
   function loadSVGStamp(url) {
-    const sz  = 64;
-    const img = new Image();
-    img.onload = () => {
-      const c   = document.createElement('canvas');
-      c.width   = c.height = sz;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, sz, sz);
-      ctx.drawImage(img, 0, 0, sz, sz);
-      if (stampTex) gl.deleteTexture(stampTex);
-      stampTex = uploadCanvasAsStamp(c);
-    };
-    img.onerror = () => console.warn('DitherBG: could not load stamp SVG:', url);
-    img.src = url;
+    // Use fetch → Blob URL to avoid canvas tainting on file:// protocol.
+    // The canvas is left transparent — alpha channel drives the stamp mask.
+    // This means the SVG can be ANY colour (black, dark, anything) — as long
+    // as the shapes are opaque, they will show up in the dither.
+    fetch(url)
+      .then(r => {
+        if (!r.ok) throw new Error(r.status);
+        return r.blob();
+      })
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const sz = 64;
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+          const c = document.createElement('canvas');
+          c.width = c.height = sz;
+          const ctx = c.getContext('2d');
+          // NO black fill — transparent background so alpha = 0 outside shape
+          ctx.drawImage(img, 0, 0, sz, sz);
+          if (stampTex) gl.deleteTexture(stampTex);
+          stampTex = uploadCanvasAsStamp(c);
+          console.log('DitherBG: stamp loaded —', url);
+        };
+        img.onerror = () => console.warn('DitherBG: stamp image render failed:', url);
+        img.src = blobUrl;
+      })
+      .catch(err => console.warn('DitherBG: could not fetch stamp SVG:', url, err));
   }
 
   // ─── RENDER LOOP ──────────────────────────────────────────────────────────
@@ -338,15 +351,15 @@ const DitherBG = (() => {
     gl.bindFramebuffer(gl.FRAMEBUFFER, offscreenFBO);
     gl.clear(gl.COLOR_BUFFER_BIT);
     bindQuad(quadVAO_wave);
-    gl.uniform2f(waveUniforms.resolution,    w, h);
-    gl.uniform1f(waveUniforms.time,          t);
-    gl.uniform1f(waveUniforms.waveSpeed,     WAVE_SPEED);
+    gl.uniform2f(waveUniforms.resolution, w, h);
+    gl.uniform1f(waveUniforms.time, t);
+    gl.uniform1f(waveUniforms.waveSpeed, WAVE_SPEED);
     gl.uniform1f(waveUniforms.waveFrequency, WAVE_FREQUENCY);
     gl.uniform1f(waveUniforms.waveAmplitude, WAVE_AMPLITUDE);
-    gl.uniform3fv(waveUniforms.waveColor,    currentColor);
-    gl.uniform2f(waveUniforms.mousePos,      mouseX, mouseY);
-    gl.uniform1i(waveUniforms.enableMouse,   1);
-    gl.uniform1f(waveUniforms.mouseRadius,   MOUSE_RADIUS);
+    gl.uniform3fv(waveUniforms.waveColor, currentColor);
+    gl.uniform2f(waveUniforms.mousePos, mouseX, mouseY);
+    gl.uniform1i(waveUniforms.enableMouse, 1);
+    gl.uniform1f(waveUniforms.mouseRadius, MOUSE_RADIUS);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     // ── Pass 2: Dither → screen ───────────────────────────────────────────
@@ -366,8 +379,8 @@ const DitherBG = (() => {
     gl.uniform1i(ditherUniforms.stamp, 1);
 
     gl.uniform2f(ditherUniforms.resolution, w, h);
-    gl.uniform1f(ditherUniforms.colorNum,   COLOR_NUM);
-    gl.uniform1f(ditherUniforms.pixelSize,  PIXEL_SIZE);
+    gl.uniform1f(ditherUniforms.colorNum, COLOR_NUM);
+    gl.uniform1f(ditherUniforms.pixelSize, PIXEL_SIZE);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     rafId = requestAnimationFrame(render);
@@ -387,29 +400,29 @@ const DitherBG = (() => {
       return;
     }
 
-    waveProgram   = createProgram(VERT_SRC, WAVE_FRAG_SRC);
+    waveProgram = createProgram(VERT_SRC, WAVE_FRAG_SRC);
     ditherProgram = createProgram(VERT_SRC, DITHER_FRAG_SRC);
 
     waveUniforms = {
-      resolution:    gl.getUniformLocation(waveProgram, 'u_resolution'),
-      time:          gl.getUniformLocation(waveProgram, 'u_time'),
-      waveSpeed:     gl.getUniformLocation(waveProgram, 'u_waveSpeed'),
+      resolution: gl.getUniformLocation(waveProgram, 'u_resolution'),
+      time: gl.getUniformLocation(waveProgram, 'u_time'),
+      waveSpeed: gl.getUniformLocation(waveProgram, 'u_waveSpeed'),
       waveFrequency: gl.getUniformLocation(waveProgram, 'u_waveFrequency'),
       waveAmplitude: gl.getUniformLocation(waveProgram, 'u_waveAmplitude'),
-      waveColor:     gl.getUniformLocation(waveProgram, 'u_waveColor'),
-      mousePos:      gl.getUniformLocation(waveProgram, 'u_mousePos'),
-      enableMouse:   gl.getUniformLocation(waveProgram, 'u_enableMouse'),
-      mouseRadius:   gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
+      waveColor: gl.getUniformLocation(waveProgram, 'u_waveColor'),
+      mousePos: gl.getUniformLocation(waveProgram, 'u_mousePos'),
+      enableMouse: gl.getUniformLocation(waveProgram, 'u_enableMouse'),
+      mouseRadius: gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
     };
     ditherUniforms = {
-      texture:    gl.getUniformLocation(ditherProgram, 'u_texture'),
-      stamp:      gl.getUniformLocation(ditherProgram, 'u_stamp'),
+      texture: gl.getUniformLocation(ditherProgram, 'u_texture'),
+      stamp: gl.getUniformLocation(ditherProgram, 'u_stamp'),
       resolution: gl.getUniformLocation(ditherProgram, 'u_resolution'),
-      colorNum:   gl.getUniformLocation(ditherProgram, 'u_colorNum'),
-      pixelSize:  gl.getUniformLocation(ditherProgram, 'u_pixelSize'),
+      colorNum: gl.getUniformLocation(ditherProgram, 'u_colorNum'),
+      pixelSize: gl.getUniformLocation(ditherProgram, 'u_pixelSize'),
     };
 
-    quadVAO_wave   = createQuadBuffer(waveProgram);
+    quadVAO_wave = createQuadBuffer(waveProgram);
     quadVAO_dither = createQuadBuffer(ditherProgram);
 
     // Build stamp texture — default first, then swap if STAMP_URL is set
