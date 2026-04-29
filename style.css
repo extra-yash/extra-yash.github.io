@@ -149,7 +149,7 @@ body {
   transition: opacity 0.3s ease;
 }
 
-.logo svg {
+.logo img {
   display: block;
   height: 100%;
   width: auto;
