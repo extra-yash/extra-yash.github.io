@@ -1,29 +1,39 @@
 /**
  * EXTRA COLLECTIVE — Dither Background
  *
- * Vanilla WebGL2 port of the ReactBits Dither component.
- * Original shaders by DavidHDev (reactbits.dev), ported to plain JS.
+ * WebGL2 / GLSL ES 3.0. Two-pass render:
+ *   Pass 1 → FBM wave noise into offscreen FBO
+ *   Pass 2 → Bayer 8×8 ordered dither, each cell stamped with a custom shape
  *
- * Requires WebGL2 (supported by all modern browsers).
- * Uses GLSL ES 3.0 — necessary for float[64](...) Bayer matrix syntax.
+ * ─── HOW TO USE YOUR SYMBOL ────────────────────────────────────────────────
+ *   1. Export your SVG mark as a file — white shape, transparent background.
+ *   2. Drop it in the same folder as this file (e.g. extra-mark.svg).
+ *   3. Set  STAMP_URL = './extra-mark.svg'  below.
+ *   4. Increase PIXEL_SIZE to ≥ 10 so the shape is legible at render size.
  *
- * Usage:
- *   DitherBG.init();        — create canvas and start animation loop
- *   DitherBG.setColor(hex)  — update wave color on tab change
- *   DitherBG.stop();        — pause animation
+ *   Leave STAMP_URL = ''  to use the built-in default shape (circle).
+ * ───────────────────────────────────────────────────────────────────────────
+ *
+ * Public API:
+ *   DitherBG.init()          — create canvas, load stamp, start loop
+ *   DitherBG.setColor(hex)   — smooth color transition on tab switch
+ *   DitherBG.stop()          — pause animation
  */
 
 const DitherBG = (() => {
-  // ─── CONFIG ────────────────────────────────────────────────────
-  const WAVE_SPEED      = 0.04;
-  const WAVE_FREQUENCY  = 3.0;
-  const WAVE_AMPLITUDE  = 0.3;
-  const COLOR_NUM       = 6.0;   // dither palette steps (higher = more shades)
-  const PIXEL_SIZE      = 4.0;   // dither pixel block size (larger = more pixelated)
-  const MOUSE_RADIUS    = 0.4;
 
-  // ─── VERTEX SHADER — GLSL ES 3.0 ──────────────────────────────
-  // Both programs share this vertex shader.
+  // ─── CONFIG ──────────────────────────────────────────────────────────────
+  const WAVE_SPEED     = 0.03;
+  const WAVE_FREQUENCY = 2.0;
+  const WAVE_AMPLITUDE = 0.4;
+  const COLOR_NUM      = 5.0;  // tonal steps in the dither (higher = more gradation)
+  const PIXEL_SIZE     = 8.0;  // cell size in screen pixels (min 8 for SVG to read)
+  const MOUSE_RADIUS   = 0.3;
+
+  // Path to your SVG symbol. '' = built-in circle.
+  const STAMP_URL = '';
+
+  // ─── VERTEX SHADER ───────────────────────────────────────────────────────
   const VERT_SRC = `#version 300 es
     in vec2 a_position;
     out vec2 vUv;
@@ -33,8 +43,7 @@ const DitherBG = (() => {
     }
   `;
 
-  // ─── WAVE FRAGMENT SHADER — GLSL ES 3.0 ───────────────────────
-  // FBM (fractal Brownian motion) noise → animated colour field.
+  // ─── WAVE FRAGMENT SHADER ────────────────────────────────────────────────
   const WAVE_FRAG_SRC = `#version 300 es
     precision highp float;
     uniform vec2  u_resolution;
@@ -97,28 +106,38 @@ const DitherBG = (() => {
       uv -= 0.5;
       uv.x *= u_resolution.x / u_resolution.y;
       float f = pattern(uv);
+
       if (u_enableMouse == 1) {
-        vec2 mNDC = (u_mousePos / u_resolution - 0.5) * vec2(1.0, -1.0);
-        mNDC.x *= u_resolution.x / u_resolution.y;
-        float dist = length(uv - mNDC);
+        // u_mousePos is raw clientX/clientY — convert to same space as uv.
+        // clientY=0 is top; gl_FragCoord.y=0 is bottom — flip Y only here.
+        vec2 m = vec2(u_mousePos.x, u_resolution.y - u_mousePos.y) / u_resolution;
+        m -= 0.5;
+        m.x *= u_resolution.x / u_resolution.y;
+        float dist   = length(uv - m);
         float effect = 1.0 - smoothstep(0.0, u_mouseRadius, dist);
         f -= 0.5 * effect;
       }
+
       vec3 col = mix(vec3(0.0), u_waveColor, f);
       fragColor = vec4(col, 1.0);
     }
   `;
 
-  // ─── DITHER FRAGMENT SHADER — GLSL ES 3.0 ──────────────────────
-  // Bayer 8×8 ordered dither post-process.
-  // NOTE: float[64](...) array initializer requires GLSL ES 3.0 / WebGL2.
-  //       This is why we cannot use WebGL1 here.
+  // ─── DITHER + STAMP FRAGMENT SHADER ─────────────────────────────────────
+  //
+  // Per-CELL ordered dither (Bayer 8×8). Each cell is PIXEL_SIZE × PIXEL_SIZE
+  // pixels. If the cell's brightness exceeds its Bayer threshold the cell is
+  // "on" — meaning visible pixels are those where the stamp texture is white.
+  // This makes your SVG symbol the shape of every dither dot.
+  //
+  // NOTE: float[64](...) requires GLSL ES 3.0 / WebGL2 — cannot use WebGL1.
   const DITHER_FRAG_SRC = `#version 300 es
     precision highp float;
-    uniform sampler2D u_texture;
-    uniform vec2  u_resolution;
-    uniform float u_colorNum;
-    uniform float u_pixelSize;
+    uniform sampler2D u_texture;   // wave pass output
+    uniform sampler2D u_stamp;     // pixel shape mask (white = visible)
+    uniform vec2      u_resolution;
+    uniform float     u_colorNum;
+    uniform float     u_pixelSize;
     out vec4 fragColor;
 
     const float bayer[64] = float[64](
@@ -132,50 +151,60 @@ const DitherBG = (() => {
       42.0/64.0, 26.0/64.0, 38.0/64.0, 22.0/64.0, 41.0/64.0, 25.0/64.0, 37.0/64.0, 21.0/64.0
     );
 
-    vec3 dither(vec2 uv, vec3 color) {
-      vec2 scaledCoord = floor(uv * u_resolution / u_pixelSize);
-      int x = int(mod(scaledCoord.x, 8.0));
-      int y = int(mod(scaledCoord.y, 8.0));
-      float threshold = bayer[y * 8 + x] - 0.25;
-      float step = 1.0 / (u_colorNum - 1.0);
-      color += threshold * step;
-      color = clamp(color - 0.2, 0.0, 1.0);
-      return floor(color * (u_colorNum - 1.0) + 0.5) / (u_colorNum - 1.0);
-    }
-
     void main() {
-      vec2 uv = gl_FragCoord.xy / u_resolution;
-      vec2 npx = u_pixelSize / u_resolution;
-      vec2 uvPixel = npx * floor(uv / npx);
-      vec3 color = texture(u_texture, uvPixel).rgb;
-      color = dither(uv, color);
-      fragColor = vec4(color, 1.0);
+      // ── Which cell are we in? ──────────────────────────────────────────
+      vec2 cellIdx = floor(gl_FragCoord.xy / u_pixelSize);
+
+      // ── Sample wave at cell centre ─────────────────────────────────────
+      vec2 cellCentreUV = (cellIdx * u_pixelSize + u_pixelSize * 0.5) / u_resolution;
+      vec3 cellColor = texture(u_texture, cellCentreUV).rgb;
+      float brightness = dot(cellColor, vec3(0.299, 0.587, 0.114));
+
+      // ── Quantise brightness to COLOR_NUM steps ─────────────────────────
+      float step = 1.0 / (u_colorNum - 1.0);
+      float quantized = floor(brightness / step + 0.5) * step;
+
+      // ── Bayer threshold at cell level ──────────────────────────────────
+      int bx = int(mod(cellIdx.x, 8.0));
+      int by = int(mod(cellIdx.y, 8.0));
+      float threshold = bayer[by * 8 + bx];
+
+      // ── Stamp mask — position within this cell (0..1) ─────────────────
+      // Flip Y so the stamp reads top-to-bottom as drawn.
+      vec2 posInCell = fract(gl_FragCoord.xy / u_pixelSize);
+      posInCell.y = 1.0 - posInCell.y;
+      float stampMask = texture(u_stamp, posInCell).r;
+
+      // ── Output: on = cell colour × stamp; off = black ─────────────────
+      if (quantized > threshold && stampMask > 0.5) {
+        fragColor = vec4(cellColor, 1.0);
+      } else {
+        fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+      }
     }
   `;
 
-  // ─── INTERNAL STATE ─────────────────────────────────────────────
+  // ─── INTERNAL STATE ───────────────────────────────────────────────────────
   let canvas, gl, rafId;
   let waveProgram, ditherProgram;
-  let waveUniforms = {};
+  let waveUniforms  = {};
   let ditherUniforms = {};
   let offscreenFBO, offscreenTex;
   let quadVAO_wave, quadVAO_dither;
-  let startTime = 0;
+  let stampTex      = null;
+  let startTime     = 0;
   let mouseX = 0, mouseY = 0;
 
-  // Current wave colour (mutable) — starts as EXTRA CONTRAST green
-  let waveColor = hexToVec3('#27E700');
+  let targetColor  = [0.153, 0.906, 0.0]; // EXTRA CONTRAST #27E700
+  let currentColor = [...targetColor];
 
-  // ─── TARGET colour for smooth interpolation ─────────────────────
-  let targetColor = [...waveColor];
-  let currentColor = [...waveColor];
-
-  // ─── HELPERS ────────────────────────────────────────────────────
+  // ─── HELPERS ─────────────────────────────────────────────────────────────
   function hexToVec3(hex) {
-    const r = parseInt(hex.slice(1, 3), 16) / 255;
-    const g = parseInt(hex.slice(3, 5), 16) / 255;
-    const b = parseInt(hex.slice(5, 7), 16) / 255;
-    return [r, g, b];
+    return [
+      parseInt(hex.slice(1, 3), 16) / 255,
+      parseInt(hex.slice(3, 5), 16) / 255,
+      parseInt(hex.slice(5, 7), 16) / 255,
+    ];
   }
 
   function compileShader(src, type) {
@@ -183,32 +212,32 @@ const DitherBG = (() => {
     gl.shaderSource(s, src);
     gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-      console.error('Shader compile error:', gl.getShaderInfoLog(s));
+      console.error('DitherBG shader error:', gl.getShaderInfoLog(s));
     }
     return s;
   }
 
-  function createProgram(vertSrc, fragSrc) {
+  function createProgram(vSrc, fSrc) {
     const prog = gl.createProgram();
-    gl.attachShader(prog, compileShader(vertSrc, gl.VERTEX_SHADER));
-    gl.attachShader(prog, compileShader(fragSrc, gl.FRAGMENT_SHADER));
+    gl.attachShader(prog, compileShader(vSrc, gl.VERTEX_SHADER));
+    gl.attachShader(prog, compileShader(fSrc, gl.FRAGMENT_SHADER));
     gl.linkProgram(prog);
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-      console.error('Program link error:', gl.getProgramInfoLog(prog));
+      console.error('DitherBG program error:', gl.getProgramInfoLog(prog));
     }
     return prog;
   }
 
   function createQuadBuffer(prog) {
-    const verts = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
-    const buf = gl.createBuffer();
+    const verts = new Float32Array([-1,-1, 1,-1, -1,1, 1,1]);
+    const buf   = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(prog, 'a_position');
     return { buf, loc };
   }
 
-  function createOffscreenBuffer(w, h) {
+  function createFBO(w, h) {
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -226,144 +255,180 @@ const DitherBG = (() => {
   function resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
-    canvas.width = w;
+    canvas.width  = w;
     canvas.height = h;
     gl.viewport(0, 0, w, h);
-
-    // Recreate FBO at new size
     if (offscreenFBO) gl.deleteFramebuffer(offscreenFBO);
     if (offscreenTex) gl.deleteTexture(offscreenTex);
-    const { fbo, tex } = createOffscreenBuffer(w, h);
-    offscreenFBO = fbo;
-    offscreenTex = tex;
+    const r = createFBO(w, h);
+    offscreenFBO = r.fbo;
+    offscreenTex = r.tex;
   }
 
+  // ─── STAMP TEXTURE ────────────────────────────────────────────────────────
+  // Builds a 64×64 WebGL texture from an SVG file or a built-in shape.
+  // The stamp is sampled per-cell in the dither pass — white pixels are
+  // "visible", black/transparent are "off".
+
+  function uploadCanvasAsStamp(c) {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    return tex;
+  }
+
+  function buildDefaultStamp() {
+    // Built-in: filled circle, white on black.
+    const sz  = 64;
+    const c   = document.createElement('canvas');
+    c.width   = c.height = sz;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, sz, sz);
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(sz / 2, sz / 2, sz * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+    return uploadCanvasAsStamp(c);
+  }
+
+  function loadSVGStamp(url) {
+    const sz  = 64;
+    const img = new Image();
+    img.onload = () => {
+      const c   = document.createElement('canvas');
+      c.width   = c.height = sz;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, sz, sz);
+      ctx.drawImage(img, 0, 0, sz, sz);
+      if (stampTex) gl.deleteTexture(stampTex);
+      stampTex = uploadCanvasAsStamp(c);
+    };
+    img.onerror = () => console.warn('DitherBG: could not load stamp SVG:', url);
+    img.src = url;
+  }
+
+  // ─── RENDER LOOP ──────────────────────────────────────────────────────────
   function lerp(a, b, t) { return a + (b - a) * t; }
 
-  // ─── RENDER LOOP ─────────────────────────────────────────────────
+  function bindQuad(q) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, q.buf);
+    if (q.loc >= 0) {
+      gl.enableVertexAttribArray(q.loc);
+      gl.vertexAttribPointer(q.loc, 2, gl.FLOAT, false, 0, 0);
+    }
+  }
+
   function render(ts) {
     const t = (ts - startTime) / 1000;
     const w = canvas.width, h = canvas.height;
 
-    // Smooth colour transition
+    // Smooth colour lerp
     for (let i = 0; i < 3; i++) {
       currentColor[i] = lerp(currentColor[i], targetColor[i], 0.03);
     }
 
-    // ── PASS 1: Wave → offscreen FBO ───────────────────────────────
+    // ── Pass 1: Wave → offscreen FBO ─────────────────────────────────────
     gl.useProgram(waveProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, offscreenFBO);
     gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // Bind geometry — guard against invalid attribute location
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadVAO_wave.buf);
-    if (quadVAO_wave.loc >= 0) {
-      gl.enableVertexAttribArray(quadVAO_wave.loc);
-      gl.vertexAttribPointer(quadVAO_wave.loc, 2, gl.FLOAT, false, 0, 0);
-    }
-
-    // Update uniforms
-    gl.uniform2f(waveUniforms.resolution, w, h);
-    gl.uniform1f(waveUniforms.time, t);
-    gl.uniform1f(waveUniforms.waveSpeed, WAVE_SPEED);
+    bindQuad(quadVAO_wave);
+    gl.uniform2f(waveUniforms.resolution,    w, h);
+    gl.uniform1f(waveUniforms.time,          t);
+    gl.uniform1f(waveUniforms.waveSpeed,     WAVE_SPEED);
     gl.uniform1f(waveUniforms.waveFrequency, WAVE_FREQUENCY);
     gl.uniform1f(waveUniforms.waveAmplitude, WAVE_AMPLITUDE);
-    gl.uniform3fv(waveUniforms.waveColor, currentColor);
-    gl.uniform2f(waveUniforms.mousePos, mouseX, mouseY);
-    gl.uniform1i(waveUniforms.enableMouse, 1);
-    gl.uniform1f(waveUniforms.mouseRadius, MOUSE_RADIUS);
-
+    gl.uniform3fv(waveUniforms.waveColor,    currentColor);
+    gl.uniform2f(waveUniforms.mousePos,      mouseX, mouseY);
+    gl.uniform1i(waveUniforms.enableMouse,   1);
+    gl.uniform1f(waveUniforms.mouseRadius,   MOUSE_RADIUS);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    // ── PASS 2: Dither → screen ────────────────────────────────────
+    // ── Pass 2: Dither → screen ───────────────────────────────────────────
     gl.useProgram(ditherProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.clear(gl.COLOR_BUFFER_BIT);
+    bindQuad(quadVAO_dither);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadVAO_dither.buf);
-    if (quadVAO_dither.loc >= 0) {
-      gl.enableVertexAttribArray(quadVAO_dither.loc);
-      gl.vertexAttribPointer(quadVAO_dither.loc, 2, gl.FLOAT, false, 0, 0);
-    }
-
+    // Unit 0 = wave texture
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, offscreenTex);
     gl.uniform1i(ditherUniforms.texture, 0);
-    gl.uniform2f(ditherUniforms.resolution, w, h);
-    gl.uniform1f(ditherUniforms.colorNum, COLOR_NUM);
-    gl.uniform1f(ditherUniforms.pixelSize, PIXEL_SIZE);
 
+    // Unit 1 = stamp texture
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, stampTex);
+    gl.uniform1i(ditherUniforms.stamp, 1);
+
+    gl.uniform2f(ditherUniforms.resolution, w, h);
+    gl.uniform1f(ditherUniforms.colorNum,   COLOR_NUM);
+    gl.uniform1f(ditherUniforms.pixelSize,  PIXEL_SIZE);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     rafId = requestAnimationFrame(render);
   }
 
-  // ─── PUBLIC API ──────────────────────────────────────────────────
+  // ─── PUBLIC API ───────────────────────────────────────────────────────────
   function init() {
-    // Create canvas and append behind everything
     canvas = document.createElement('canvas');
     canvas.id = 'dither-bg';
-    canvas.style.cssText = [
-      'position:fixed', 'inset:0', 'width:100%', 'height:100%',
-      'z-index:-1', 'display:block', 'pointer-events:none'
-    ].join(';');
+    canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block;pointer-events:none';
     document.body.prepend(canvas);
 
-    // WebGL2 required — GLSL ES 3.0 float[64](...) array initializer
-    // is not supported in WebGL1/GLSL ES 1.0.
     gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
     if (!gl) {
-      // Graceful fallback: hide canvas, let the dark body background show.
-      console.warn('DitherBG: WebGL2 not supported in this browser. Background disabled.');
+      console.warn('DitherBG: WebGL2 not supported. Background disabled.');
       canvas.style.display = 'none';
       return;
     }
 
-    // Compile programs
-    waveProgram = createProgram(VERT_SRC, WAVE_FRAG_SRC);
+    waveProgram   = createProgram(VERT_SRC, WAVE_FRAG_SRC);
     ditherProgram = createProgram(VERT_SRC, DITHER_FRAG_SRC);
 
-    // Cache uniform locations
     waveUniforms = {
-      resolution: gl.getUniformLocation(waveProgram, 'u_resolution'),
-      time: gl.getUniformLocation(waveProgram, 'u_time'),
-      waveSpeed: gl.getUniformLocation(waveProgram, 'u_waveSpeed'),
+      resolution:    gl.getUniformLocation(waveProgram, 'u_resolution'),
+      time:          gl.getUniformLocation(waveProgram, 'u_time'),
+      waveSpeed:     gl.getUniformLocation(waveProgram, 'u_waveSpeed'),
       waveFrequency: gl.getUniformLocation(waveProgram, 'u_waveFrequency'),
       waveAmplitude: gl.getUniformLocation(waveProgram, 'u_waveAmplitude'),
-      waveColor: gl.getUniformLocation(waveProgram, 'u_waveColor'),
-      mousePos: gl.getUniformLocation(waveProgram, 'u_mousePos'),
-      enableMouse: gl.getUniformLocation(waveProgram, 'u_enableMouse'),
-      mouseRadius: gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
+      waveColor:     gl.getUniformLocation(waveProgram, 'u_waveColor'),
+      mousePos:      gl.getUniformLocation(waveProgram, 'u_mousePos'),
+      enableMouse:   gl.getUniformLocation(waveProgram, 'u_enableMouse'),
+      mouseRadius:   gl.getUniformLocation(waveProgram, 'u_mouseRadius'),
     };
     ditherUniforms = {
-      texture: gl.getUniformLocation(ditherProgram, 'u_texture'),
+      texture:    gl.getUniformLocation(ditherProgram, 'u_texture'),
+      stamp:      gl.getUniformLocation(ditherProgram, 'u_stamp'),
       resolution: gl.getUniformLocation(ditherProgram, 'u_resolution'),
-      colorNum: gl.getUniformLocation(ditherProgram, 'u_colorNum'),
-      pixelSize: gl.getUniformLocation(ditherProgram, 'u_pixelSize'),
+      colorNum:   gl.getUniformLocation(ditherProgram, 'u_colorNum'),
+      pixelSize:  gl.getUniformLocation(ditherProgram, 'u_pixelSize'),
     };
 
-    // Quad buffers for each program
-    quadVAO_wave = createQuadBuffer(waveProgram);
+    quadVAO_wave   = createQuadBuffer(waveProgram);
     quadVAO_dither = createQuadBuffer(ditherProgram);
 
-    // Size up and start
+    // Build stamp texture — default first, then swap if STAMP_URL is set
+    stampTex = buildDefaultStamp();
+    if (STAMP_URL) loadSVGStamp(STAMP_URL);
+
     resize();
     window.addEventListener('resize', resize);
 
-    // Mouse tracking
+    // ── Mouse: use raw clientX/clientY — the shader handles the Y-flip ────
     window.addEventListener('mousemove', e => {
       mouseX = e.clientX;
-      mouseY = canvas.height - e.clientY; // flip Y for WebGL
+      mouseY = e.clientY; // NO JS flip — shader converts to GL space
     });
 
     startTime = performance.now();
     rafId = requestAnimationFrame(render);
   }
 
-  /**
-   * Update the wave colour — called when the active tab changes.
-   * Accepts a hex string: '#27E700'
-   */
   function setColor(hex) {
     targetColor = hexToVec3(hex);
   }
