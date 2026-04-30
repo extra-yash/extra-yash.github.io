@@ -643,6 +643,7 @@ main,
 .comparison-table-wrapper {
   max-width: fit-content;
   margin: 0 auto;
+  padding: 40px;
 }
 
 .comparison-table {
@@ -656,20 +657,20 @@ main,
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.comp-row:last-child {
+  border-bottom: none;
 }
 
 .comp-cell {
   font-size: 0.95rem;
   line-height: 1.6;
-  padding: 24px 32px;
-  border-bottom: 1px solid var(--card-border);
 }
 
-.comp-row:last-child .comp-cell {
-  border-bottom: none;
-  border-bottom-left-radius: var(--radius-sm);
-  border-bottom-right-radius: var(--radius-sm);
-}
+
 
 .comp-header .comp-cell {
   font-family: var(--font-display);
@@ -678,14 +679,11 @@ main,
   text-transform: uppercase;
   color: var(--text);
   border-bottom: 2px solid;
-  padding-bottom: 24px;
-  border-top-left-radius: var(--radius-sm);
-  border-top-right-radius: var(--radius-sm);
+  padding-bottom: 16px;
 }
 
 .comp-cell.traditional {
   color: var(--text-muted);
-  background-color: rgba(13, 15, 20, 0.4);
 }
 
 .comp-header .comp-cell.traditional {
@@ -695,7 +693,6 @@ main,
 .comp-cell.extra {
   color: var(--text);
   font-weight: 700;
-  background-color: rgba(255, 51, 0, 0.05);
 }
 
 .comp-header .comp-cell.extra {
