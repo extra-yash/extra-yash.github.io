@@ -635,7 +635,8 @@ main,
   border: 1px solid var(--card-border);
 }
 
-.mastery-title:hover+.mastery-hover-images .h-img {
+.mastery-title:hover+.mastery-hover-images .h-img,
+.mastery-item.is-active .mastery-hover-images .h-img {
   opacity: 1;
 }
 

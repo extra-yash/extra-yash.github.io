@@ -216,49 +216,143 @@ function initScrollGuidance() {
 function initMasteryHover() {
   const masteryItems = document.querySelectorAll('.mastery-item');
   
+  // Helper to close all active items on mobile
+  function closeAllMastery() {
+    document.querySelectorAll('.mastery-item.is-active').forEach(activeItem => {
+      activeItem.classList.remove('is-active');
+      activeItem.querySelectorAll('.h-img').forEach(img => {
+        img.style.transform = `translate(-50%, -50%) scale(0.5)`;
+      });
+    });
+  }
+  
+  // Close when tapping outside on mobile
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth < 768 && !e.target.closest('.mastery-item')) {
+      closeAllMastery();
+    }
+  });
+  
   masteryItems.forEach(item => {
     const images = item.querySelectorAll('.h-img');
     const title = item.querySelector('.mastery-title');
+    const masteryKey = item.getAttribute('data-mastery');
     if (!title) return;
     
-    title.addEventListener('mouseenter', () => {
-      // Define medium regions around the text so they spread nicely without being too far
-      const regions = [
-        { x: -120, y: -70 }, // Top Left
-        { x: 120, y: -60 },  // Top Right
-        { x: -110, y: 80 },  // Bottom Left
-        { x: 110, y: 90 },   // Bottom Right
-        { x: 0, y: -100 },   // Top Center
-        { x: 0, y: 110 }     // Bottom Center
+    // Load images from data.js
+    if (typeof MASTERY_DATA !== 'undefined' && MASTERY_DATA[masteryKey]) {
+      const urls = MASTERY_DATA[masteryKey];
+      images.forEach((img, i) => {
+        let rawUrl = urls[i];
+        if (rawUrl && rawUrl.trim() !== '') {
+          // Auto-convert Google Drive viewer links to direct image links
+          const gDriveMatch = rawUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view/);
+          if (gDriveMatch) {
+            // Use the thumbnail API endpoint to bypass strict hotlinking rules
+            rawUrl = `https://drive.google.com/thumbnail?id=${gDriveMatch[1]}&sz=w800`;
+          }
+          
+          // Preload the image to calculate its true aspect ratio
+          const preloader = new Image();
+          preloader.src = rawUrl;
+          preloader.onload = () => {
+            const aspect = preloader.naturalWidth / preloader.naturalHeight;
+            
+            // Start with a target height (original was 160px)
+            let h = 160;
+            let w = h * aspect;
+            
+            // If the image is extremely wide (like a landscape banner), cap the width
+            if (w > 240) {
+              w = 240;
+              h = w / aspect;
+            }
+            
+            img.style.width = `${w}px`;
+            img.style.height = `${h}px`;
+            img.style.backgroundImage = `url('${rawUrl}')`;
+            img.classList.remove('placeholder');
+          };
+          
+        } else {
+          img.style.display = 'none'; // Hide if no link provided
+        }
+      });
+    } else {
+      images.forEach(img => img.style.display = 'none'); // Hide all if category missing
+    }
+    
+    function openImages() {
+      // On mobile, close others first
+      if (window.innerWidth < 768) {
+        closeAllMastery();
+      }
+      
+      item.classList.add('is-active');
+      const isMobile = window.innerWidth < 768;
+      
+      // Define regions. Shrink them by ~60% on mobile to prevent screen edge bleeding.
+      const regions = isMobile ? [
+        { x: -50, y: -40 },
+        { x: 50, y: -30 },
+        { x: -40, y: 50 },
+        { x: 40, y: 60 },
+        { x: 0, y: -60 },
+        { x: 0, y: 70 }
+      ] : [
+        { x: -120, y: -70 },
+        { x: 120, y: -60 },
+        { x: -110, y: 80 },
+        { x: 110, y: 90 },
+        { x: 0, y: -100 },
+        { x: 0, y: 110 }
       ];
       
-      // Shuffle regions to assign distinct areas
+      // Shuffle regions
       const shuffled = regions.sort(() => 0.5 - Math.random());
       
       images.forEach((img, i) => {
         const region = shuffled[i % shuffled.length];
         
-        // Add random noise to the distinct region
-        const rX = region.x + (Math.random() * 40 - 20);
-        const rY = region.y + (Math.random() * 40 - 20);
+        // Add random noise to the distinct region (less noise on mobile)
+        const variance = isMobile ? 20 : 40;
+        const offset = isMobile ? 10 : 20;
+        const rX = region.x + (Math.random() * variance - offset);
+        const rY = region.y + (Math.random() * variance - offset);
         
-        // Random rotation (-15 to 15 deg)
         const rRot = Math.random() * 30 - 15;
-        
-        // Random scale (0.9 to 1.15)
         const rScale = 0.9 + (Math.random() * 0.25);
         
-        // Apply inline transform (combines with the CSS top:50% left:50% translate(-50%, -50%))
         img.style.transform = `translate(calc(-50% + ${rX}px), calc(-50% + ${rY}px)) rotate(${rRot}deg) scale(${rScale})`;
       });
-    });
-    
-    title.addEventListener('mouseleave', () => {
-      // Images will fade out via CSS opacity. 
-      // We also scale them back down slightly for a nice shrink effect.
+    }
+
+    function closeImages() {
+      item.classList.remove('is-active');
       images.forEach(img => {
         img.style.transform = `translate(-50%, -50%) scale(0.5)`;
       });
+    }
+    
+    // Desktop Interaction
+    title.addEventListener('mouseenter', () => {
+      if (window.innerWidth >= 768) openImages();
+    });
+    
+    title.addEventListener('mouseleave', () => {
+      if (window.innerWidth >= 768) closeImages();
+    });
+
+    // Mobile Interaction
+    title.addEventListener('click', (e) => {
+      if (window.innerWidth < 768) {
+        e.preventDefault();
+        if (item.classList.contains('is-active')) {
+          closeImages();
+        } else {
+          openImages();
+        }
+      }
     });
   });
 }
