@@ -111,7 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
   DitherBG.init();
   initCursor();
   initTabs();
-  loadPortfolio();
+  initProcessTabs();
+  initScrollGuidance();
+  initMasteryHover();
+  
+  // Re-enable CMS load when ready
+  // loadPortfolio();
 });
 
 // ─── TAB SYSTEM ───────────────────────────────────────────────────
@@ -161,65 +166,101 @@ function activateTab(tab, tabs, panels, animate) {
   DitherBG.setBgColor(colors.bg);
   document.documentElement.style.setProperty('--accent', colors.accent);
   document.body.dataset.theme = colors.theme;
-
-  // Re-render portfolio for new tab
-  if (portfolioData.length > 0) {
-    renderPortfolio(tab);
-  }
 }
 
-// ─── PORTFOLIO ────────────────────────────────────────────────────
-async function loadPortfolio() {
-  if (!SHEETS_ENDPOINT) {
-    // No endpoint configured — use fallback data
-    portfolioData = FALLBACK_PORTFOLIO.filter(item => item.visible);
-    renderPortfolio(activeTab);
-    return;
-  }
-
-  try {
-    const res = await fetch(SHEETS_ENDPOINT);
-    if (!res.ok) throw new Error('Sheet fetch failed');
-    portfolioData = await res.json();
-    renderPortfolio(activeTab);
-  } catch (err) {
-    console.warn('Portfolio: Sheet unreachable, using fallback data.', err);
-    portfolioData = FALLBACK_PORTFOLIO.filter(item => item.visible);
-    renderPortfolio(activeTab);
-  }
-}
-
-function renderPortfolio(tab) {
-  const grid = document.getElementById('portfolio-brands');
-  if (!grid) return;
-
-  // Filter: show items matching this tab or tagged 'all'
-  const filtered = portfolioData.filter(item => {
-    const itemTab = (item.tab || 'all').toLowerCase().trim();
-    return itemTab === 'all' || itemTab === tab;
+// ─── PROCESS TABS (HOW WE WORK) ───────────────────────────────────
+function initProcessTabs() {
+  const processBtns = document.querySelectorAll('.process-btn');
+  processBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetProcess = btn.dataset.process;
+      
+      // Update buttons
+      processBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      
+      // Update panels
+      const panels = document.querySelectorAll('.process-panel');
+      panels.forEach(p => {
+        if (p.id === `process-${targetProcess}`) {
+          p.classList.add('active');
+          p.hidden = false;
+        } else {
+          p.classList.remove('active');
+          p.hidden = true;
+        }
+      });
+    });
   });
+}
 
-  if (filtered.length === 0) {
-    grid.innerHTML = '<p class="loading-state">Portfolio coming soon — contact us for the full deck.</p>';
-    return;
-  }
+// ─── SCROLL GUIDANCE ──────────────────────────────────────────────
+function initScrollGuidance() {
+  const indicator = document.getElementById('scroll-guidance');
+  if (!indicator) return;
+  
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 100) {
+      indicator.classList.add('hidden');
+    } else {
+      indicator.classList.remove('hidden');
+    }
+  }, { passive: true });
+}
 
-  grid.innerHTML = filtered.map((item, i) => `
-    <article class="portfolio-card" id="portfolio-card-${i}">
-      <div class="portfolio-card-img">
-        <img
-          src="${escapeHtml(item.image_url)}"
-          alt="${escapeHtml(item.title)} — ${escapeHtml(item.client)}"
-          loading="lazy"
-        >
-      </div>
-      <div class="portfolio-card-info">
-        <p class="portfolio-card-cat">${escapeHtml(item.category)}</p>
-        <h3 class="portfolio-card-title">Extra × ${escapeHtml(item.client)}</h3>
-        <p class="portfolio-card-tags">${escapeHtml(item.tags)}</p>
-      </div>
-    </article>
-  `).join('');
+// ─── MASTERY HOVER RANDOMIZATION ──────────────────────────────────
+function initMasteryHover() {
+  const masteryItems = document.querySelectorAll('.mastery-item');
+  
+  masteryItems.forEach(item => {
+    const images = item.querySelectorAll('.h-img');
+    const title = item.querySelector('.mastery-title');
+    if (!title) return;
+    
+    title.addEventListener('mouseenter', () => {
+      // Define medium regions around the text so they spread nicely without being too far
+      const regions = [
+        { x: -120, y: -70 }, // Top Left
+        { x: 120, y: -60 },  // Top Right
+        { x: -110, y: 80 },  // Bottom Left
+        { x: 110, y: 90 },   // Bottom Right
+        { x: 0, y: -100 },   // Top Center
+        { x: 0, y: 110 }     // Bottom Center
+      ];
+      
+      // Shuffle regions to assign distinct areas
+      const shuffled = regions.sort(() => 0.5 - Math.random());
+      
+      images.forEach((img, i) => {
+        const region = shuffled[i % shuffled.length];
+        
+        // Add random noise to the distinct region
+        const rX = region.x + (Math.random() * 40 - 20);
+        const rY = region.y + (Math.random() * 40 - 20);
+        
+        // Random rotation (-15 to 15 deg)
+        const rRot = Math.random() * 30 - 15;
+        
+        // Random scale (0.9 to 1.15)
+        const rScale = 0.9 + (Math.random() * 0.25);
+        
+        // Apply inline transform (combines with the CSS top:50% left:50% translate(-50%, -50%))
+        img.style.transform = `translate(calc(-50% + ${rX}px), calc(-50% + ${rY}px)) rotate(${rRot}deg) scale(${rScale})`;
+      });
+    });
+    
+    title.addEventListener('mouseleave', () => {
+      // Images will fade out via CSS opacity. 
+      // We also scale them back down slightly for a nice shrink effect.
+      images.forEach(img => {
+        img.style.transform = `translate(-50%, -50%) scale(0.5)`;
+      });
+    });
+  });
 }
 
 // ─── CUSTOM CURSOR ────────────────────────────────────────────────
@@ -239,7 +280,7 @@ function initCursor() {
   });
 
   // Expand on interactive elements
-  const interactiveSelector = 'a, button, .tab-btn, .info-card, .portfolio-card, details summary';
+  const interactiveSelector = 'a, button, .tab-btn, .info-card, .portfolio-card, details summary, .mastery-title';
   document.addEventListener('mouseover', e => {
     if (e.target.closest(interactiveSelector)) {
       cursor.classList.add('hovered');

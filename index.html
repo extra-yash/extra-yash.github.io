@@ -37,6 +37,12 @@
     <!-- Custom cursor -->
     <div class="cursor" id="cursor" aria-hidden="true"></div>
 
+    <!-- Scroll Guidance -->
+    <div class="scroll-guidance" id="scroll-guidance" aria-hidden="true">
+        <div class="scroll-line"></div>
+        <span class="scroll-text">SCROLL</span>
+    </div>
+
     <nav class="top-nav" role="navigation" aria-label="Main navigation">
         <a href="#brands" class="logo" id="brand-logo" aria-label="Extra Collective — Home">
             <img src="./assets/EXTRA LOGO LIGHT.svg" alt="Extra Collective" height="28">
@@ -67,44 +73,84 @@
 
         <!-- Hero -->
         <header class="hero-section">
-            <h1 class="display-heading">A CREATIVE COLLECTIVE</h1>
-            <p class="hero-sub">Built entirely of masters.
-                Assembled on demand.
-                Designed to negate agency overhead.</p>
+            <h1 class="display-heading">AN UNBOUND<br>CREATIVE<br>COLLECTIVE</h1>
+            <p class="hero-sub">Helping brands launch, scale, and evolve,<br>without agency overhead.</p>
         </header>
 
-        <!-- How We Work -->
         <section class="content-section" aria-labelledby="brands-model-heading">
-            <h2 class="section-label" id="brands-model-heading">HOW WE WORK</h2>
-            <div class="card-grid three-col">
-                <article class="info-card" id="brands-card-brief">
+            <h2 class="section-label" id="brands-model-heading" data-text="HOW WE WORK">HOW WE WORK</h2>
+            
+            <div class="card-grid four-col">
+                <article class="info-card frosted-card">
                     <span class="card-num">01</span>
-                    <h3 class="card-heading">The right team.</h3>
-                    <p>We assess the brief and build the team it demands. The right combination of mastery, assembled
-                        with intent.</p>
+                    <h3 class="card-heading">We Talk.</h3>
+                    <p>We dive deep into your brief to understand not just what you need, but why you need it. Strategy and intent are established here.</p>
                 </article>
-                <article class="info-card" id="brands-card-team">
+                <article class="info-card frosted-card">
                     <span class="card-num">02</span>
-                    <h3 class="card-heading">Masters on every brief.</h3>
-                    <p>Every project is staffed at the same level. The people who present are the people who produced
-                        the work.</p>
+                    <h3 class="card-heading">We Build.</h3>
+                    <p>Based on the exact requirements of the brief, we curate a bespoke team from our collective of specialists. No filler, only capability.</p>
                 </article>
-                <article class="info-card" id="brands-card-price">
+                <article class="info-card frosted-card">
                     <span class="card-num">03</span>
-                    <h3 class="card-heading">No overhead.</h3>
-                    <p>We carry none of the fixed costs of a traditional structure. Every unit of your budget goes
-                        directly to the craft.</p>
+                    <h3 class="card-heading">We Work.</h3>
+                    <p>The team gets to work. Transparent communication, direct access to the creators, and iterative reviews keep the project perfectly aligned.</p>
+                </article>
+                <article class="info-card frosted-card">
+                    <span class="card-num">04</span>
+                    <h3 class="card-heading">We Deliver.</h3>
+                    <p>Final files, organized logic, and comprehensive documentation. We deliver capability that drops seamlessly into your ecosystem.</p>
                 </article>
             </div>
         </section>
 
 
 
-        <!-- Portfolio -->
-        <section class="content-section" aria-labelledby="brands-work-heading">
-            <h2 class="section-label" id="brands-work-heading">SELECTED WORK</h2>
-            <div class="portfolio-grid" id="portfolio-brands">
-                <p class="loading-state">Loading work...</p>
+        <!-- What We Master -->
+        <section class="content-section mastery-section" aria-labelledby="brands-mastery-heading">
+            <h2 class="section-label" id="brands-mastery-heading" data-text="WHAT WE MASTER">WHAT WE MASTER</h2>
+            <div class="mastery-grid">
+                <div class="mastery-item" data-mastery="art-direction"><h3 class="mastery-title" data-text="Art Direction">Art Direction</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="videography"><h3 class="mastery-title" data-text="Videography">Videography</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="web-development"><h3 class="mastery-title" data-text="Web Development">Web Development</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="graphic-design"><h3 class="mastery-title" data-text="Graphic Design">Graphic Design</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="mobile-development"><h3 class="mastery-title" data-text="Mobile Development">Mobile Development</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="motion-design"><h3 class="mastery-title" data-text="Motion Design">Motion Design</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="strategy"><h3 class="mastery-title" data-text="Strategy">Strategy</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="creative-direction"><h3 class="mastery-title" data-text="Creative Direction">Creative Direction</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="interior-design"><h3 class="mastery-title" data-text="Interior Design">Interior Design</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="web-design"><h3 class="mastery-title" data-text="Web Design">Web Design</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="3d-modelling"><h3 class="mastery-title" data-text="3D Modelling">3D Modelling</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="virtual-photography"><h3 class="mastery-title" data-text="Virtual Photography">Virtual Photography</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="architectural-visualisation"><h3 class="mastery-title" data-text="Architectural Visualisation">Architectural Visualisation</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="social-media-management"><h3 class="mastery-title" data-text="Social Media Management">Social Media Management</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="photography"><h3 class="mastery-title" data-text="Photography">Photography</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="video-editing"><h3 class="mastery-title" data-text="Video Editing">Video Editing</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+            </div>
+        </section>
+
+        <!-- Comparison -->
+        <section class="content-section comparison-section" aria-labelledby="comparison-heading">
+            <h2 class="section-label" id="comparison-heading" data-text="THE DIFFERENCE">THE DIFFERENCE</h2>
+            <div class="comparison-table-wrapper">
+                <div class="comparison-table">
+                    <div class="comp-row comp-header">
+                        <div class="comp-cell traditional">The Traditional Pipeline</div>
+                        <div class="comp-cell extra">The Extra Collective</div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-cell traditional">High fixed overhead costs</div>
+                        <div class="comp-cell extra">Zero overhead, budget goes to craft</div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-cell traditional">Junior staff doing the actual work</div>
+                        <div class="comp-cell extra">Masters on every brief</div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-cell traditional">Slow, bureaucratic processes</div>
+                        <div class="comp-cell extra">Agile, direct access to creators</div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -131,7 +177,7 @@
 
         <!-- How the Partnership Works -->
         <section class="content-section" aria-labelledby="agencies-model-heading">
-            <h2 class="section-label" id="agencies-model-heading">HOW IT WORKS</h2>
+            <h2 class="section-label" id="agencies-model-heading" data-text="HOW IT WORKS">HOW IT WORKS</h2>
             <div class="card-grid three-col">
                 <article class="info-card" id="agencies-card-invisible">
                     <span class="card-num">01</span>
@@ -156,25 +202,27 @@
 
 
 
-        <!-- Disciplines -->
-        <section class="content-section" aria-labelledby="agencies-disciplines-heading">
-            <h2 class="section-label" id="agencies-disciplines-heading">WHAT WE BRING TO YOUR BENCH</h2>
-            <div class="discipline-tags" id="agencies-disciplines">
-                <span class="tag">Art Direction</span>
-                <span class="tag">3D Visualization</span>
-                <span class="tag">Brand Strategy</span>
-                <span class="tag">Motion Design</span>
-                <span class="tag">Photography</span>
-                <span class="tag">Copywriting</span>
-                <span class="tag">UX / Digital</span>
-                <span class="tag">Print & Publication</span>
-                <span class="tag">Illustration</span>
-                <span class="tag">Architectural Rendering</span>
-                <span class="tag">Video Production</span>
-                <span class="tag">Data Visualization</span>
+        <!-- What We Master -->
+        <section class="content-section mastery-section" aria-labelledby="agencies-mastery-heading">
+            <h2 class="section-label" id="agencies-mastery-heading" data-text="WHAT WE MASTER">WHAT WE MASTER</h2>
+            <div class="mastery-grid">
+                <div class="mastery-item" data-mastery="art-direction"><h3 class="mastery-title" data-text="Art Direction">Art Direction</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="videography"><h3 class="mastery-title" data-text="Videography">Videography</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="web-development"><h3 class="mastery-title" data-text="Web Development">Web Development</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="graphic-design"><h3 class="mastery-title" data-text="Graphic Design">Graphic Design</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="mobile-development"><h3 class="mastery-title" data-text="Mobile Development">Mobile Development</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="motion-design"><h3 class="mastery-title" data-text="Motion Design">Motion Design</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="strategy"><h3 class="mastery-title" data-text="Strategy">Strategy</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="creative-direction"><h3 class="mastery-title" data-text="Creative Direction">Creative Direction</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="interior-design"><h3 class="mastery-title" data-text="Interior Design">Interior Design</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="web-design"><h3 class="mastery-title" data-text="Web Design">Web Design</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="3d-modelling"><h3 class="mastery-title" data-text="3D Modelling">3D Modelling</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="virtual-photography"><h3 class="mastery-title" data-text="Virtual Photography">Virtual Photography</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="architectural-visualisation"><h3 class="mastery-title" data-text="Architectural Visualisation">Architectural Visualisation</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="social-media-management"><h3 class="mastery-title" data-text="Social Media Management">Social Media Management</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="photography"><h3 class="mastery-title" data-text="Photography">Photography</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
+                <div class="mastery-item" data-mastery="video-editing"><h3 class="mastery-title" data-text="Video Editing">Video Editing</h3><div class="mastery-hover-images"><div class="h-img h-img-1 placeholder"></div><div class="h-img h-img-2 placeholder"></div><div class="h-img h-img-3 placeholder"></div></div></div>
             </div>
-            <p class="discipline-note">Our reach is dictated by the mastery of our collective. If we don't have the
-                match for a brief, we say so.</p>
         </section>
 
         <!-- CTA Strip -->
@@ -200,7 +248,7 @@
 
         <!-- The Four Pillars -->
         <section class="content-section" aria-labelledby="creatives-pillars-heading">
-            <h2 class="section-label" id="creatives-pillars-heading">THE FOUR PILLARS</h2>
+            <h2 class="section-label" id="creatives-pillars-heading" data-text="THE FOUR PILLARS">THE FOUR PILLARS</h2>
             <div class="card-grid four-col">
                 <article class="info-card" id="creatives-card-freedom">
                     <span class="card-num pillar-num">01</span>
@@ -231,7 +279,7 @@
 
         <!-- Who We're Looking For -->
         <section class="content-section" aria-labelledby="creatives-criteria-heading">
-            <h2 class="section-label" id="creatives-criteria-heading">THE HONEST CRITERIA</h2>
+            <h2 class="section-label" id="creatives-criteria-heading" data-text="THE HONEST CRITERIA">THE HONEST CRITERIA</h2>
             <div class="prose-block" id="creatives-criteria-text">
                 <p>Your portfolio gets you in the door. Your workflow keeps you here.</p>
                 <p>We build project teams fast and hand files between partners constantly. That means clean layers,
@@ -243,7 +291,7 @@
 
         <!-- The Economics -->
         <section class="content-section" aria-labelledby="creatives-economics-heading">
-            <h2 class="section-label" id="creatives-economics-heading">WHAT YOU EARN</h2>
+            <h2 class="section-label" id="creatives-economics-heading" data-text="WHAT YOU EARN">WHAT YOU EARN</h2>
             <div class="mono-block" id="creatives-economics-block">
                 <p class="mono-block-title">HOW YOUR RATE IS SET</p>
                 <div class="mono-block-rule"></div>
