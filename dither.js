@@ -31,9 +31,9 @@ const DitherBG = (() => {
   const STAMP_SIZE = 20.0;  // symbol size within each cell (≤ CELL_SIZE)
   const CURSOR_VOID_PX = 70.0;      // inner void radius — fully clear (px)
   const CURSOR_VOID_FALLOFF = 140.0; // falloff width beyond void — symbols fade in over this (px)
-  const HERO_VOID_PX = -20.0;        // inset from text rect (negative = tighter, positive = expand)
-  const HERO_VOID_FALLOFF = 60.0;   // feather width outside ellipse — symbols fade in over this (px)
-  const HERO_VOID_X_SCALE = 0.5;    // 0–1: scales ellipse x-radius from text block half-width (lower = narrower oval)
+  const HERO_VOID_PX = -50.0;        // inset from text rect (negative = tighter, positive = expand)
+  const HERO_VOID_FALLOFF = 100.0;   // feather width outside ellipse — symbols fade in over this (px)
+  const HERO_VOID_X_SCALE = 0.85;    // 0–1: scales ellipse x-radius from text block half-width (lower = narrower oval)
   const WAVE_MOUSE_RADIUS = 0.5; // wave distortion radius (UV 0–1)
   const BIAS = 0.4;   // darkness bias — higher = fewer lit cells
   const PARALLAX_SPEED = 0.0002; // wave UV shift per scroll pixel — 0 = off, ~0.0003 = noticeable
