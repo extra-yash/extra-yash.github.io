@@ -59,8 +59,16 @@
   /* ─── HERO PADDING ─── tweak this to raise/lower hero text */
   --hero-padding-top: 60px;
 
-  /* ─── HERO FONT SIZE ─── clamp(min, fluid, max) — increase max to fit "CREATIVE COLLECTIVE." on one line */
+  /* ─── HERO FONT SIZE ─── clamp(min, fluid, max) — increase max to fit long headlines on one line */
   --hero-font-size: clamp(3.2rem, 9vw, 7.5rem);
+
+  /* ─── BODY & HERO-SUB FONT SIZES ─── */
+  --body-font-size: 21px;
+  /* base body text */
+  --hero-sub-font-size: clamp(1rem, 1.8vw, 1.3rem);
+  /* tagline under hero heading */
+  --hero-sub-max-width: 700px;
+  /* max width of hero sub text — increase to let it breathe wider */
 }
 
 /* ─── RESET ───────────────────────────────────────────────────── */
@@ -75,14 +83,14 @@
 
 /* ─── BODY & BACKGROUND ───────────────────────────────────────── */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: inherit;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: var(--body-font-size);
   line-height: 1.6;
   min-height: 100vh;
   padding: 20px;
@@ -293,9 +301,9 @@ main,
 }
 
 .hero-sub {
-  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  font-size: var(--hero-sub-font-size);
   color: var(--text-muted);
-  max-width: 560px;
+  max-width: var(--hero-sub-max-width);
   margin-bottom: 0;
   line-height: 1.5;
   text-align: center;

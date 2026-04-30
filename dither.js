@@ -24,11 +24,11 @@ const DitherBG = (() => {
 
   // ─── CONFIG ──────────────────────────────────────────────────────────────
   const WAVE_SPEED = 0.05;
-  const WAVE_FREQUENCY = 5.0;
-  const WAVE_AMPLITUDE = 0.5;
+  const WAVE_FREQUENCY = 3.0;
+  const WAVE_AMPLITUDE = 0.9;
   const COLOR_NUM = 3.0;   // tonal steps in the dither
-  const CELL_SIZE = 30.0;  // grid pitch in px — controls symbol density
-  const STAMP_SIZE = 16.0;  // symbol size within each cell (≤ CELL_SIZE)
+  const CELL_SIZE = 15.0;  // grid pitch in px — controls symbol density
+  const STAMP_SIZE = 20.0;  // symbol size within each cell (≤ CELL_SIZE)
   const CURSOR_VOID_PX = 70.0;      // inner void radius — fully clear (px)
   const CURSOR_VOID_FALLOFF = 140.0; // falloff width beyond void — symbols fade in over this (px)
   const HERO_VOID_PX = -20.0;        // inset from text rect (negative = tighter, positive = expand)
