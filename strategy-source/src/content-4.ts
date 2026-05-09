@@ -1,4 +1,4 @@
-export const contentPart4 = `
+export const contentCh08 = `
 # 08. Brand Voice & Tone
 **Status: ✓ COMPLETE**
 
@@ -47,7 +47,9 @@ These are the physical constraints of our communication.
 | Direct | Professional |
 
 ---
+`;
 
+export const contentCh09 = `
 # 09. Brand Architecture
 **Status: ✓ COMPLETE**
 
@@ -218,9 +220,11 @@ The Extra brand is always the frame. Client branding lives within the work itsel
 - When Extra is presented alongside other brands (event sponsors, award categories, press mentions), the Big Mark is used in its standard form. No custom lockups are created for temporary contexts.
 - For sustained, formal partnerships that require co-branding (e.g., a joint venture or long-term retainer with a major institution), a specific lockup may be developed. This is an exception approved by the Owner, not a default.
 
-### What This Means for Document 02
+### What This Means for Document 03
 
-The strategic decisions are settled here. Document 02 (Brand Identity Guidelines) will codify the technical execution—exact spacing rules, minimum sizes, color codes, file formats, and usage restrictions. The guidelines are the specification; this section is the strategic intent behind them.
+The strategic decisions are settled here. Document 03 (Visual Guidelines) will codify the technical execution—exact spacing rules, minimum sizes, color codes, file formats, and usage restrictions. The guidelines are the specification; this section is the strategic intent behind them.
 
 ---
 `;
+
+export const contentPart4 = contentCh08 + '\n\n' + contentCh09;
