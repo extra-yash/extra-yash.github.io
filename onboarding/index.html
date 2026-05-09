@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join the Collective — Extra Creative Collective</title>
+<meta name="description" content="Apply to become a partner of the Extra Creative Collective. Tell us who you are, what you master, and what you charge.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Texturina:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-display: 'Texturina', serif;
+  --font-body: 'Space Mono', monospace;
+  --color-bg: #1A1A2E;
+  --color-fg: #FFFFF0;
+  --color-accent: #9D00FF;
+  --color-accent-glow: rgba(157,0,255,0.25);
+  --color-muted: rgba(255,255,240,0.38);
+  --color-error: #FF2C00;
+  --color-card: #0f0f1e;
+  --color-border: #252540;
+  --color-border-active: rgba(157,0,255,0.6);
+  --color-success: #27E700;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-body); font-size: 16px; line-height: 1.6; min-height: 100vh; }
+body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0 24px 80px; }
+a { color: var(--color-accent); }
+input, textarea, button, select { font-family: inherit; font-size: inherit; }
+button { cursor: pointer; }
+
+/* PROGRESS BAR */
+#progress-bar-wrap {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(26,26,46,0.92); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border); padding: 14px 32px 12px;
+}
+#progress-bar-inner { max-width: 760px; margin: 0 auto; }
+#progress-track {
+  height: 3px; background: var(--color-border); border-radius: 99px;
+  overflow: hidden; margin-bottom: 10px;
+}
+#progress-fill {
+  height: 100%; background: var(--color-accent); border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+#progress-labels { display: flex; justify-content: space-between; gap: 4px; }
+.prog-label {
+  font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--color-muted); transition: color 0.3s; flex: 1; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.prog-label.active { color: var(--color-accent); }
+.prog-label.done { color: var(--color-fg); opacity: 0.55; }
+
+/* MAIN SHELL */
+#form-shell {
+  width: 100%; max-width: 760px; margin-top: 96px;
+}
+#confirmation-screen {
+  display: none; width: 100%; max-width: 760px; margin-top: 96px;
+  min-height: 80vh; align-items: center; justify-content: center;
+  flex-direction: column; text-align: center; gap: 32px;
+}
+#confirmation-screen.visible { display: flex; }
+
+/* STAGE */
+.stage { display: none; animation: stageIn 0.32s ease forwards; }
+.stage.active { display: block; }
+@keyframes stageIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stage-header { margin: 48px 0 40px; }
+.stage-kicker {
+  font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--color-accent); margin-bottom: 10px;
+}
+.stage-title {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(2.2rem, 6vw, 3.4rem); line-height: 1.05;
+  color: var(--color-fg); margin-bottom: 12px;
+}
+.stage-sub {
+  font-size: 0.82rem; color: var(--color-muted); line-height: 1.7; max-width: 540px;
+}
+
+/* FIELDS */
+.field-group { margin-bottom: 28px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.field-label {
+  display: block; font-size: 0.68rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--color-muted); margin-bottom: 8px;
+}
+.field-label span { color: var(--color-accent); margin-left: 2px; }
+.field-input {
+  width: 100%; min-height: 56px; background: var(--color-card);
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  color: var(--color-fg); padding: 0 16px; font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+}
+.field-input:focus {
+  border-color: var(--color-border-active);
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+.field-input.error { border-color: var(--color-error); }
+textarea.field-input { padding: 14px 16px; min-height: 120px; resize: vertical; line-height: 1.6; }
+.field-error {
+  font-size: 0.7rem; color: var(--color-error); margin-top: 6px;
+  display: none; letter-spacing: 0.04em;
+}
+.field-error.visible { display: block; }
+.field-hint { font-size: 0.72rem; color: var(--color-muted); margin-top: 6px; line-height: 1.5; }
+
+/* CHECKBOX / ALIAS */
+.checkbox-wrap { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.checkbox-wrap input[type=checkbox] { display: none; }
+.checkbox-custom {
+  width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;
+  border: 1px solid var(--color-border); border-radius: 4px;
+  background: var(--color-card); display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.checkbox-wrap input:checked + .checkbox-custom {
+  background: var(--color-accent); border-color: var(--color-accent);
+}
+.checkbox-custom::after { content: '✓'; color: #fff; font-size: 12px; opacity: 0; transition: opacity 0.15s; }
+.checkbox-wrap input:checked + .checkbox-custom::after { opacity: 1; }
+.checkbox-label { font-size: 0.85rem; color: var(--color-fg); display: flex; align-items: center; gap: 8px; }
+
+.collapsible { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
+.collapsible.open { max-height: 400px; }
+
+/* TOOLTIP */
+.tooltip-wrap { position: relative; display: inline-flex; }
+.tooltip-icon {
+  width: 18px; height: 18px; border: 1px solid var(--color-muted);
+  border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; color: var(--color-muted); cursor: help;
+}
+.tooltip-box {
+  display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%); width: 280px; background: #1e1e38;
+  border: 1px solid var(--color-border); border-radius: var(--radius-xs);
+  padding: 12px 14px; font-size: 0.73rem; color: var(--color-fg);
+  line-height: 1.6; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.tooltip-wrap:hover .tooltip-box,
+.tooltip-icon:focus + .tooltip-box { display: block; }
+
+/* SEARCHABLE DROPDOWN */
+.dropdown-wrap { position: relative; }
+.dropdown-list {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 40;
+  background: #1e1e38; border: 1px solid var(--color-border-active);
+  border-radius: var(--radius-sm); max-height: 260px; overflow-y: auto;
+  display: none; box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+}
+.dropdown-list.open { display: block; }
+.dropdown-list::-webkit-scrollbar { width: 4px; }
+.dropdown-list::-webkit-scrollbar-track { background: transparent; }
+.dropdown-list::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 99px; }
+.dd-group-header {
+  font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--color-accent); padding: 10px 14px 4px; pointer-events: none;
+  border-top: 1px solid var(--color-border); margin-top: 4px;
+}
+.dd-group-header:first-child { border-top: none; margin-top: 0; }
+.dd-option {
+  padding: 10px 14px; font-size: 0.85rem; color: var(--color-fg);
+  cursor: pointer; transition: background 0.15s;
+}
+.dd-option:hover, .dd-option.focused { background: rgba(157,0,255,0.15); }
+.dd-divider { height: 1px; background: var(--color-border); margin: 4px 0; }
+.dd-no-results { padding: 12px 14px; font-size: 0.8rem; color: var(--color-muted); }
+
+/* CHIPS */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.chip {
+  border: 1px solid var(--color-border); border-radius: 99px;
+  padding: 8px 16px; font-size: 0.78rem; font-family: var(--font-body);
+  color: var(--color-muted); background: var(--color-card);
+  cursor: pointer; transition: all 0.15s; line-height: 1;
+}
+.chip:hover { border-color: var(--color-accent); color: var(--color-fg); }
+.chip[aria-pressed=true], .chip.selected {
+  background: rgba(157,0,255,0.18); border-color: var(--color-accent);
+  color: var(--color-fg); box-shadow: 0 0 0 1px var(--color-accent);
+}
+.chip.radio[aria-pressed=true] {
+  background: var(--color-accent); color: #fff;
+  box-shadow: 0 0 12px var(--color-accent-glow);
+}
+.chip.disabled { opacity: 0.35; pointer-events: none; }
+.chip-removable {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--color-accent); background: rgba(157,0,255,0.14);
+  border-radius: 99px; padding: 6px 12px; font-size: 0.75rem;
+  color: var(--color-fg); font-family: var(--font-body);
+}
+.chip-remove-btn {
+  background: none; border: none; color: var(--color-muted);
+  font-size: 0.75rem; padding: 0 0 0 2px; line-height: 1;
+  transition: color 0.15s; cursor: pointer;
+}
+.chip-remove-btn:hover { color: var(--color-error); }
+.selected-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 0; }
+.cap-counter { font-size: 0.72rem; color: var(--color-muted); margin-top: 8px; }
+.cap-counter.at-limit { color: var(--color-error); }
+
+/* SECTOR GRID */
+.sector-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.sector-chip {
+  border: 1px solid var(--color-border); border-radius: var(--radius-xs);
+  padding: 10px 12px; font-size: 0.72rem; font-family: var(--font-body);
+  color: var(--color-muted); background: var(--color-card);
+  cursor: pointer; transition: all 0.15s; text-align: center; line-height: 1.3;
+}
+.sector-chip:hover { border-color: var(--color-accent); color: var(--color-fg); }
+.sector-chip[aria-pressed=true] {
+  background: rgba(157,0,255,0.18); border-color: var(--color-accent);
+  color: var(--color-fg); box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+/* RATE CARD */
+.rate-framing {
+  border: 1px solid var(--color-border-active); border-radius: var(--radius);
+  padding: 24px 28px; margin-bottom: 32px;
+  background: rgba(157,0,255,0.05);
+}
+.rate-framing-title {
+  font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--color-accent); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.rate-framing p { font-size: 0.82rem; color: var(--color-muted); line-height: 1.7; }
+.rate-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.rate-row {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--color-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); padding: 14px 18px;
+  transition: border-color 0.2s;
+}
+.rate-row:focus-within { border-color: var(--color-border-active); }
+.rate-role { flex: 1; font-size: 0.82rem; color: var(--color-fg); }
+.rate-currency-badge {
+  font-size: 0.72rem; color: var(--color-muted); padding: 2px 8px;
+  border: 1px solid var(--color-border); border-radius: 4px;
+}
+.rate-input {
+  width: 130px; background: transparent; border: none; border-bottom: 1px solid var(--color-border);
+  color: var(--color-fg); font-family: var(--font-body); font-size: 0.9rem;
+  padding: 4px 0; text-align: right; outline: none; transition: border-color 0.2s;
+}
+.rate-input:focus { border-bottom-color: var(--color-accent); }
+.rate-input::placeholder { color: var(--color-muted); }
+.rate-input.has-value::placeholder { color: transparent; }
+.currency-toggle-wrap { display: flex; align-items: center; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+.currency-toggle-label { font-size: 0.72rem; color: var(--color-muted); }
+.toggle-switch { display: flex; border: 1px solid var(--color-border); border-radius: 99px; overflow: hidden; }
+.toggle-opt {
+  padding: 6px 16px; font-size: 0.72rem; font-family: var(--font-body);
+  background: transparent; border: none; color: var(--color-muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.toggle-opt.active { background: var(--color-accent); color: #fff; }
+
+/* INFO CARD */
+.info-card {
+  background: rgba(157,0,255,0.05); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 24px 28px; margin-bottom: 32px;
+}
+
+/* REVIEW */
+.review-section { margin-bottom: 32px; }
+.review-section-title {
+  font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--color-accent); padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border); margin-bottom: 16px;
+}
+.review-field { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(37,37,64,0.6); }
+.review-field:last-child { border-bottom: none; }
+.review-field-left { flex: 1; }
+.review-label { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 4px; }
+.review-value { font-size: 0.9rem; color: var(--color-fg); line-height: 1.5; }
+.review-value.empty { color: var(--color-muted); font-style: italic; }
+.review-edit-btn {
+  background: none; border: none; color: var(--color-muted);
+  font-size: 0.8rem; padding: 4px; transition: color 0.15s; flex-shrink: 0; margin-top: 2px;
+}
+.review-edit-btn:hover { color: var(--color-accent); }
+.inline-edit-wrap { margin-top: 8px; display: none; }
+.inline-edit-wrap.open { display: flex; gap: 8px; align-items: center; }
+.inline-edit-input {
+  flex: 1; background: var(--color-card); border: 1px solid var(--color-accent);
+  border-radius: var(--radius-xs); color: var(--color-fg);
+  padding: 8px 12px; font-size: 0.85rem; outline: none;
+}
+.inline-confirm-btn {
+  background: var(--color-accent); border: none; border-radius: var(--radius-xs);
+  color: #fff; padding: 8px 14px; font-size: 0.78rem; transition: opacity 0.15s;
+}
+.inline-confirm-btn:hover { opacity: 0.85; }
+
+/* NAVIGATION BUTTONS */
+.stage-nav { display: flex; gap: 16px; align-items: center; margin-top: 48px; padding-bottom: 40px; }
+.btn-back {
+  background: none; border: 1px solid var(--color-border); border-radius: 99px;
+  color: var(--color-muted); padding: 14px 28px; font-family: var(--font-body);
+  font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+  transition: all 0.2s;
+}
+.btn-back:hover { border-color: var(--color-fg); color: var(--color-fg); }
+.btn-continue {
+  flex: 1; background: var(--color-accent); border: none; border-radius: 99px;
+  color: #fff; padding: 16px 32px; font-family: var(--font-body);
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: all 0.2s; box-shadow: 0 0 24px var(--color-accent-glow);
+}
+.btn-continue:hover { transform: translateY(-2px); box-shadow: 0 4px 32px var(--color-accent-glow); }
+.btn-continue:disabled { opacity: 0.45; transform: none; cursor: not-allowed; box-shadow: none; }
+.btn-submit {
+  flex: 1; background: var(--color-success); border: none; border-radius: 99px;
+  color: #000; padding: 16px 32px; font-family: var(--font-body);
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: all 0.2s; box-shadow: 0 0 24px rgba(39,231,0,0.25);
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 32px rgba(39,231,0,0.35); }
+.btn-submit:disabled { opacity: 0.45; transform: none; cursor: not-allowed; box-shadow: none; }
+.submit-error { font-size: 0.78rem; color: var(--color-error); margin-top: 12px; display: none; }
+.submit-error.visible { display: block; }
+
+/* CONFIRMATION */
+.confirm-logo { margin-bottom: 24px; }
+.confirm-title {
+  font-family: var(--font-display); font-weight: 900; font-size: clamp(2rem,5vw,3rem);
+  color: var(--color-fg); margin-bottom: 20px;
+}
+.confirm-body { font-size: 1rem; color: var(--color-muted); max-width: 480px; line-height: 1.8; }
+.confirm-accent { color: var(--color-success); }
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  body { padding: 0 16px 60px; }
+  #progress-bar-wrap { padding: 12px 16px 10px; }
+  .prog-label { display: none; }
+  .prog-label.active { display: block; font-size: 0.62rem; }
+  #progress-labels { justify-content: center; }
+  .field-row { grid-template-columns: 1fr; }
+  .sector-grid { grid-template-columns: repeat(2, 1fr); }
+  .stage-nav { flex-direction: column; }
+  .btn-back, .btn-continue, .btn-submit { width: 100%; }
+  .rate-row { flex-wrap: wrap; }
+  .rate-input { width: 100%; text-align: left; }
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .sector-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div id="progress-bar-wrap" role="progressbar" aria-label="Onboarding progress">
+  <div id="progress-bar-inner">
+    <div id="progress-track"><div id="progress-fill" style="width:14.28%"></div></div>
+    <div id="progress-labels">
+      <span class="prog-label active" data-stage="1">Identity</span>
+      <span class="prog-label" data-stage="2">Mastery</span>
+      <span class="prog-label" data-stage="3">Capabilities</span>
+      <span class="prog-label" data-stage="4">Sectors</span>
+      <span class="prog-label" data-stage="5">Rates</span>
+      <span class="prog-label" data-stage="6">Preferences</span>
+      <span class="prog-label" data-stage="7">Review</span>
+    </div>
+  </div>
+</div>
+
+<!-- FORM SHELL -->
+<div id="form-shell">
+
+<!-- STAGE 1 — IDENTITY -->
+<section class="stage active" id="stage-1" aria-label="Stage 1: Identity">
+  <div class="stage-header">
+    <div class="stage-kicker">Stage 1 of 7</div>
+    <h1 class="stage-title">Who are you?</h1>
+    <p class="stage-sub">Let's start with the basics. This is how you'll appear in the Extra system.</p>
+  </div>
+  <div class="field-row">
+    <div class="field-group">
+      <label class="field-label" for="first-name">First Name <span>*</span></label>
+      <input class="field-input" type="text" id="first-name" name="firstName" autocomplete="given-name" placeholder="Ada">
+      <div class="field-error" id="err-first-name">Required.</div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="last-name">Last Name <span>*</span></label>
+      <input class="field-input" type="text" id="last-name" name="lastName" autocomplete="family-name" placeholder="Lovelace">
+      <div class="field-error" id="err-last-name">Required.</div>
+    </div>
+  </div>
+  <div class="field-group">
+    <label class="field-label" for="email">Email Address <span>*</span></label>
+    <input class="field-input" type="email" id="email" name="email" autocomplete="email" placeholder="ada@studio.com">
+    <div class="field-error" id="err-email">A valid email address is required.</div>
+  </div>
+  <div class="field-group">
+    <label class="field-label" for="phone">Phone Number</label>
+    <input class="field-input" type="tel" id="phone" name="phone" autocomplete="tel" placeholder="+230 5 XXX XXXX">
+    <div class="field-error" id="err-phone">Enter a valid phone number.</div>
+  </div>
+  <div class="field-group">
+    <label class="field-label" for="country-input">Country / Jurisdiction <span>*</span></label>
+    <div class="dropdown-wrap" id="country-wrap">
+      <input class="field-input" type="text" id="country-input" autocomplete="off" placeholder="Search countries..." aria-autocomplete="list" aria-controls="country-list">
+      <div class="dropdown-list" id="country-list" role="listbox"></div>
+    </div>
+    <div class="field-error" id="err-country">Select a country from the list.</div>
+  </div>
+  <div class="field-group">
+    <label class="checkbox-wrap" id="alias-checkbox-label">
+      <input type="checkbox" id="alias-checkbox" aria-describedby="alias-tooltip">
+      <span class="checkbox-custom"></span>
+      <span class="checkbox-label">
+        I require an alias
+        <span class="tooltip-wrap">
+          <button class="tooltip-icon" type="button" aria-describedby="alias-tooltip-box" tabindex="0">?</button>
+          <span class="tooltip-box" id="alias-tooltip-box" role="tooltip">An alias is a persistent pseudonym used in place of your real name across all project communications, file credits, and internal documentation. Available to partners who require anonymity due to existing employment agreements or personal preference.</span>
+        </span>
+      </span>
+    </label>
+    <div class="collapsible" id="alias-collapsible">
+      <div style="height:12px"></div>
+      <label class="field-label" for="alias-input">Alias <span>*</span></label>
+      <input class="field-input" type="text" id="alias-input" placeholder="e.g. Studio Noir">
+      <div class="field-error" id="err-alias">Alias required when selected.</div>
+    </div>
+  </div>
+  <div class="stage-nav">
+    <button class="btn-continue" id="btn-1">Continue →</button>
+  </div>
+</section>
+
+<!-- STAGE 2 — PRIMARY MASTERY -->
+<section class="stage" id="stage-2" aria-label="Stage 2: Primary Mastery">
+  <div class="stage-header">
+    <div class="stage-kicker">Stage 2 of 7</div>
+    <h2 class="stage-title">Your Primary Mastery</h2>
+    <p class="stage-sub">What is your primary discipline? Select the role that best defines your mastery.</p>
+  </div>
+  <div class="field-group">
+    <label class="field-label" for="mastery-input">Primary Role <span>*</span></label>
+    <div class="dropdown-wrap" id="mastery-wrap">
+      <input class="field-input" type="text" id="mastery-input" autocomplete="off" placeholder="Search roles..." aria-autocomplete="list" aria-controls="mastery-list">
+      <div class="dropdown-list" id="mastery-list" role="listbox"></div>
+    </div>
+    <div class="field-error" id="err-mastery">Select a role from the list.</div>
+  </div>
+  <div class="collapsible" id="spec-collapsible">
+    <div class="field-group" id="spec-chips-wrap" style="display:none">
+      <label class="field-label">Specialisations</label>
+      <div class="chip-grid" id="spec-chips"></div>
+    </div>
+    <div class="field-group" style="margin-top:16px">
+      <label class="field-label" for="spec-other">Specialisation Notes</label>
+      <input class="field-input" type="text" id="spec-other" placeholder="Anything else to note about your specialisation?">
+    </div>
+  </div>
+  <div class="stage-nav">
+    <button class="btn-back" id="back-2">← Back</button>
+    <button class="btn-continue" id="btn-2">Continue →</button>
+  </div>
+</section>
+
+<!-- STAGE 3 — SECONDARY CAPABILITIES -->
+<section class="stage" id="stage-3" aria-label="Stage 3: Secondary Capabilities">
+  <div class="stage-header">
+    <div class="stage-kicker">Stage 3 of 7</div>
+    <h2 class="stage-title">Secondary Capabilities</h2>
+    <p class="stage-sub">What else can you do? Select up to 5 additional roles beyond your primary mastery.</p>
+  </div>
+  <div class="field-group">
+    <div class="selected-chips" id="secondary-selected"></div>
+    <label class="field-label" for="secondary-input">Add Roles</label>
+    <div class="dropdown-wrap" id="secondary-wrap">
+      <input class="field-input" type="text" id="secondary-input" autocomplete="off" placeholder="Search roles..." aria-autocomplete="list" aria-controls="secondary-list">
+      <div class="dropdown-list" id="secondary-list" role="listbox"></div>
+    </div>
+    <div class="cap-counter" id="secondary-counter">0 / 5 selected</div>
+  </div>
+  <div class="field-group">
+    <label class="field-label" for="secondary-other">Anything else?</label>
+    <input class="field-input" type="text" id="secondary-other" placeholder="Other capabilities not listed...">
+  </div>
+  <div class="stage-nav">
+    <button class="btn-back" id="back-3">← Back</button>
+    <button class="btn-continue" id="btn-3">Continue →</button>
+  </div>
+</section>
+
+<!-- STAGE 4 — SECTOR EXPERIENCE -->
+<section class="stage" id="stage-4" aria-label="Stage 4: Sector Experience">
+  <div class="stage-header">
+    <div class="stage-kicker">Stage 4 of 7</div>
+    <h2 class="stage-title">Sector Experience</h2>
+    <p class="stage-sub">Which sectors have you worked in? Select all that apply. Minimum one required.</p>
+  </div>
+  <div class="field-group">
+    <div class="sector-grid" id="sector-grid"></div>
+    <div class="field-error" id="err-sector" style="margin-top:10px">Select at least one sector.</div>
+  </div>
+  <div class="field-group" style="margin-top:20px">
+    <label class="field-label" for="sector-other">Any other sectors?</label>
+    <input class="field-input" type="text" id="sector-other" placeholder="e.g. Maritime, Diaspora Media...">
+  </div>
+  <div class="stage-nav">
+    <button class="btn-back" id="back-4">← Back</button>
+    <button class="btn-continue" id="btn-4">Continue →</button>
+  </div>
+</section>
+
+<!-- STAGE 5 — RATE CARD -->
+<section class="stage" id="stage-5" aria-label="Stage 5: Rate Card">
+  <div class="stage-header">
+    <div class="stage-kicker">Stage 5 of 7</div>
+    <h2 class="stage-title">Your Rate Card</h2>
+  </div>
+  <div class="rate-framing">
+    <div class="rate-framing-title">
+      Daily Output Rate
+      <span class="tooltip-wrap">
+        <button class="tooltip-icon" type="button">?</button>
+        <span class="tooltip-box" role="tooltip">Start with your monthly income target. Divide by the number of days per month you realistically dedicate to this type of work. That's your Daily Output Rate. Factor in your experience level, the complexity of work you typically handle, and what you'd charge a direct client today.</span>
+      </span>
+    </div>
+    <p>Your Daily Output Rate is not your take-home figure — it's the baseline we use to build your quote. A formula applied to your rate accounts for the complexity, context, and scale of each brief. What you earn per project will typically exceed your stated rate.</p>
+  </div>
+  <div class="currency-toggle-wrap" style="margin-bottom:20px">
+    <span class="currency-toggle-label">Currency:</span>
+    <div class="toggle-switch">
+      <button class="toggle-opt active" id="toggle-mur" type="button">MUR</button>
+      <button class="toggle-opt" id="toggle-usd" type="button">USD</button>
+    </div>
+  </div>
+  <div class="rate-list" id="rate-list"></div>
+  <div class="field-error" id="err-rates">All rate fields must have a value greater than 0.</div>
+  <div class="stage-nav">
+    <button class="btn-back" id="back-5">← Back</button>
+    <button class="btn-continue" id="btn-5">Continue →</button>
+  </div>
+</section>
+
+<!-- STAGE 6 — PREFERENCES -->
+<section class="stage" id="stage-6" aria-label="Stage 6: Preferences">
+  <div class="stage-header">
+    <div class="stage-kicker">Stage 6 of 7</div>
+    <h2 class="stage-title">How you work.</h2>
+    <p class="stage-sub">These preferences help us match you to the right briefs.</p>
+  </div>
+  <div class="field-group">
+    <label class="field-label">Preferred Project Duration <span>*</span></label>
+    <div class="chip-grid" id="duration-chips">
+      <button class="chip" type="button" aria-pressed="false" data-value="days">Quick turnarounds — days to 1 week</button>
+      <button class="chip" type="button" aria-pressed="false" data-value="weeks">Short projects — 1 to 4 weeks</button>
+      <button class="chip" type="button" aria-pressed="false" data-value="months">Medium projects — 1 to 3 months</button>
+      <button class="chip" type="button" aria-pressed="false" data-value="longterm">Long term — 3 months and beyond</button>
+      <button class="chip" type="button" aria-pressed="false" data-value="no-pref-duration">No preference</button>
+    </div>
+    <div class="field-error" id="err-duration">Select at least one option.</div>
+  </div>
+  <div class="field-group" style="margin-top:32px">
+    <label class="field-label">Preferred Brief Complexity <span>*</span></label>
+    <div class="chip-grid" id="complexity-chips">
+      <button class="chip radio" type="button" aria-pressed="false" data-value="single">Single discipline, focused scope</button>
+      <button class="chip radio" type="button" aria-pressed="false" data-value="multi">Multi-discipline, collaborative</button>
+      <button class="chip radio" type="button" aria-pressed="false" data-value="no-pref-complex">No preference</button>
+    </div>
+    <div class="field-error" id="err-complexity">Select one option.</div>
+  </div>
+  <div class="field-group" style="margin-top:32px">
+    <label class="field-label" for="notes-input">Anything else we should know?</label>
+    <textarea class="field-input" id="notes-input" placeholder="Working style, availability notes, tools you swear by..."></textarea>
+  </div>
+  <div class="stage-nav">
+    <button class="btn-back" id="back-6">← Back</button>
+    <button class="btn-continue" id="btn-6">Continue →</button>
+  </div>
+</section>
+
+<!-- STAGE 7 — REVIEW -->
+<section class="stage" id="stage-7" aria-label="Stage 7: Review and Submit">
+  <div class="stage-header">
+    <div class="stage-kicker">Stage 7 of 7</div>
+    <h2 class="stage-title">Does everything look right?</h2>
+    <p class="stage-sub">Review your profile before submitting. Click any pencil icon to edit inline.</p>
+  </div>
+  <div id="review-content"></div>
+  <div class="stage-nav" style="flex-direction:column;gap:12px">
+    <button class="btn-submit" id="btn-submit" type="button">Submit &amp; Sign Agreement</button>
+    <div class="submit-error" id="submit-error">Something went wrong. Please try again or contact hello@extracollective.com</div>
+    <button class="btn-back" id="back-7" style="text-align:center">← Back to Preferences</button>
+  </div>
+</section>
+
+</div><!-- /form-shell -->
+
+<!-- CONFIRMATION -->
+<div id="confirmation-screen" role="main" aria-label="Application submitted">
+  <div class="confirm-logo">
+    <img src="../assets/EXTRA LOGO LIGHT.svg" alt="Extra Collective" height="32">
+  </div>
+  <h1 class="confirm-title">You're in.</h1>
+  <p class="confirm-body">
+    Your profile has been received.<br>
+    Check your inbox — your Partner Agreement is on its way and needs your signature to complete your onboarding.<br><br>
+    <span class="confirm-accent">Welcome to Extra.</span>
+  </p>
+</div>
+<script>
+const CONFIG = {
+  GOOGLE_SCRIPT_URL: 'REPLACE_WITH_YOUR_GOOGLE_SCRIPT_URL'
+};
+
+const COUNTRIES_PRIORITY = ['Mauritius','Réunion','Madagascar','South Africa','France','United Kingdom','United States'];
+const COUNTRIES_ALL = ['Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil','Brunei','Bulgaria','Burkina Faso','Burundi','Cabo Verde','Cambodia','Cameroon','Canada','Central African Republic','Chad','Chile','China','Colombia','Comoros','Congo','Costa Rica','Croatia','Cuba','Cyprus','Czech Republic','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea','Estonia','Eswatini','Ethiopia','Fiji','Finland','Gabon','Gambia','Georgia','Germany','Ghana','Greece','Grenada','Guatemala','Guinea','Guinea-Bissau','Guyana','Haiti','Honduras','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kiribati','Kuwait','Kyrgyzstan','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Marshall Islands','Mauritania','Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia','Montenegro','Morocco','Mozambique','Myanmar','Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Korea','North Macedonia','Norway','Oman','Pakistan','Palau','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Rwanda','Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines','Samoa','San Marino','Sao Tome and Principe','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands','Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan','Suriname','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor-Leste','Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Vanuatu','Vatican City','Venezuela','Vietnam','Yemen','Zambia','Zimbabwe','Réunion','Martinique','Guadeloupe','French Polynesia','New Caledonia','Mayotte'];
+
+const ROLES = {
+  'Strategy & Direction': ['Creative Director','Brand Strategist','Campaign Director','UX/UI Director','Art Director','Content Strategist'],
+  'Design': ['UX Designer','Environmental/Spatial Designer','UI Designer','UX Researcher','Interaction Designer','Motion Designer','Brand Identity Designer','Signage & Wayfinding Designer','Retail & Exhibition Designer','Typographer','Packaging Designer','Illustrator','Infographic Designer','Graphic Designer','Publication Designer','Editorial Designer','Presentation Designer','Icon Designer'],
+  'Production — Photo & Video': ['Videographer/Cinematographer','Colorist','Photographer','Sound Designer','Audio Engineer','Video Editor','Retoucher/Compositor','Scriptwriter','Voiceover Artist'],
+  'Production — Animation & 3D': ['AR/VR Developer','VFX Artist','3D Animator','Architectural Visualiser','3D Generalist','3D Product Modeler','2D Animator','Character Designer','Storyboard Artist'],
+  'Digital & Technology': ['Full Stack Developer','iOS Developer','Android Developer','Back End Developer','Front End Developer','Digital Analyst','CMS Specialist','SEO Specialist'],
+  'Content & Copy': ['Copywriter','Social Media Manager','Translator/Localisation Specialist'],
+  'Account & Project Management': ['Producer','Project Manager','Account Manager','Client Liaison','Traffic Manager'],
+  'Event Management': ['Event Director','Event Producer','Experiential Designer','Set Designer','Lighting Designer','Event Coordinator','AV Technician']
+};
+
+const SPECIALISATIONS = {
+  'Copywriter': ['English','French','Kreol','Arabic','Mandarin','Long Form','Short Form / Social','Technical','Script','SEO Copy'],
+  'Translator/Localisation Specialist': ['English → French','English → Kreol','French → English','French → Kreol','Kreol → English','Kreol → French'],
+  'Photographer': ['Portrait','Product','Architecture/Interior','Fashion/Editorial','Event','Food & Beverage','Landscape/Travel','Documentary/Reportage','Aerial/Drone'],
+  'Videographer/Cinematographer': ['Commercial','Documentary','Fashion/Editorial','Event','Corporate','Music Video','Aerial/Drone','Social/Short Form'],
+  'Illustrator': ['Digital','Hand-drawn','Character','Editorial','Technical/Infographic',"Children's",'Fashion'],
+  'Motion Designer': ['2D Motion','3D Motion','Title Sequences','Social/Short Form','Broadcast','Interactive'],
+  'Social Media Manager': ['Instagram','LinkedIn','TikTok','Facebook','X/Twitter','YouTube','Pinterest'],
+  'Brand Strategist': ['Corporate','Retail','NGO/Non-profit','Hospitality','F&B','Real Estate','Tech','Fashion'],
+  'Event Director': ['Corporate Events','Brand Activations','Experiential','Conferences','Product Launches','Cultural/Arts Events'],
+  'Event Producer': ['Corporate Events','Brand Activations','Experiential','Conferences','Product Launches','Cultural/Arts Events'],
+  'Front End Developer': ['React','Vue','Angular','Webflow','Framer','WordPress','Shopify'],
+  'Back End Developer': ['Node.js','Python','PHP','Ruby','Java','Database Architecture'],
+  'Full Stack Developer': ['React','Vue','Angular','Node.js','Python','PHP','WordPress','Shopify'],
+  'UX Researcher': ['Quantitative','Qualitative','Usability Testing','Information Architecture']
+};
+
+const SECTORS = ['Agriculture','Architecture & Interior Design','Automotive','Education','Energy & Sustainability','Entertainment & Media','Fashion & Luxury','Financial Services','FMCG','Food & Beverage','Government & Public Sector','Healthcare & Wellness','Hospitality','Music & Performing Arts','NGO & Non-Profit','Real Estate & Property','Retail','Sports & Recreation','Technology & SaaS','Travel & Tourism'];
+
+const MEDIAN_DOR = {
+  'Creative Director':20000,'Brand Strategist':18000,'Campaign Director':18000,'UX/UI Director':18000,'Art Director':15000,'Content Strategist':13000,
+  'UX Designer':14000,'Environmental/Spatial Designer':13000,'UI Designer':13000,'UX Researcher':13000,'Interaction Designer':13000,'Motion Designer':13000,'Brand Identity Designer':11000,'Signage & Wayfinding Designer':11000,'Retail & Exhibition Designer':11000,'Typographer':9500,'Packaging Designer':9500,'Illustrator':10000,'Infographic Designer':8000,'Graphic Designer':8000,'Publication Designer':8000,'Editorial Designer':8000,'Presentation Designer':8000,'Icon Designer':7000,
+  'Videographer/Cinematographer':15000,'Colorist':13000,'Photographer':13000,'Sound Designer':11000,'Audio Engineer':11000,'Video Editor':10000,'Retoucher/Compositor':10000,'Scriptwriter':10000,'Voiceover Artist':8000,
+  'AR/VR Developer':18000,'VFX Artist':16000,'3D Animator':16000,'Architectural Visualiser':14000,'3D Generalist':14000,'3D Product Modeler':13000,'2D Animator':13000,'Character Designer':13000,'Storyboard Artist':11000,
+  'Full Stack Developer':18000,'iOS Developer':18000,'Android Developer':17000,'Back End Developer':17000,'Front End Developer':15000,'Digital Analyst':13000,'CMS Specialist':11000,'SEO Specialist':10000,
+  'Copywriter':10000,'Social Media Manager':8000,'Translator/Localisation Specialist':8000,
+  'Producer':14000,'Project Manager':13000,'Account Manager':11000,'Client Liaison':10000,'Traffic Manager':9000,
+  'Event Director':16000,'Event Producer':13000,'Experiential Designer':13000,'Set Designer':13000,'Lighting Designer':11000,'Event Coordinator':9000,'AV Technician':9000
+};
+
+const MUR_TO_USD = 46;
+
+const ALL_ROLES_FLAT = Object.values(ROLES).flat();
+
+const formState = {
+  firstName:'',lastName:'',email:'',phone:'',country:'',requiresAlias:false,alias:'',
+  primaryMastery:'',primarySpecialisations:[],primarySpecialisationsOther:'',
+  secondaryCapabilities:[],secondaryCapabilitiesOther:'',
+  sectorExperience:[],sectorExperienceOther:'',
+  rates:[],rateCurrency:'MUR',
+  preferredDuration:[],preferredComplexity:'',additionalNotes:''
+};
+
+let currentStage = 1;
+const TOTAL_STAGES = 7;
+</script>
+<script>
+// ── UTILITIES ──────────────────────────────────────────────────
+function qs(sel, ctx) { return (ctx || document).querySelector(sel); }
+function qsa(sel, ctx) { return [...(ctx || document).querySelectorAll(sel)]; }
+function show(el) { if (el) el.style.display = ''; }
+function hide(el) { if (el) el.style.display = 'none'; }
+
+function updateProgress(stage) {
+  const pct = (stage / TOTAL_STAGES) * 100;
+  qs('#progress-fill').style.width = pct + '%';
+  qsa('.prog-label').forEach(l => {
+    const s = parseInt(l.dataset.stage);
+    l.classList.toggle('active', s === stage);
+    l.classList.toggle('done', s < stage);
+  });
+}
+
+function showStage(n) {
+  qsa('.stage').forEach(s => s.classList.remove('active'));
+  const next = qs('#stage-' + n);
+  if (next) { next.classList.add('active'); next.scrollIntoView({behavior:'smooth',block:'start'}); }
+  updateProgress(n);
+  currentStage = n;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function showError(id, msg) {
+  const el = qs('#' + id);
+  if (!el) return;
+  if (msg) el.textContent = msg;
+  el.classList.add('visible');
+}
+function clearError(id) {
+  const el = qs('#' + id);
+  if (el) el.classList.remove('visible');
+}
+function clearAllErrors() {
+  qsa('.field-error').forEach(e => e.classList.remove('visible'));
+}
+
+// ── SEARCHABLE DROPDOWN ────────────────────────────────────────
+function makeDropdown(inputId, listId, options, onSelect, grouped) {
+  const input = qs('#' + inputId);
+  const list = qs('#' + listId);
+  let focusIdx = -1;
+
+  function renderList(filter) {
+    list.innerHTML = '';
+    focusIdx = -1;
+    let hasResults = false;
+
+    if (grouped) {
+      Object.entries(grouped).forEach(([cat, roles]) => {
+        const matches = roles.filter(r => r.toLowerCase().includes(filter.toLowerCase()));
+        if (!matches.length) return;
+        hasResults = true;
+        const hdr = document.createElement('div');
+        hdr.className = 'dd-group-header'; hdr.textContent = cat;
+        list.appendChild(hdr);
+        matches.forEach(r => {
+          const opt = document.createElement('div');
+          opt.className = 'dd-option'; opt.textContent = r;
+          opt.dataset.value = r; opt.setAttribute('role','option');
+          opt.addEventListener('mousedown', e => { e.preventDefault(); onSelect(r); input.value = r; list.classList.remove('open'); });
+          list.appendChild(opt);
+        });
+      });
+    } else {
+      const priority = options.filter(o => COUNTRIES_PRIORITY.includes(o));
+      const rest = options.filter(o => !COUNTRIES_PRIORITY.includes(o));
+      const filtered_p = priority.filter(o => o.toLowerCase().includes(filter.toLowerCase()));
+      const filtered_r = rest.filter(o => o.toLowerCase().includes(filter.toLowerCase()));
+      if (filtered_p.length) {
+        filtered_p.forEach(o => {
+          const opt = document.createElement('div');
+          opt.className = 'dd-option'; opt.textContent = o;
+          opt.setAttribute('role','option');
+          opt.addEventListener('mousedown', e => { e.preventDefault(); onSelect(o); input.value = o; list.classList.remove('open'); });
+          list.appendChild(opt);
+        });
+        if (filtered_r.length) { const div = document.createElement('div'); div.className = 'dd-divider'; list.appendChild(div); }
+        hasResults = true;
+      }
+      filtered_r.forEach(o => {
+        const opt = document.createElement('div');
+        opt.className = 'dd-option'; opt.textContent = o;
+        opt.setAttribute('role','option');
+        opt.addEventListener('mousedown', e => { e.preventDefault(); onSelect(o); input.value = o; list.classList.remove('open'); });
+        list.appendChild(opt);
+        hasResults = true;
+      });
+    }
+
+    if (!hasResults) {
+      const nd = document.createElement('div'); nd.className = 'dd-no-results'; nd.textContent = 'No results.';
+      list.appendChild(nd);
+    }
+  }
+
+  input.addEventListener('focus', () => { renderList(input.value); list.classList.add('open'); });
+  input.addEventListener('input', () => { renderList(input.value); list.classList.add('open'); });
+  input.addEventListener('blur', () => { setTimeout(() => list.classList.remove('open'), 150); });
+  input.addEventListener('keydown', e => {
+    const opts = qsa('.dd-option', list);
+    if (e.key === 'ArrowDown') { e.preventDefault(); focusIdx = Math.min(focusIdx + 1, opts.length - 1); opts.forEach((o,i) => o.classList.toggle('focused', i === focusIdx)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); focusIdx = Math.max(focusIdx - 1, 0); opts.forEach((o,i) => o.classList.toggle('focused', i === focusIdx)); }
+    else if (e.key === 'Enter' && focusIdx >= 0) { e.preventDefault(); const v = opts[focusIdx].dataset.value || opts[focusIdx].textContent; onSelect(v); input.value = v; list.classList.remove('open'); }
+    else if (e.key === 'Escape') list.classList.remove('open');
+  });
+}
+
+// ── COUNTRY DROPDOWN ──────────────────────────────────────────
+const allCountries = [...new Set([...COUNTRIES_PRIORITY, ...COUNTRIES_ALL])];
+makeDropdown('country-input', 'country-list', allCountries, val => { formState.country = val; clearError('err-country'); });
+
+// ── PRIMARY MASTERY DROPDOWN ───────────────────────────────────
+makeDropdown('mastery-input', 'mastery-list', null, val => {
+  formState.primaryMastery = val;
+  clearError('err-mastery');
+  renderSpecialisations(val);
+}, ROLES);
+
+function renderSpecialisations(role) {
+  const collapsible = qs('#spec-collapsible');
+  const chipsWrap = qs('#spec-chips-wrap');
+  const chipsContainer = qs('#spec-chips');
+  formState.primarySpecialisations = [];
+
+  const specs = SPECIALISATIONS[role];
+  collapsible.classList.add('open');
+  if (specs && specs.length) {
+    chipsWrap.style.display = '';
+    chipsContainer.innerHTML = '';
+    specs.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'chip'; btn.type = 'button';
+      btn.textContent = s; btn.setAttribute('aria-pressed','false');
+      btn.addEventListener('click', () => {
+        const pressed = btn.getAttribute('aria-pressed') === 'true';
+        btn.setAttribute('aria-pressed', String(!pressed));
+        if (!pressed) formState.primarySpecialisations.push(s);
+        else formState.primarySpecialisations = formState.primarySpecialisations.filter(x => x !== s);
+      });
+      chipsContainer.appendChild(btn);
+    });
+  } else {
+    chipsWrap.style.display = 'none';
+  }
+}
+
+// ── SECONDARY CAPABILITIES ────────────────────────────────────
+function getAvailableRoles() {
+  return ALL_ROLES_FLAT.filter(r => r !== formState.primaryMastery && !formState.secondaryCapabilities.includes(r));
+}
+
+function renderSecondaryChips() {
+  const container = qs('#secondary-selected');
+  container.innerHTML = '';
+  formState.secondaryCapabilities.forEach(role => {
+    const chip = document.createElement('div');
+    chip.className = 'chip-removable';
+    chip.innerHTML = `<span>${role}</span><button class="chip-remove-btn" type="button" aria-label="Remove ${role}">✕</button>`;
+    chip.querySelector('.chip-remove-btn').addEventListener('click', () => {
+      formState.secondaryCapabilities = formState.secondaryCapabilities.filter(r => r !== role);
+      renderSecondaryChips();
+      updateSecondaryCounter();
+      refreshSecondaryDropdown();
+    });
+    container.appendChild(chip);
+  });
+}
+
+function updateSecondaryCounter() {
+  const n = formState.secondaryCapabilities.length;
+  const el = qs('#secondary-counter');
+  el.textContent = n + ' / 5 selected';
+  el.classList.toggle('at-limit', n >= 5);
+}
+
+function refreshSecondaryDropdown() {
+  // re-init triggered by input event
+}
+
+const secInput = qs('#secondary-input');
+const secList = qs('#secondary-list');
+
+function renderSecondaryList(filter) {
+  secList.innerHTML = '';
+  const available = getAvailableRoles();
+  const atLimit = formState.secondaryCapabilities.length >= 5;
+
+  Object.entries(ROLES).forEach(([cat, roles]) => {
+    const matches = roles.filter(r => available.includes(r) && r.toLowerCase().includes(filter.toLowerCase()));
+    if (!matches.length) return;
+    const hdr = document.createElement('div');
+    hdr.className = 'dd-group-header'; hdr.textContent = cat;
+    secList.appendChild(hdr);
+    matches.forEach(r => {
+      const opt = document.createElement('div');
+      opt.className = 'dd-option' + (atLimit ? ' disabled' : '');
+      opt.textContent = r; opt.setAttribute('role','option');
+      if (!atLimit) {
+        opt.addEventListener('mousedown', e => {
+          e.preventDefault();
+          if (formState.secondaryCapabilities.length >= 5) return;
+          formState.secondaryCapabilities.push(r);
+          renderSecondaryChips();
+          updateSecondaryCounter();
+          secInput.value = '';
+          secList.classList.remove('open');
+        });
+      }
+      secList.appendChild(opt);
+    });
+  });
+}
+
+secInput.addEventListener('focus', () => { renderSecondaryList(secInput.value); secList.classList.add('open'); });
+secInput.addEventListener('input', () => { renderSecondaryList(secInput.value); secList.classList.add('open'); });
+secInput.addEventListener('blur', () => { setTimeout(() => secList.classList.remove('open'), 150); });
+
+// ── ALIAS TOGGLE ──────────────────────────────────────────────
+qs('#alias-checkbox').addEventListener('change', function() {
+  formState.requiresAlias = this.checked;
+  qs('#alias-collapsible').classList.toggle('open', this.checked);
+});
+
+// ── SECTOR GRID ───────────────────────────────────────────────
+const sectorGrid = qs('#sector-grid');
+SECTORS.forEach(s => {
+  const btn = document.createElement('button');
+  btn.className = 'sector-chip'; btn.type = 'button';
+  btn.textContent = s; btn.setAttribute('aria-pressed','false');
+  btn.addEventListener('click', () => {
+    const pressed = btn.getAttribute('aria-pressed') === 'true';
+    btn.setAttribute('aria-pressed', String(!pressed));
+    if (!pressed) formState.sectorExperience.push(s);
+    else formState.sectorExperience = formState.sectorExperience.filter(x => x !== s);
+    clearError('err-sector');
+  });
+  sectorGrid.appendChild(btn);
+});
+
+// ── RATE CARD ─────────────────────────────────────────────────
+let rateCurrency = 'MUR';
+
+function buildRateCard() {
+  const list = qs('#rate-list');
+  list.innerHTML = '';
+  const roles = [formState.primaryMastery, ...formState.secondaryCapabilities].filter(Boolean);
+  formState.rates = roles.map(role => ({ role, rate: 0, currency: rateCurrency }));
+  roles.forEach((role, i) => {
+    const median = MEDIAN_DOR[role] || 0;
+    const placeholder = rateCurrency === 'MUR' ? (median ? median.toLocaleString() : '') : (median ? (Math.round(median / MUR_TO_USD / 25) * 25).toLocaleString() : '');
+    const row = document.createElement('div');
+    row.className = 'rate-row';
+    row.innerHTML = `
+      <span class="rate-role">${role}</span>
+      <span class="rate-currency-badge">${rateCurrency}</span>
+      <input class="rate-input" type="number" min="1" placeholder="${placeholder}" data-idx="${i}" aria-label="${role} daily rate in ${rateCurrency}">
+    `;
+    const input = row.querySelector('input');
+    input.addEventListener('input', () => {
+      formState.rates[i].rate = parseFloat(input.value) || 0;
+      input.classList.toggle('has-value', input.value !== '');
+      clearError('err-rates');
+    });
+    list.appendChild(row);
+  });
+}
+
+function updateRatePlaceholders() {
+  qsa('.rate-row').forEach((row, i) => {
+    const role = formState.rates[i]?.role;
+    if (!role) return;
+    const median = MEDIAN_DOR[role] || 0;
+    const ph = rateCurrency === 'MUR' ? (median ? median.toLocaleString() : '') : (median ? (Math.round(median / MUR_TO_USD / 25) * 25).toLocaleString() : '');
+    const inp = row.querySelector('input');
+    if (inp && !inp.value) inp.placeholder = ph;
+    const badge = row.querySelector('.rate-currency-badge');
+    if (badge) badge.textContent = rateCurrency;
+    if (formState.rates[i]) formState.rates[i].currency = rateCurrency;
+  });
+}
+
+qs('#toggle-mur').addEventListener('click', () => {
+  rateCurrency = 'MUR'; formState.rateCurrency = 'MUR';
+  qs('#toggle-mur').classList.add('active'); qs('#toggle-usd').classList.remove('active');
+  updateRatePlaceholders();
+});
+qs('#toggle-usd').addEventListener('click', () => {
+  rateCurrency = 'USD'; formState.rateCurrency = 'USD';
+  qs('#toggle-usd').classList.add('active'); qs('#toggle-mur').classList.remove('active');
+  updateRatePlaceholders();
+});
+
+// ── DURATION CHIPS ────────────────────────────────────────────
+qsa('#duration-chips .chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = btn.dataset.value;
+    const isNoP = val === 'no-pref-duration';
+    if (isNoP) {
+      qsa('#duration-chips .chip').forEach(b => b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+      formState.preferredDuration = ['No preference'];
+    } else {
+      qs('[data-value="no-pref-duration"]').setAttribute('aria-pressed','false');
+      const pressed = btn.getAttribute('aria-pressed') === 'true';
+      btn.setAttribute('aria-pressed', String(!pressed));
+      const labels = {'days':'Quick turnarounds — days to 1 week','weeks':'Short projects — 1 to 4 weeks','months':'Medium projects — 1 to 3 months','longterm':'Long term — 3 months and beyond'};
+      formState.preferredDuration = qsa('#duration-chips .chip[aria-pressed=true]').map(b => labels[b.dataset.value] || b.dataset.value);
+    }
+    clearError('err-duration');
+  });
+});
+
+// ── COMPLEXITY CHIPS ──────────────────────────────────────────
+qsa('#complexity-chips .chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    qsa('#complexity-chips .chip').forEach(b => b.setAttribute('aria-pressed','false'));
+    btn.setAttribute('aria-pressed','true');
+    const labels = {'single':'Single discipline, focused scope','multi':'Multi-discipline, collaborative','no-pref-complex':'No preference'};
+    formState.preferredComplexity = labels[btn.dataset.value] || btn.dataset.value;
+    clearError('err-complexity');
+  });
+});
+
+// ── VALIDATION ────────────────────────────────────────────────
+function validateStage(n) {
+  clearAllErrors();
+  let ok = true;
+  if (n === 1) {
+    if (!qs('#first-name').value.trim()) { showError('err-first-name'); ok = false; }
+    if (!qs('#last-name').value.trim()) { showError('err-last-name'); ok = false; }
+    const email = qs('#email').value.trim();
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showError('err-email'); ok = false; }
+    const phone = qs('#phone').value.trim();
+    if (phone && !/^[+\d\s\-().]{6,20}$/.test(phone)) { showError('err-phone'); ok = false; }
+    if (!formState.country) { showError('err-country'); ok = false; }
+    if (formState.requiresAlias && !qs('#alias-input').value.trim()) { showError('err-alias'); ok = false; }
+    if (ok) {
+      formState.firstName = qs('#first-name').value.trim();
+      formState.lastName = qs('#last-name').value.trim();
+      formState.email = email;
+      formState.phone = phone;
+      formState.alias = qs('#alias-input').value.trim();
+    }
+  }
+  if (n === 2) {
+    if (!formState.primaryMastery) { showError('err-mastery'); ok = false; }
+    if (ok) {
+      formState.primarySpecialisationsOther = qs('#spec-other').value.trim();
+    }
+  }
+  if (n === 3) {
+    formState.secondaryCapabilitiesOther = qs('#secondary-other').value.trim();
+  }
+  if (n === 4) {
+    formState.sectorExperienceOther = qs('#sector-other').value.trim();
+    if (!formState.sectorExperience.length) { showError('err-sector'); ok = false; }
+  }
+  if (n === 5) {
+    const allFilled = formState.rates.every(r => r.rate > 0);
+    if (!allFilled) { showError('err-rates'); ok = false; }
+  }
+  if (n === 6) {
+    if (!formState.preferredDuration.length) { showError('err-duration'); ok = false; }
+    if (!formState.preferredComplexity) { showError('err-complexity'); ok = false; }
+    if (ok) formState.additionalNotes = qs('#notes-input').value.trim();
+  }
+  return ok;
+}
+
+// ── NAV WIRING ────────────────────────────────────────────────
+qs('#btn-1').addEventListener('click', () => { if (validateStage(1)) showStage(2); });
+qs('#btn-2').addEventListener('click', () => { if (validateStage(2)) showStage(3); });
+qs('#btn-3').addEventListener('click', () => { if (validateStage(3)) showStage(4); });
+qs('#btn-4').addEventListener('click', () => { if (validateStage(4)) { showStage(5); buildRateCard(); } });
+qs('#btn-5').addEventListener('click', () => { if (validateStage(5)) showStage(6); });
+qs('#btn-6').addEventListener('click', () => { if (validateStage(6)) { showStage(7); buildReview(); } });
+
+qs('#back-2').addEventListener('click', () => showStage(1));
+qs('#back-3').addEventListener('click', () => showStage(2));
+qs('#back-4').addEventListener('click', () => showStage(3));
+qs('#back-5').addEventListener('click', () => showStage(4));
+qs('#back-6').addEventListener('click', () => showStage(5));
+qs('#back-7').addEventListener('click', () => showStage(6));
+
+// ── REVIEW BUILD ──────────────────────────────────────────────
+function buildReview() {
+  const container = qs('#review-content');
+  container.innerHTML = '';
+
+  const sections = [
+    { title: 'Identity', fields: [
+      { label: 'First Name', value: formState.firstName, key: 'firstName' },
+      { label: 'Last Name', value: formState.lastName, key: 'lastName' },
+      { label: 'Email Address', value: formState.email, key: 'email' },
+      { label: 'Phone', value: formState.phone || '—', key: 'phone' },
+      { label: 'Country', value: formState.country, key: 'country' },
+      { label: 'Alias', value: formState.requiresAlias ? (formState.alias || '—') : 'Not required', key: 'alias' }
+    ]},
+    { title: 'Primary Mastery', fields: [
+      { label: 'Role', value: formState.primaryMastery, key: 'primaryMastery' },
+      { label: 'Specialisations', value: [...formState.primarySpecialisations, formState.primarySpecialisationsOther].filter(Boolean).join(', ') || '—' }
+    ]},
+    { title: 'Secondary Capabilities', fields: [
+      { label: 'Roles', value: formState.secondaryCapabilities.join(', ') || 'None selected' },
+      { label: 'Other', value: formState.secondaryCapabilitiesOther || '—' }
+    ]},
+    { title: 'Sector Experience', fields: [
+      { label: 'Sectors', value: formState.sectorExperience.join(', ') }
+    ]},
+    { title: 'Rate Card', fields: formState.rates.map(r => ({ label: r.role, value: r.currency + ' ' + r.rate.toLocaleString() + ' / day' })) },
+    { title: 'Preferences', fields: [
+      { label: 'Duration', value: formState.preferredDuration.join(', ') },
+      { label: 'Complexity', value: formState.preferredComplexity },
+      { label: 'Notes', value: formState.additionalNotes || '—' }
+    ]}
+  ];
+
+  sections.forEach(sec => {
+    const div = document.createElement('div');
+    div.className = 'review-section';
+    div.innerHTML = `<div class="review-section-title">${sec.title}</div>`;
+    sec.fields.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'review-field';
+      const editBtn = f.key ? `<button class="review-edit-btn" type="button" aria-label="Edit ${f.label}" data-key="${f.key}">✎</button>` : '';
+      row.innerHTML = `
+        <div class="review-field-left">
+          <div class="review-label">${f.label}</div>
+          <div class="review-value" id="rv-${f.key || f.label.replace(/\s/g,'_')}">${f.value || '<span class=\"empty\">—</span>'}</div>
+          ${f.key ? `<div class="inline-edit-wrap" id="ie-${f.key}"><input class="inline-edit-input" value="${f.value}"><button class="inline-confirm-btn" type="button">✓</button></div>` : ''}
+        </div>${editBtn}`;
+      if (f.key) {
+        const btn = row.querySelector('.review-edit-btn');
+        const wrap = row.querySelector('.inline-edit-wrap');
+        const inp = wrap?.querySelector('.inline-edit-input');
+        const confirm = wrap?.querySelector('.inline-confirm-btn');
+        btn?.addEventListener('click', () => wrap.classList.toggle('open'));
+        confirm?.addEventListener('click', () => {
+          const v = inp.value.trim();
+          formState[f.key] = v;
+          qs('#rv-' + f.key).textContent = v || '—';
+          wrap.classList.remove('open');
+        });
+      }
+      div.appendChild(row);
+    });
+    container.appendChild(div);
+  });
+}
+
+// ── SUBMISSION ────────────────────────────────────────────────
+qs('#btn-submit').addEventListener('click', async () => {
+  const btn = qs('#btn-submit');
+  const errEl = qs('#submit-error');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  errEl.classList.remove('visible');
+
+  const payload = {
+    firstName: formState.firstName,
+    lastName: formState.lastName,
+    email: formState.email,
+    phone: formState.phone || null,
+    country: formState.country,
+    requiresAlias: formState.requiresAlias,
+    alias: formState.alias || null,
+    primaryMastery: formState.primaryMastery,
+    primarySpecialisations: formState.primarySpecialisations,
+    primarySpecialisationsOther: formState.primarySpecialisationsOther || null,
+    secondaryCapabilities: formState.secondaryCapabilities,
+    secondaryCapabilitiesOther: formState.secondaryCapabilitiesOther || null,
+    sectorExperience: formState.sectorExperience,
+    sectorExperienceOther: formState.sectorExperienceOther || null,
+    rates: formState.rates,
+    preferredDuration: formState.preferredDuration,
+    preferredComplexity: formState.preferredComplexity,
+    additionalNotes: formState.additionalNotes || null
+  };
+
+  try {
+    await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    qs('#form-shell').style.display = 'none';
+    const confirm = qs('#confirmation-screen');
+    confirm.classList.add('visible');
+    confirm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Submit & Sign Agreement';
+    errEl.classList.add('visible');
+  }
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+updateProgress(1);
+</script>
+</body>
+</html>
