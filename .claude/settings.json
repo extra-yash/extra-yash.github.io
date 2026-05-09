@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node node_modules/vite/bin/vite.js build)",
+      "Bash(node node_modules/vite/bin/vite.js build --emptyOutDir=false)",
+      "PowerShell(icacls \"f:\\\\01. EXTRA\\\\00. WEBSITE\\\\extra-yash.github.io\\\\brand\" 2>&1)",
+      "PowerShell(icacls \"f:\\\\01. EXTRA\\\\00. WEBSITE\\\\extra-yash.github.io\\\\brand\\\\assets\" 2>&1)",
+      "PowerShell(takeown /F \"f:\\\\01. EXTRA\\\\00. WEBSITE\\\\extra-yash.github.io\\\\brand\\\\assets\" /R /D Y 2>&1; icacls \"f:\\\\01. EXTRA\\\\00. WEBSITE\\\\extra-yash.github.io\\\\brand\\\\assets\" /grant \"$env:USERNAME:\\(OI\\)\\(CI\\)F\" /T 2>&1)",
+      "PowerShell(Remove-Item -Path \"f:\\\\01. EXTRA\\\\00. WEBSITE\\\\extra-yash.github.io\\\\brand\\\\assets\" -Recurse -Force -Confirm:$false 2>&1)",
+      "Bash(cmd.exe /c \"dir /A /B \\\\\"f:\\\\\\\\01. EXTRA\\\\\\\\00. WEBSITE\\\\\\\\extra-yash.github.io\\\\\\\\brand\\\\\\\\\\\\\"\")",
+      "Bash(cmd.exe /c \"dir /A /S /B \\\\\"f:\\\\\\\\01. EXTRA\\\\\\\\00. WEBSITE\\\\\\\\extra-yash.github.io\\\\\\\\brand\\\\\"\")",
+      "PowerShell(cmd /c \"rd /S /Q \"\"f:\\\\01. EXTRA\\\\00. WEBSITE\\\\extra-yash.github.io\\\\brand\\\\assets\"\"\" 2>&1)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}
