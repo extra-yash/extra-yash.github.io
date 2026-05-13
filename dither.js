@@ -35,7 +35,8 @@ const DitherBG = (() => {
   const HERO_VOID_FALLOFF = 100.0;   // feather width outside ellipse — symbols fade in over this (px)
   const HERO_VOID_X_SCALE = 0.85;    // 0–1: scales ellipse x-radius from text block half-width (lower = narrower oval)
   const WAVE_MOUSE_RADIUS = 0.5; // wave distortion radius (UV 0–1)
-  const BIAS = 0.4;   // darkness bias — higher = fewer lit cells
+  const BIAS = 0.4;   // darkness bias — fixed, controls base density
+  const COLOR_SCROLL_MIN = 0.35; // wave colour scale at max scroll (0 = fully invisible, 0.15 = faint glow remains)
   const PARALLAX_SPEED = 0.0002; // wave UV shift per scroll pixel — 0 = off, ~0.0003 = noticeable
 
   // ─── STAMP CONFIG ─────────────────────────────────────────────────────────
@@ -300,6 +301,9 @@ const DitherBG = (() => {
   let targetBgColor = [0.102, 0.102, 0.180]; // EXTRA DARK #1A1A2E
   let currentBgColor = [...targetBgColor];
 
+  let currentColorScale = 1.0; // 1.0 = full brightness, 0.0 = invisible
+  let targetColorScale = 1.0;
+
   // ─── HELPERS ─────────────────────────────────────────────────────────────
   function hexToVec3(hex) {
     return [
@@ -521,7 +525,9 @@ const DitherBG = (() => {
     gl.uniform1f(waveUniforms.waveSpeed, WAVE_SPEED);
     gl.uniform1f(waveUniforms.waveFrequency, WAVE_FREQUENCY);
     gl.uniform1f(waveUniforms.waveAmplitude, WAVE_AMPLITUDE);
-    gl.uniform3fv(waveUniforms.waveColor, currentColor);
+    // Scroll-driven colour fade: scale wave colour before upload
+    currentColorScale = lerp(currentColorScale, targetColorScale, 0.04);
+    gl.uniform3fv(waveUniforms.waveColor, currentColor.map(c => c * currentColorScale));
     gl.uniform2f(waveUniforms.mousePos, mouseX * WAVE_SCALE, mouseY * WAVE_SCALE);
     gl.uniform1i(waveUniforms.enableMouse, 1);
     gl.uniform1f(waveUniforms.mouseRadius, WAVE_MOUSE_RADIUS);
@@ -697,7 +703,12 @@ const DitherBG = (() => {
     });
 
     // ── Scroll: drive wave parallax offset ————————————————————————
-    window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
+    window.addEventListener('scroll', () => {
+      scrollY = window.scrollY;
+      // Drive colour scale from scroll: full intensity at top, fades to COLOR_SCROLL_MIN after 1 viewport
+      const scrollFraction = Math.min(scrollY / window.innerHeight, 1.0);
+      targetColorScale = 1.0 - (1.0 - COLOR_SCROLL_MIN) * scrollFraction;
+    }, { passive: true });
 
     startTime = performance.now();
     rafId = requestAnimationFrame(render);
