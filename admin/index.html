@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Showcase Admin — Extra</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #1A1A2E;
+      --surface:  #0f0f1e;
+      --border:   #252540;
+      --text:     #FFFFF0;
+      --muted:    rgba(255,255,240,0.45);
+      --accent:   #27E700;
+      --danger:   #FF2C00;
+      --font:     'Space Mono', monospace;
+      --radius:   12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font);
+           font-size: 12px; min-height: 100vh; }
+
+    /* Header bar */
+    .admin-header { display: flex; align-items: center; justify-content: space-between;
+                    padding: 20px 32px; border-bottom: 1px solid var(--border); }
+    .admin-logo   { font-size: 20px; font-weight: 700; color: var(--accent);
+                    letter-spacing: 0.05em; }
+    .admin-title  { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+                    color: var(--muted); }
+
+    /* Main content area */
+    .admin-content { max-width: 860px; margin: 0 auto; padding: 40px 32px; }
+
+    /* Section label */
+    .admin-section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+                            color: var(--muted); margin-bottom: 16px; }
+
+    /* Inputs */
+    input[type=text], input[type=password], select, textarea {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text); font-family: var(--font);
+      font-size: 12px; padding: 10px 14px; width: 100%;
+      outline: none; transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+    select   { cursor: pointer; appearance: none;
+               background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23FFFFF0' opacity='.4'/%3E%3C/svg%3E");
+               background-repeat: no-repeat; background-position: right 12px center; }
+
+    /* Labels above inputs */
+    .field-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+                   color: var(--muted); display: block; margin-bottom: 6px; }
+
+    /* Field group */
+    .field { margin-bottom: 20px; }
+
+    /* Buttons */
+    .btn { font-family: var(--font); font-size: 11px; letter-spacing: 0.15em;
+           text-transform: uppercase; padding: 10px 20px; border-radius: var(--radius);
+           border: 1px solid var(--border); cursor: pointer;
+           background: transparent; color: var(--text); transition: all 0.2s; }
+    .btn:hover      { border-color: var(--accent); color: var(--accent); }
+    .btn--primary   { background: var(--accent); color: var(--bg);
+                      border-color: var(--accent); font-weight: 700; }
+    .btn--primary:hover { opacity: 0.85; }
+    .btn--danger    { border-color: var(--danger); color: var(--danger); }
+    .btn--danger:hover { background: var(--danger); color: var(--text); }
+    .btn--ghost     { border-color: transparent; color: var(--muted); }
+    .btn--ghost:hover { color: var(--text); }
+    .btn:disabled   { opacity: 0.35; cursor: not-allowed; }
+
+    /* Row layout */
+    .row { display: flex; gap: 12px; align-items: flex-start; }
+    .row .field { flex: 1; }
+
+    /* Card row (client / project list items) */
+    .list-item { display: flex; align-items: center; gap: 16px;
+                 background: var(--surface); border: 1px solid var(--border);
+                 border-radius: var(--radius); padding: 16px 20px;
+                 margin-bottom: 8px; }
+    .list-item__thumb { width: 40px; height: 40px; object-fit: cover;
+                        border-radius: 6px; background: var(--border); flex-shrink: 0; }
+    .list-item__body  { flex: 1; min-width: 0; }
+    .list-item__title { font-size: 12px; font-weight: 700; color: var(--text);
+                        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .list-item__meta  { font-size: 10px; color: var(--muted); margin-top: 3px;
+                        letter-spacing: 0.05em; }
+
+    /* Format badge */
+    .badge { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+             padding: 3px 8px; border-radius: 4px;
+             border: 1px solid var(--border); color: var(--muted); }
+
+    /* Inline editor box */
+    .editor-box { background: var(--surface); border: 1px solid var(--border);
+                  border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+
+    /* Media / role item */
+    .media-item, .role-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 16px; margin-bottom: 8px;
+    }
+    .media-item__type { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+                        color: var(--accent); width: 40px; flex-shrink: 0; padding-top: 2px; }
+
+    /* Status / error messages */
+    .status-msg { font-size: 11px; padding: 8px 0; letter-spacing: 0.05em; }
+    .status-msg--error   { color: var(--danger); }
+    .status-msg--success { color: var(--accent); }
+
+    /* Login screen */
+    .login-wrap { max-width: 400px; margin: 0 auto; padding: 80px 24px; text-align: center; }
+    .login-logo  { font-size: 48px; font-weight: 700; color: var(--accent);
+                   letter-spacing: -0.02em; margin-bottom: 8px; }
+    .login-label { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+                   color: var(--muted); margin-bottom: 48px; display: block; }
+    .login-wrap input { text-align: left; margin-bottom: 16px; }
+    .login-note { font-size: 10px; color: var(--muted); line-height: 1.6;
+                  margin-top: 20px; }
+
+    /* Publish confirm overlay */
+    .overlay { position: fixed; inset: 0; background: rgba(10,10,20,0.85);
+               display: flex; align-items: center; justify-content: center;
+               z-index: 100; }
+    .overlay-box { background: var(--surface); border: 1px solid var(--border);
+                   border-radius: var(--radius); padding: 32px; max-width: 360px;
+                   text-align: center; }
+    .overlay-box p { margin-bottom: 24px; line-height: 1.6; color: var(--muted); }
+    .overlay-box .row { justify-content: center; }
+  </style>
+</head>
+<body>
+  <div id="app"><!-- JS renders here --></div>
+  <script>
+    // Part 1 — Configuration
+    const REPO_OWNER  = 'extra-yash';
+    const REPO_NAME   = 'extra-yash.github.io';
+    const REPO_BRANCH = 'main';
+    const API_BASE    = 'https://api.github.com';
+
+    // Part 2 — State
+    let pat          = '';          // GitHub Personal Access Token
+    let showcaseData = [];          // in-memory copy of SHOWCASE_DATA array
+    let fileSha      = '';          // GitHub file SHA — required for PUT updates
+    let currentView  = 'login';     // 'login' | 'dashboard' | 'project'
+    let editingClient  = null;      // { index } or null
+    let editingProject = null;      // { clientIndex, projectIndex } or null
+    let isUploading  = false;       // Track active uploads
+
+    // Part 3 — GitHub API Functions
+    async function githubGet(path) {
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: { Authorization: `Bearer ${pat}`, Accept: 'application/vnd.github+json' }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub API error ${res.status}`);
+      }
+      return res.json();
+    }
+
+    async function githubPut(path, body) {
+      const res = await fetch(`${API_BASE}${path}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${pat}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub API error ${res.status}`);
+      }
+      return res.json();
+    }
+
+    async function authenticate(token) {
+      pat = token;
+      const user = await githubGet('/user');
+      await githubGet(`/repos/${REPO_OWNER}/${REPO_NAME}`);
+      return user.login;
+    }
+
+    async function loadShowcaseData() {
+      const file = await githubGet(
+        `/repos/${REPO_OWNER}/${REPO_NAME}/contents/showcase-data.js?ref=${REPO_BRANCH}`
+      );
+      fileSha = file.sha;
+      const raw = decodeURIComponent(
+        escape(atob(file.content.replace(/\n/g, '')))
+      );
+      const json = raw
+        .replace(/^[\s\S]*?const SHOWCASE_DATA\s*=\s*/, '')
+        .replace(/;\s*$/, '')
+        .trim();
+      showcaseData = JSON.parse(json);
+    }
+
+    async function publishShowcaseData() {
+      const content = `const SHOWCASE_DATA = ${JSON.stringify(showcaseData, null, 2)};\n`;
+      const encoded = btoa(unescape(encodeURIComponent(content)));
+      const result = await githubPut(
+        `/repos/${REPO_OWNER}/${REPO_NAME}/contents/showcase-data.js`,
+        {
+          message: 'admin: update showcase data',
+          content: encoded,
+          sha: fileSha,
+          branch: REPO_BRANCH
+        }
+      );
+      fileSha = result.content.sha;
+    }
+
+    async function uploadFile(repoPath, file) {
+      let existingSha = null;
+      try {
+        const existing = await githubGet(
+          `/repos/${REPO_OWNER}/${REPO_NAME}/contents/${repoPath}`
+        );
+        existingSha = existing.sha;
+      } catch (_) { }
+
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const body = {
+        message: `admin: upload ${repoPath}`,
+        content: base64,
+        branch: REPO_BRANCH
+      };
+      if (existingSha) body.sha = existingSha;
+
+      return githubPut(
+        `/repos/${REPO_OWNER}/${REPO_NAME}/contents/${repoPath}`,
+        body
+      );
+    }
+
+    function generateId(str) {
+      return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    function saveSession() {
+      sessionStorage.setItem('extra_admin_pat', pat);
+      sessionStorage.setItem('extra_admin_data', JSON.stringify(showcaseData));
+      sessionStorage.setItem('extra_admin_sha', fileSha);
+    }
+
+    // Part 8 — Wiring & Navigation
+    function showView(view, params = {}) {
+      currentView = view;
+      const app = document.getElementById('app');
+      app.innerHTML = '';
+
+      if (view === 'login')     renderLogin(app);
+      if (view === 'dashboard') renderDashboard(app);
+      if (view === 'projects')  renderProjectList(app, params.clientIndex);
+      if (view === 'project')   renderProjectEditor(app, params.clientIndex, params.projectIndex);
+    }
+
+    function renderHeader(parent, leftContent, rightContent) {
+      const header = document.createElement('div');
+      header.className = 'admin-header';
+
+      const left = document.createElement('div');
+      left.className = 'admin-logo';
+      if (typeof leftContent === 'string') {
+        left.innerHTML = leftContent;
+      } else {
+        left.appendChild(leftContent);
+      }
+      
+      const right = document.createElement('div');
+      if (typeof rightContent === 'string') {
+        right.innerHTML = rightContent;
+      } else if (rightContent) {
+        right.appendChild(rightContent);
+      }
+
+      header.appendChild(left);
+      header.appendChild(right);
+      parent.appendChild(header);
+    }
+
+    function renderLogin(app) {
+      const wrap = document.createElement('div');
+      wrap.className = 'login-wrap';
+
+      wrap.innerHTML = `
+        <div class="login-logo">✕</div>
+        <div class="login-label">SHOWCASE ADMIN</div>
+        <div class="field">
+          <label class="field-label">GITHUB PERSONAL ACCESS TOKEN</label>
+          <input type="password" id="login-pat" placeholder="ghp_..." autofocus>
+        </div>
+        <button id="login-btn" class="btn btn--primary" style="width: 100%;">AUTHENTICATE</button>
+        <div id="login-error" class="status-msg status-msg--error"></div>
+        <div class="login-note">Token is session-only and never stored beyond this tab.</div>
+      `;
+
+      app.appendChild(wrap);
+
+      const btn = wrap.querySelector('#login-btn');
+      const err = wrap.querySelector('#login-error');
+      const patInput = wrap.querySelector('#login-pat');
+
+      btn.addEventListener('click', async () => {
+        const token = patInput.value.trim();
+        if (!token) return;
+
+        btn.textContent = 'AUTHENTICATING...';
+        btn.disabled = true;
+        err.textContent = '';
+
+        try {
+          await authenticate(token);
+          await loadShowcaseData();
+          saveSession();
+          showView('dashboard');
+        } catch (e) {
+          err.textContent = e.message;
+          btn.textContent = 'AUTHENTICATE';
+          btn.disabled = false;
+        }
+      });
+    }
+
+    function renderDashboard(app) {
+      const headerRight = document.createElement('div');
+      headerRight.style.display = 'flex';
+      headerRight.style.alignItems = 'center';
+      headerRight.style.gap = '16px';
+      
+      const statusText = document.createElement('div');
+      statusText.className = 'status-msg';
+      headerRight.appendChild(statusText);
+
+      const publishBtn = document.createElement('button');
+      publishBtn.className = 'btn btn--primary';
+      publishBtn.textContent = 'PUBLISH';
+      headerRight.appendChild(publishBtn);
+
+      renderHeader(app, '✕ SHOWCASE ADMIN', headerRight);
+
+      publishBtn.addEventListener('click', () => {
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        overlay.innerHTML = `
+          <div class="overlay-box">
+            <p>Publish to live site? (~60s to deploy)</p>
+            <div class="row">
+              <button class="btn btn--ghost" id="confirm-cancel">CANCEL</button>
+              <button class="btn btn--primary" id="confirm-publish">CONFIRM</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.querySelector('#confirm-cancel').addEventListener('click', () => {
+          overlay.remove();
+        });
+        
+        overlay.querySelector('#confirm-publish').addEventListener('click', async () => {
+          overlay.remove();
+          publishBtn.disabled = true;
+          publishBtn.textContent = 'PUBLISHING...';
+          statusText.textContent = '';
+          
+          try {
+            await publishShowcaseData();
+            saveSession();
+            statusText.textContent = 'PUBLISHED ✓ — Live in ~60 seconds.';
+            statusText.className = 'status-msg status-msg--success';
+            setTimeout(() => { statusText.textContent = ''; }, 4000);
+          } catch (e) {
+            statusText.textContent = e.message;
+            statusText.className = 'status-msg status-msg--error';
+          } finally {
+            publishBtn.disabled = false;
+            publishBtn.textContent = 'PUBLISH';
+          }
+        });
+      });
+
+      const content = document.createElement('div');
+      content.className = 'admin-content';
+
+      const sectionHeader = document.createElement('div');
+      sectionHeader.className = 'row';
+      sectionHeader.style.justifyContent = 'space-between';
+      sectionHeader.style.alignItems = 'center';
+      sectionHeader.style.marginBottom = '20px';
+      
+      const title = document.createElement('div');
+      title.className = 'admin-section-label';
+      title.textContent = 'CLIENTS';
+      title.style.margin = '0';
+      
+      const newClientBtn = document.createElement('button');
+      newClientBtn.className = 'btn btn--ghost';
+      newClientBtn.textContent = '+ NEW CLIENT';
+      
+      sectionHeader.appendChild(title);
+      sectionHeader.appendChild(newClientBtn);
+      content.appendChild(sectionHeader);
+
+      const editorContainer = document.createElement('div');
+      content.appendChild(editorContainer);
+
+      newClientBtn.addEventListener('click', () => {
+        editingClient = null;
+        renderClientEditor(editorContainer);
+      });
+
+      if (showcaseData.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.color = 'var(--muted)';
+        empty.textContent = 'No clients yet. Add your first client.';
+        content.appendChild(empty);
+      } else {
+        showcaseData.forEach((client, idx) => {
+          const item = document.createElement('div');
+          item.className = 'list-item';
+          
+          const img = document.createElement('img');
+          img.className = 'list-item__thumb';
+          if (client.logo) img.src = '../' + client.logo.replace('./', '');
+          
+          const body = document.createElement('div');
+          body.className = 'list-item__body';
+          
+          const name = document.createElement('div');
+          name.className = 'list-item__title';
+          name.textContent = client.name;
+          name.style.cursor = 'pointer';
+          name.addEventListener('click', () => {
+            editingClient = { index: idx };
+            renderClientEditor(editorContainer);
+          });
+          
+          const meta = document.createElement('div');
+          meta.className = 'list-item__meta';
+          meta.textContent = `${client.projects ? client.projects.length : 0} projects`;
+          
+          body.appendChild(name);
+          body.appendChild(meta);
+          
+          const goBtn = document.createElement('button');
+          goBtn.className = 'btn btn--ghost';
+          goBtn.textContent = '→';
+          goBtn.addEventListener('click', () => {
+            showView('projects', { clientIndex: idx });
+          });
+          
+          item.appendChild(img);
+          item.appendChild(body);
+          item.appendChild(goBtn);
+          content.appendChild(item);
+        });
+      }
+
+      app.appendChild(content);
+    }
+
+    function renderClientEditor(container) {
+      container.innerHTML = '';
+      const box = document.createElement('div');
+      box.className = 'editor-box';
+
+      const isNew = !editingClient;
+      const client = isNew ? { id: '', name: '', logo: '', projects: [] } : showcaseData[editingClient.index];
+
+      box.innerHTML = `
+        <div class="row">
+          <div class="field" style="flex: 2;">
+            <label class="field-label">CLIENT NAME</label>
+            <input type="text" id="client-name" value="${client.name}">
+          </div>
+          <div class="field" style="flex: 1;">
+            <label class="field-label">ID</label>
+            <input type="text" id="client-id" value="${client.id}">
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">LOGO</label>
+          <div class="row" style="align-items: center;">
+            <img id="client-logo-preview" src="${client.logo ? '../' + client.logo.replace('./', '') : ''}" class="list-item__thumb" style="display: ${client.logo ? 'block' : 'none'};">
+            <input type="file" id="client-logo-file" accept="image/*">
+            <span id="client-logo-status" class="status-msg"></span>
+          </div>
+        </div>
+        <div class="row" style="justify-content: flex-end; margin-bottom: 0;">
+          <button class="btn btn--ghost" id="client-cancel">CANCEL</button>
+          <button class="btn btn--primary" id="client-save">SAVE CLIENT</button>
+        </div>
+      `;
+      container.appendChild(box);
+
+      const nameInput = box.querySelector('#client-name');
+      const idInput = box.querySelector('#client-id');
+      const fileInput = box.querySelector('#client-logo-file');
+      const preview = box.querySelector('#client-logo-preview');
+      const status = box.querySelector('#client-logo-status');
+      const saveBtn = box.querySelector('#client-save');
+      
+      let manualId = !isNew;
+      let currentLogo = client.logo;
+
+      nameInput.addEventListener('input', () => {
+        if (!manualId) idInput.value = generateId(nameInput.value);
+      });
+      idInput.addEventListener('input', () => { manualId = true; });
+
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const id = idInput.value || generateId(nameInput.value) || 'temp';
+        const ext = file.name.split('.').pop();
+        const repoPath = `assets/showcase/logos/${id}.${ext}`;
+        
+        isUploading = true;
+        saveBtn.disabled = true;
+        status.textContent = 'Uploading...';
+        
+        try {
+          await uploadFile(repoPath, file);
+          currentLogo = `./${repoPath}`;
+          preview.src = URL.createObjectURL(file);
+          preview.style.display = 'block';
+          status.textContent = '';
+        } catch (err) {
+          status.textContent = 'Upload failed: ' + err.message;
+          status.className = 'status-msg status-msg--error';
+        } finally {
+          isUploading = false;
+          saveBtn.disabled = false;
+        }
+      });
+
+      box.querySelector('#client-cancel').addEventListener('click', () => {
+        container.innerHTML = '';
+      });
+
+      saveBtn.addEventListener('click', () => {
+        if (!nameInput.value.trim()) return alert('Name required');
+        
+        const newClient = {
+          id: idInput.value.trim(),
+          name: nameInput.value.trim(),
+          logo: currentLogo,
+          projects: client.projects || []
+        };
+
+        if (isNew) {
+          showcaseData.push(newClient);
+        } else {
+          showcaseData[editingClient.index] = newClient;
+        }
+        
+        saveSession();
+        showView('dashboard');
+      });
+    }
+
+    function renderProjectList(app, clientIndex) {
+      const client = showcaseData[clientIndex];
+
+      const headerLeft = document.createElement('div');
+      headerLeft.style.display = 'flex';
+      headerLeft.style.alignItems = 'center';
+      headerLeft.style.gap = '12px';
+      
+      const backBtn = document.createElement('button');
+      backBtn.className = 'btn btn--ghost';
+      backBtn.textContent = '← CLIENTS';
+      backBtn.style.padding = '0';
+      backBtn.style.border = 'none';
+      backBtn.addEventListener('click', () => showView('dashboard'));
+      
+      const title = document.createElement('span');
+      title.className = 'admin-logo';
+      title.style.color = 'var(--text)';
+      title.textContent = client.name;
+      
+      headerLeft.appendChild(backBtn);
+      headerLeft.appendChild(title);
+
+      const newProjBtn = document.createElement('button');
+      newProjBtn.className = 'btn btn--ghost';
+      newProjBtn.textContent = '+ NEW PROJECT';
+      newProjBtn.addEventListener('click', () => {
+        showView('project', { clientIndex, projectIndex: null });
+      });
+
+      renderHeader(app, headerLeft, newProjBtn);
+
+      const content = document.createElement('div');
+      content.className = 'admin-content';
+
+      if (!client.projects || client.projects.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.color = 'var(--muted)';
+        empty.textContent = 'No projects yet.';
+        content.appendChild(empty);
+      } else {
+        client.projects.forEach((proj, pIdx) => {
+          const item = document.createElement('div');
+          item.className = 'list-item';
+          
+          const img = document.createElement('img');
+          img.className = 'list-item__thumb';
+          if (proj.cover) img.src = '../' + proj.cover.replace('./', '');
+          
+          const body = document.createElement('div');
+          body.className = 'list-item__body';
+          
+          const nameRow = document.createElement('div');
+          nameRow.style.display = 'flex';
+          nameRow.style.alignItems = 'center';
+          nameRow.style.gap = '8px';
+          
+          const name = document.createElement('div');
+          name.className = 'list-item__title';
+          name.textContent = proj.title;
+          
+          const badge = document.createElement('div');
+          badge.className = 'badge';
+          badge.textContent = proj.format || 'square';
+          
+          nameRow.appendChild(name);
+          nameRow.appendChild(badge);
+          
+          const meta = document.createElement('div');
+          meta.className = 'list-item__meta';
+          if (proj.roles && proj.roles.length > 0) {
+            meta.textContent = `${proj.roles[0].what} — ${proj.roles[0].who}`;
+          }
+          
+          body.appendChild(nameRow);
+          body.appendChild(meta);
+          
+          const editBtn = document.createElement('button');
+          editBtn.className = 'btn btn--ghost';
+          editBtn.textContent = 'EDIT';
+          editBtn.addEventListener('click', () => {
+            showView('project', { clientIndex, projectIndex: pIdx });
+          });
+          
+          item.appendChild(img);
+          item.appendChild(body);
+          item.appendChild(editBtn);
+          content.appendChild(item);
+        });
+      }
+
+      app.appendChild(content);
+    }
+
+    function renderProjectEditor(app, clientIndex, projectIndex) {
+      const client = showcaseData[clientIndex];
+      const isNew = projectIndex === null;
+      const proj = isNew ? {
+        id: '', title: '', format: 'square', cover: '', media: [], roles: [], summary: '', detail: '', visible: true
+      } : JSON.parse(JSON.stringify(client.projects[projectIndex]));
+
+      const headerTitle = isNew ? 'NEW PROJECT' : proj.title;
+
+      const headerLeft = document.createElement('div');
+      headerLeft.innerHTML = `<span class="admin-title">PROJECT EDITOR — ${headerTitle}</span>`;
+      
+      const backBtn = document.createElement('button');
+      backBtn.className = 'btn btn--ghost';
+      backBtn.textContent = '← PROJECTS';
+      backBtn.addEventListener('click', () => showView('projects', { clientIndex }));
+      
+      renderHeader(app, headerLeft, backBtn);
+
+      const content = document.createElement('div');
+      content.className = 'admin-content';
+
+      content.innerHTML = `
+        <div class="row">
+          <div class="field" style="flex: 2;">
+            <label class="field-label">TITLE</label>
+            <input type="text" id="proj-title" value="${proj.title}">
+          </div>
+          <div class="field" style="flex: 1;">
+            <label class="field-label">ID</label>
+            <input type="text" id="proj-id" value="${proj.id}">
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="field">
+            <label class="field-label">FORMAT</label>
+            <select id="proj-format">
+              <option value="square" ${proj.format === 'square' ? 'selected' : ''}>square</option>
+              <option value="portrait" ${proj.format === 'portrait' ? 'selected' : ''}>portrait</option>
+              <option value="landscape" ${proj.format === 'landscape' ? 'selected' : ''}>landscape</option>
+            </select>
+          </div>
+          <div class="field" style="display: flex; align-items: center; gap: 8px; margin-top: 24px;">
+            <input type="checkbox" id="proj-visible" ${proj.visible ? 'checked' : ''} style="width: auto;">
+            <label for="proj-visible" class="field-label" style="margin: 0;">Show in showcase</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">COVER IMAGE</label>
+          <div class="row" style="align-items: center;">
+            <img id="proj-cover-preview" src="${proj.cover ? '../' + proj.cover.replace('./', '') : ''}" class="list-item__thumb" style="display: ${proj.cover ? 'block' : 'none'};">
+            <input type="file" id="proj-cover-file" accept="image/*">
+            <span id="proj-cover-status" class="status-msg"></span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <label class="field-label" style="margin:0;">MEDIA</label>
+            <div>
+              <button class="btn btn--ghost" id="add-video">+ ADD VIDEO</button>
+              <button class="btn btn--ghost" id="add-image">+ ADD IMAGE</button>
+            </div>
+          </div>
+          <div id="media-list"></div>
+        </div>
+
+        <div class="field">
+          <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <label class="field-label" style="margin:0;">ROLES</label>
+            <button class="btn btn--ghost" id="add-role">+ ADD ROLE</button>
+          </div>
+          <div id="roles-list"></div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">SUMMARY (bold statement, 1–2 sentences)</label>
+          <textarea id="proj-summary">${proj.summary}</textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label">DETAIL (additional context, 1 paragraph)</label>
+          <textarea id="proj-detail">${proj.detail}</textarea>
+        </div>
+
+        <div class="row" style="justify-content: flex-end;">
+          <button class="btn btn--ghost" id="proj-discard">DISCARD</button>
+          <button class="btn btn--primary" id="proj-save">SAVE PROJECT</button>
+        </div>
+      `;
+
+      app.appendChild(content);
+
+      const titleInput = content.querySelector('#proj-title');
+      const idInput = content.querySelector('#proj-id');
+      const formatSelect = content.querySelector('#proj-format');
+      const visibleCheck = content.querySelector('#proj-visible');
+      const coverFile = content.querySelector('#proj-cover-file');
+      const coverPreview = content.querySelector('#proj-cover-preview');
+      const coverStatus = content.querySelector('#proj-cover-status');
+      const summaryInput = content.querySelector('#proj-summary');
+      const detailInput = content.querySelector('#proj-detail');
+      
+      const mediaList = content.querySelector('#media-list');
+      const rolesList = content.querySelector('#roles-list');
+
+      let manualId = !isNew;
+      titleInput.addEventListener('input', () => {
+        if (!manualId) idInput.value = generateId(titleInput.value);
+      });
+      idInput.addEventListener('input', () => { manualId = true; });
+
+      coverFile.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const cId = client.id;
+        const pId = idInput.value || generateId(titleInput.value) || 'temp';
+        const ext = file.name.split('.').pop();
+        const repoPath = `assets/showcase/covers/${cId}-${pId}-cover.${ext}`;
+        
+        isUploading = true;
+        content.querySelector('#proj-save').disabled = true;
+        coverStatus.textContent = 'Uploading...';
+        
+        try {
+          await uploadFile(repoPath, file);
+          proj.cover = `./${repoPath}`;
+          coverPreview.src = URL.createObjectURL(file);
+          coverPreview.style.display = 'block';
+          coverStatus.textContent = '';
+        } catch (err) {
+          coverStatus.textContent = 'Upload failed: ' + err.message;
+          coverStatus.className = 'status-msg status-msg--error';
+        } finally {
+          isUploading = false;
+          content.querySelector('#proj-save').disabled = false;
+        }
+      });
+
+      const renderMedia = () => {
+        mediaList.innerHTML = '';
+        proj.media.forEach((m, mIdx) => {
+          const mItem = document.createElement('div');
+          mItem.className = 'media-item';
+          
+          const typeLabel = document.createElement('div');
+          typeLabel.className = 'media-item__type';
+          typeLabel.textContent = m.type;
+
+          const upDown = document.createElement('div');
+          upDown.style.color = 'var(--muted)';
+          upDown.style.fontSize = '12px';
+          upDown.style.paddingTop = '2px';
+          upDown.textContent = '[↑↓]';
+
+          const inputs = document.createElement('div');
+          inputs.style.flex = '1';
+          
+          if (m.type === 'video') {
+            inputs.innerHTML = `
+              <div class="row" style="margin-bottom: 8px;">
+                <label class="field-label" style="width: 70px; margin:0; align-self:center;">Drive ID</label>
+                <input type="text" class="media-drive" value="${m.driveId || ''}">
+              </div>
+              <div class="row">
+                <label class="field-label" style="width: 70px; margin:0; align-self:center;">Vimeo ID</label>
+                <input type="text" class="media-vimeo" value="${m.vimeoId || ''}">
+              </div>
+            `;
+            inputs.querySelector('.media-drive').addEventListener('input', e => m.driveId = e.target.value);
+            inputs.querySelector('.media-vimeo').addEventListener('input', e => m.vimeoId = e.target.value);
+          } else {
+            inputs.innerHTML = `
+              <div class="row" style="align-items: center;">
+                <img src="${m.src ? '../' + m.src.replace('./', '') : ''}" class="list-item__thumb" style="display: ${m.src ? 'block' : 'none'};">
+                <input type="file" class="media-file" accept="image/*">
+                <span class="media-status status-msg"></span>
+              </div>
+            `;
+            const mFile = inputs.querySelector('.media-file');
+            const mPrev = inputs.querySelector('img');
+            const mStat = inputs.querySelector('.media-status');
+            
+            mFile.addEventListener('change', async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              
+              const cId = client.id;
+              const pId = idInput.value || generateId(titleInput.value) || 'temp';
+              const ext = file.name.split('.').pop();
+              const repoPath = `assets/showcase/${cId}-${pId}-${mIdx}.${ext}`;
+              
+              isUploading = true;
+              content.querySelector('#proj-save').disabled = true;
+              mStat.textContent = 'Uploading...';
+              
+              try {
+                await uploadFile(repoPath, file);
+                m.src = `./${repoPath}`;
+                mPrev.src = URL.createObjectURL(file);
+                mPrev.style.display = 'block';
+                mStat.textContent = '';
+              } catch (err) {
+                mStat.textContent = err.message;
+                mStat.className = 'media-status status-msg status-msg--error';
+              } finally {
+                isUploading = false;
+                content.querySelector('#proj-save').disabled = false;
+              }
+            });
+          }
+
+          const remBtn = document.createElement('button');
+          remBtn.className = 'btn btn--ghost';
+          remBtn.textContent = 'REMOVE';
+          remBtn.style.alignSelf = 'flex-start';
+          remBtn.addEventListener('click', () => {
+            proj.media.splice(mIdx, 1);
+            renderMedia();
+          });
+
+          mItem.appendChild(typeLabel);
+          mItem.appendChild(upDown);
+          mItem.appendChild(inputs);
+          mItem.appendChild(remBtn);
+          mediaList.appendChild(mItem);
+        });
+      };
+
+      const renderRoles = () => {
+        rolesList.innerHTML = '';
+        proj.roles.forEach((r, rIdx) => {
+          const rItem = document.createElement('div');
+          rItem.className = 'role-item';
+          
+          rItem.innerHTML = `
+            <div class="row" style="flex: 1; align-items: center; margin: 0;">
+              <label class="field-label" style="margin:0;">WHAT</label>
+              <input type="text" class="role-what" value="${r.what}" style="flex:1;">
+              <label class="field-label" style="margin:0;">WHO</label>
+              <input type="text" class="role-who" value="${r.who}" style="flex:1;">
+            </div>
+          `;
+          rItem.querySelector('.role-what').addEventListener('input', e => r.what = e.target.value);
+          rItem.querySelector('.role-who').addEventListener('input', e => r.who = e.target.value);
+
+          const remBtn = document.createElement('button');
+          remBtn.className = 'btn btn--ghost';
+          remBtn.textContent = 'REMOVE';
+          remBtn.addEventListener('click', () => {
+            proj.roles.splice(rIdx, 1);
+            renderRoles();
+          });
+
+          rItem.appendChild(remBtn);
+          rolesList.appendChild(rItem);
+        });
+      };
+
+      renderMedia();
+      renderRoles();
+
+      content.querySelector('#add-video').addEventListener('click', () => {
+        proj.media.push({ type: 'video', driveId: '', vimeoId: '' });
+        renderMedia();
+      });
+      content.querySelector('#add-image').addEventListener('click', () => {
+        proj.media.push({ type: 'image', src: '' });
+        renderMedia();
+      });
+      content.querySelector('#add-role').addEventListener('click', () => {
+        proj.roles.push({ what: '', who: '' });
+        renderRoles();
+      });
+
+      content.querySelector('#proj-discard').addEventListener('click', () => {
+        if (confirm('Discard changes?')) {
+          showView('projects', { clientIndex });
+        }
+      });
+
+      content.querySelector('#proj-save').addEventListener('click', () => {
+        if (!titleInput.value.trim()) return alert('Title required');
+
+        proj.title = titleInput.value.trim();
+        proj.id = idInput.value.trim();
+        proj.format = formatSelect.value;
+        proj.visible = visibleCheck.checked;
+        proj.summary = summaryInput.value.trim();
+        proj.detail = detailInput.value.trim();
+
+        if (!client.projects) client.projects = [];
+        if (isNew) {
+          client.projects.push(proj);
+        } else {
+          client.projects[projectIndex] = proj;
+        }
+
+        saveSession();
+        showView('projects', { clientIndex });
+      });
+    }
+
+    // --- INIT ---
+    const savedPat = sessionStorage.getItem('extra_admin_pat');
+    if (savedPat) {
+      pat = savedPat;
+      showcaseData = JSON.parse(sessionStorage.getItem('extra_admin_data') || '[]');
+      fileSha = sessionStorage.getItem('extra_admin_sha') || '';
+      showView('dashboard');
+    } else {
+      showView('login');
+    }
+  </script>
+</body>
+</html>

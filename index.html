@@ -13,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Texturina:ital,wght@0,900;1,900&display=swap" rel="stylesheet">
 
     <!--
       ═══════════════════════════════════════════════════════════
@@ -63,7 +64,10 @@
                 JOIN THE COLLECTIVE
             </button>
         </div>
-        <a href="mailto:hello@extracollective.com" class="nav-cta" id="nav-cta">EXTEND YOUR REACH</a>
+        <div class="nav-links">
+            <button class="nav-link-btn" data-tab="showcase" id="nav-showcase">SHOWCASE</button>
+            <button class="nav-link-btn" data-tab="origins" id="nav-origins">WHY IS EXTRA</button>
+        </div>
     </nav>
 
     <!-- ═══════════════════════════════════════════════════
@@ -73,7 +77,7 @@
 
         <!-- Hero -->
         <header class="hero-section">
-            <h1 class="display-heading">AN UNBOUND<br>CREATIVE<br>COLLECTIVE</h1>
+            <h1 class="display-heading"><span class="hero-title-wrapper"><span class="hero-the">THE</span>Unbound</span><br>Creative<br>Collective.</h1>
             <p class="hero-sub">Helping brands launch, scale, and evolve, without agency overhead.</p>
         </header>
 
@@ -294,7 +298,7 @@
 
         <!-- Hero -->
         <header class="hero-section">
-            <h1 class="display-heading">EXTRA<br>PLUGS IN.</h1>
+            <h1 class="display-heading">Extra<br>Plugs In.</h1>
             <p class="hero-sub">Specialist capability, delivered into your workflow. Seamless to your process, invisible
                 to your client.</p>
         </header>
@@ -477,7 +481,7 @@
 
         <!-- Hero -->
         <header class="hero-section">
-            <h1 class="display-heading">Extra<br>works<br>for you</h1>
+            <h1 class="display-heading">Extra<br>Works<br>For You.</h1>
             <p class="hero-sub">We exist to bring more work to skilled individuals like
                 you and get you earning extra.</p>
         </header>
@@ -541,7 +545,40 @@
 
     </section>
 
-    <!-- ═══════ FOOTER ═══════ -->
+
+    <!-- ═══════ TAB 04 — SHOWCASE ═══════════════════════ -->
+    <section class="tab-panel" id="panel-showcase" role="tabpanel" aria-labelledby="nav-showcase" hidden>
+
+        <header class="hero-section">
+            <h1 class="display-heading">The<br>Work.</h1>
+            <p class="hero-sub">Selected projects from the Extra Collective and its partners.</p>
+        </header>
+
+        <section class="content-section" aria-label="Showcase — selected work">
+            <div id="showcase-root"></div>
+        </section>
+
+    </section>
+
+    <!-- ═══════ TAB 05 — WHY IS EXTRA (ORIGINS) ════════ -->
+    <section class="tab-panel" id="panel-origins" role="tabpanel" aria-labelledby="nav-origins" hidden>
+
+        <header class="hero-section origins-hero">
+            <h1 class="display-heading origins-heading">The Future<br>Of Creative<br>Work Is Not<br>Where You Are.</h1>
+        </header>
+
+        <section class="content-section origins-content" aria-label="Origins of Extra">
+            <div class="origins-prose">
+                <p class="origins-body">In 2020, the studios went dark. As an Art Director, I watched the lockdowns arrive and take everything physical with them; the spaces, the equipment, the infrastructure we had all quietly assumed was needed. What we found on the other side was fascinating. Videos were shot at home, with whatever we could reach for. Proposals sketched by hand. Storyboards built without the comfort of a proper desk. What felt lost in structure was exceeded in energy. The constraint didn't diminish the work. It clarified it. It revealed the essential.</p>
+                <p class="origins-body">When I left, this followed into a different kind of work. International contracts with UN agencies, where teams were distributed across cities and time zones, the briefs were complex, and the stakes were real. Sanitation and Water for All. UNAIDS. The DRC. There was no shared office. No single room where everyone gathered to align. There was intent, a clear structure of responsibility, and people who knew exactly what they were there to do. The work landed. The contracts were renewed. Not because they had to, but because the right ingredients had been identified and nothing else turned out to be necessary.</p>
+                <p class="origins-body">Extra was built on that evidence. That geography is a detail. That a physical structure is a habit, not a requirement. That when the intent is clear, the people are right, and the standard is non-negotiable, everything else falls into place.</p>
+                <p class="origins-closing">Extra is what happens when the right people stop waiting for the right conditions.</p>
+            </div>
+        </section>
+
+    </section>
+
+    <!-- ═════ FOOTER ═════ -->
     <footer class="site-footer" role="contentinfo">
         <span>© EXTRA COLLECTIVE</span>
         <span class="footer-divider" aria-hidden="true">//</span>
@@ -551,9 +588,16 @@
         <a href="mailto:hello@extracollective.com" class="footer-email" id="footer-email">hello@extracollective.com</a>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="dither.js"></script>
     <script src="fluid.js"></script>
     <script src="data.js"></script>
+    <script src="showcase-data.js"></script>
+    <script src="showcase.js"></script>
+    <script src="showcase-dither.js"></script>
+    <script src="showcase-media.js"></script>
+    <script src="showcase-cards.js"></script>
+    <script src="showcase-animations.js"></script>
     <script src="script.js"></script>
 
 </body>

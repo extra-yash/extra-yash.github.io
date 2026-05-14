@@ -303,6 +303,7 @@ const DitherBG = (() => {
 
   let currentColorScale = 1.0; // 1.0 = full brightness, 0.0 = invisible
   let targetColorScale = 1.0;
+  let colorScaleOverride = null; // when set, scroll won't touch targetColorScale
 
   // ─── HELPERS ─────────────────────────────────────────────────────────────
   function hexToVec3(hex) {
@@ -705,9 +706,11 @@ const DitherBG = (() => {
     // ── Scroll: drive wave parallax offset ————————————————————————
     window.addEventListener('scroll', () => {
       scrollY = window.scrollY;
-      // Drive colour scale from scroll: full intensity at top, fades to COLOR_SCROLL_MIN after 1 viewport
-      const scrollFraction = Math.min(scrollY / window.innerHeight, 1.0);
-      targetColorScale = 1.0 - (1.0 - COLOR_SCROLL_MIN) * scrollFraction;
+      // Only drive colour scale from scroll when no tab override is active
+      if (colorScaleOverride === null) {
+        const scrollFraction = Math.min(scrollY / window.innerHeight, 1.0);
+        targetColorScale = 1.0 - (1.0 - COLOR_SCROLL_MIN) * scrollFraction;
+      }
     }, { passive: true });
 
     startTime = performance.now();
@@ -716,11 +719,21 @@ const DitherBG = (() => {
 
   function setColor(hex) { targetColor = hexToVec3(hex); }
   function setBgColor(hex) { targetBgColor = hexToVec3(hex); }
+  function setColorScale(val) {
+    colorScaleOverride = val;
+    targetColorScale = val;
+  }
+  function clearColorScale() {
+    colorScaleOverride = null;
+    // Recompute from current scroll so the transition out feels natural
+    const scrollFraction = Math.min(scrollY / window.innerHeight, 1.0);
+    targetColorScale = 1.0 - (1.0 - COLOR_SCROLL_MIN) * scrollFraction;
+  }
 
   function stop() {
     cancelAnimationFrame(rafId);
   }
 
-  return { init, setColor, setBgColor, stop, hexToVec3 };
+  return { init, setColor, setBgColor, stop, hexToVec3, setColorScale, clearColorScale };
 })();
 

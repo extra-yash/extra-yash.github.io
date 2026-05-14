@@ -40,22 +40,35 @@ const SHEETS_ENDPOINT = '';
 // Each tab drives the dither wave color AND the CSS --accent token.
 const TAB_COLORS = {
   brands: {
-    wave:   '#FF2C00',  // EXTRA BRIGHT
+    wave: '#FF2C00',  // EXTRA BRIGHT
     accent: '#FF2C00',
-    bg:     '#1A1A2E',  // EXTRA DARK
-    theme:  'dark',
+    bg: '#1A1A2E',  // EXTRA DARK
+    theme: 'dark',
   },
   agencies: {
-    wave:   '#5766ED',  // EXTRA CRISP — blue symbols on dark
+    wave: '#5766ED',  // EXTRA CRISP — blue symbols on dark
     accent: '#5766ED',
-    bg:     '#1A1A2E',  // EXTRA DARK
-    theme:  'dark',
+    bg: '#1A1A2E',  // EXTRA DARK
+    theme: 'dark',
   },
   creatives: {
-    wave:   '#9D00FF',  // EXTRA VIOLET
+    wave: '#9D00FF',  // EXTRA VIOLET
     accent: '#9D00FF',
-    bg:     '#1A1A2E',  // EXTRA DARK
-    theme:  'dark',
+    bg: '#1A1A2E',  // EXTRA DARK
+    theme: 'dark',
+  },
+  showcase: {
+    wave: '#27E700',  // EXTRA CONTRAST — green
+    accent: '#27E700',
+    bg: '#1A1A2E',  // EXTRA DARK
+    theme: 'dark',
+  },
+  origins: {
+    wave: '#FFFFF0',  // EXTRA LIGHT — cream, reflective tone for the essay
+    accent: '#FFFFF0',
+    bg: '#1A1A2E',  // EXTRA DARK
+    theme: 'dark',
+    ditherScale: 0.35,  // Controls background density (1.0 = full, 0.25 = sparse)
   },
 };
 
@@ -105,6 +118,7 @@ const FALLBACK_PORTFOLIO = [
 // ─── STATE ────────────────────────────────────────────────────────
 let portfolioData = [];
 let activeTab = 'brands';
+let showcaseActivated = false;
 
 // ─── INIT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -114,7 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initProcessTabs();
   initScrollGuidance();
   initMasteryHover();
-  
+  initShowcase();
+  if (typeof initShowcaseCards === 'function') initShowcaseCards();
+  if (typeof initShowcaseAnimations === 'function') initShowcaseAnimations();
+
   // Re-enable CMS load when ready
   // loadPortfolio();
 });
@@ -140,6 +157,16 @@ function initTabs() {
       activateTab(tab, tabs, panels, true);
     });
   });
+
+  // Nav link buttons (Showcase, Origins) — same system, outside the pill nav
+  document.querySelectorAll('.nav-link-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      if (tab === activeTab) return;
+      activeTab = tab;
+      activateTab(tab, tabs, panels, true);
+    });
+  });
 }
 
 function activateTab(tab, tabs, panels, animate) {
@@ -157,6 +184,11 @@ function activateTab(tab, tabs, panels, animate) {
     panel.hidden = !isActive;
   });
 
+  if (tab === 'showcase' && !showcaseActivated) {
+    showcaseActivated = true;
+    document.dispatchEvent(new CustomEvent('showcaseActivated'));
+  }
+
   // Update URL hash
   history.replaceState(null, '', `#${tab}`);
 
@@ -166,6 +198,12 @@ function activateTab(tab, tabs, panels, animate) {
   DitherBG.setBgColor(colors.bg);
   document.documentElement.style.setProperty('--accent', colors.accent);
   document.body.dataset.theme = colors.theme;
+
+  if (colors.ditherScale !== undefined) {
+    DitherBG.setColorScale(colors.ditherScale);
+  } else {
+    DitherBG.clearColorScale();
+  }
 }
 
 // ─── PROCESS TABS (HOW WE WORK) ───────────────────────────────────
@@ -174,7 +212,7 @@ function initProcessTabs() {
   processBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetProcess = btn.dataset.process;
-      
+
       // Update buttons
       processBtns.forEach(b => {
         b.classList.remove('active');
@@ -182,7 +220,7 @@ function initProcessTabs() {
       });
       btn.classList.add('active');
       btn.setAttribute('aria-selected', 'true');
-      
+
       // Update panels
       const panels = document.querySelectorAll('.process-panel');
       panels.forEach(p => {
@@ -202,7 +240,7 @@ function initProcessTabs() {
 function initScrollGuidance() {
   const indicator = document.getElementById('scroll-guidance');
   if (!indicator) return;
-  
+
   window.addEventListener('scroll', () => {
     if (window.scrollY > 100) {
       indicator.classList.add('hidden');
@@ -215,7 +253,7 @@ function initScrollGuidance() {
 // ─── MASTERY HOVER RANDOMIZATION ──────────────────────────────────
 function initMasteryHover() {
   const masteryItems = document.querySelectorAll('.mastery-item');
-  
+
   // Helper to close all active items on mobile
   function closeAllMastery() {
     document.querySelectorAll('.mastery-item.is-active').forEach(activeItem => {
@@ -225,20 +263,20 @@ function initMasteryHover() {
       });
     });
   }
-  
+
   // Close when tapping outside on mobile
   document.addEventListener('click', (e) => {
     if (window.innerWidth < 768 && !e.target.closest('.mastery-item')) {
       closeAllMastery();
     }
   });
-  
+
   masteryItems.forEach(item => {
     const images = item.querySelectorAll('.h-img');
     const title = item.querySelector('.mastery-title');
     const masteryKey = item.getAttribute('data-mastery');
     if (!title) return;
-    
+
     // Load images from data.js
     if (typeof MASTERY_DATA !== 'undefined' && MASTERY_DATA[masteryKey]) {
       const urls = MASTERY_DATA[masteryKey];
@@ -251,29 +289,29 @@ function initMasteryHover() {
             // Use the thumbnail API endpoint to bypass strict hotlinking rules
             rawUrl = `https://drive.google.com/thumbnail?id=${gDriveMatch[1]}&sz=w800`;
           }
-          
+
           // Preload the image to calculate its true aspect ratio
           const preloader = new Image();
           preloader.src = rawUrl;
           preloader.onload = () => {
             const aspect = preloader.naturalWidth / preloader.naturalHeight;
-            
+
             // Start with a target height (original was 160px)
             let h = 160;
             let w = h * aspect;
-            
+
             // If the image is extremely wide (like a landscape banner), cap the width
             if (w > 240) {
               w = 240;
               h = w / aspect;
             }
-            
+
             img.style.width = `${w}px`;
             img.style.height = `${h}px`;
             img.style.backgroundImage = `url('${rawUrl}')`;
             img.classList.remove('placeholder');
           };
-          
+
         } else {
           img.style.display = 'none'; // Hide if no link provided
         }
@@ -281,16 +319,16 @@ function initMasteryHover() {
     } else {
       images.forEach(img => img.style.display = 'none'); // Hide all if category missing
     }
-    
+
     function openImages() {
       // On mobile, close others first
       if (window.innerWidth < 768) {
         closeAllMastery();
       }
-      
+
       item.classList.add('is-active');
       const isMobile = window.innerWidth < 768;
-      
+
       // Define regions. Shrink them by ~60% on mobile to prevent screen edge bleeding.
       const regions = isMobile ? [
         { x: -50, y: -40 },
@@ -307,22 +345,22 @@ function initMasteryHover() {
         { x: 0, y: -100 },
         { x: 0, y: 110 }
       ];
-      
+
       // Shuffle regions
       const shuffled = regions.sort(() => 0.5 - Math.random());
-      
+
       images.forEach((img, i) => {
         const region = shuffled[i % shuffled.length];
-        
+
         // Add random noise to the distinct region (less noise on mobile)
         const variance = isMobile ? 20 : 40;
         const offset = isMobile ? 10 : 20;
         const rX = region.x + (Math.random() * variance - offset);
         const rY = region.y + (Math.random() * variance - offset);
-        
+
         const rRot = Math.random() * 30 - 15;
         const rScale = 0.9 + (Math.random() * 0.25);
-        
+
         img.style.transform = `translate(calc(-50% + ${rX}px), calc(-50% + ${rY}px)) rotate(${rRot}deg) scale(${rScale})`;
       });
     }
@@ -333,12 +371,12 @@ function initMasteryHover() {
         img.style.transform = `translate(-50%, -50%) scale(0.5)`;
       });
     }
-    
+
     // Desktop Interaction
     title.addEventListener('mouseenter', () => {
       if (window.innerWidth >= 768) openImages();
     });
-    
+
     title.addEventListener('mouseleave', () => {
       if (window.innerWidth >= 768) closeImages();
     });
