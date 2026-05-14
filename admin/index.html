@@ -147,6 +147,7 @@
     let showcaseData = [];          // in-memory copy of SHOWCASE_DATA array
     let fileSha      = '';          // GitHub file SHA — required for PUT updates
     let currentView  = 'login';     // 'login' | 'dashboard' | 'project'
+    let currentClient = null;       // { id, name, logo, projects } or null
     let editingClient  = null;      // { index } or null
     let editingProject = null;      // { clientIndex, projectIndex } or null
     let isUploading  = false;       // Track active uploads
@@ -244,6 +245,47 @@
         `/repos/${REPO_OWNER}/${REPO_NAME}/contents/${repoPath}`,
         body
       );
+    }
+
+    // Extract bare Drive file ID from any Drive URL or return input as-is
+    function extractDriveId(input) {
+      if (!input) return '';
+      input = input.trim();
+      const match = input.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) return match[1];
+      if (/^[a-zA-Z0-9_-]+$/.test(input)) return input;
+      return input;
+    }
+
+    // Fetch Drive thumbnail, upload to repo, return local cover path
+    // Returns null if fetch fails (CORS blocked or file not public)
+    async function fetchAndUploadDriveThumbnail(driveId, clientId, projectId) {
+      const thumbUrl = `https://drive.google.com/thumbnail?id=${driveId}&sz=w800`;
+
+      let blob;
+      try {
+        const res = await fetch(thumbUrl);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        blob = await res.blob();
+      } catch (e) {
+        console.warn('Drive thumbnail fetch failed (CORS or not public):', e);
+        return null;
+      }
+
+      // Determine extension from blob type (Drive thumbnails are typically JPEG)
+      const ext = blob.type === 'image/png' ? 'png' : 'jpg';
+      const repoPath = `assets/showcase/covers/${clientId}-${projectId}-cover.${ext}`;
+
+      // Convert blob to File for uploadFile()
+      const file = new File([blob], `cover.${ext}`, { type: blob.type });
+
+      try {
+        await uploadFile(repoPath, file);
+        return `./${repoPath}`;
+      } catch (e) {
+        console.warn('Cover upload failed:', e);
+        return null;
+      }
     }
 
     function generateId(str) {
@@ -669,6 +711,7 @@
 
     function renderProjectEditor(app, clientIndex, projectIndex) {
       const client = showcaseData[clientIndex];
+      currentClient = client;
       const isNew = projectIndex === null;
       const proj = isNew ? {
         id: '', title: '', format: 'square', cover: '', media: [], roles: [], summary: '', detail: '', visible: true
@@ -839,7 +882,48 @@
                 <input type="text" class="media-vimeo" value="${m.vimeoId || ''}">
               </div>
             `;
-            inputs.querySelector('.media-drive').addEventListener('input', e => m.driveId = e.target.value);
+            inputs.querySelector('.media-drive').addEventListener('input', async e => {
+              const stripped = extractDriveId(e.target.value);
+              if (stripped !== e.target.value) {
+                e.target.value = stripped;
+              }
+              m.driveId = stripped;
+
+              // Auto-fetch and upload thumbnail if no cover is set yet
+              if (stripped && !proj.cover) {
+                const coverPreview = document.getElementById('proj-cover-preview');
+                const coverStatus  = document.getElementById('proj-cover-status');
+
+                if (coverStatus) {
+                  coverStatus.textContent = 'Fetching thumbnail from Drive…';
+                  coverStatus.className = 'status-msg';
+                }
+
+                // Need clientId — get it from the current client context
+                const clientId = currentClient && currentClient.id ? currentClient.id : 'client';
+
+                const localPath = await fetchAndUploadDriveThumbnail(stripped, clientId, proj.id || 'project');
+
+                if (localPath) {
+                  proj.cover = localPath;
+                  if (coverPreview) {
+                    coverPreview.src = URL.createObjectURL(
+                      await (await fetch(`https://drive.google.com/thumbnail?id=${stripped}&sz=w800`)).blob()
+                    );
+                    coverPreview.style.display = 'block';
+                  }
+                  if (coverStatus) {
+                    coverStatus.textContent = 'Thumbnail saved to repo — will be dithered on site.';
+                    coverStatus.className = 'status-msg';
+                  }
+                } else {
+                  if (coverStatus) {
+                    coverStatus.textContent = 'Could not fetch Drive thumbnail — upload a cover manually.';
+                    coverStatus.className = 'status-msg status-msg--error';
+                  }
+                }
+              }
+            });
             inputs.querySelector('.media-vimeo').addEventListener('input', e => m.vimeoId = e.target.value);
           } else {
             inputs.innerHTML = `

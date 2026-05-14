@@ -38,6 +38,7 @@ function initShowcase() {
                    src="${project.cover}"
                    alt="${project.title}"
                    loading="lazy"
+                   crossorigin="anonymous"
                    onerror="this.closest('.showcase-card__media').classList.add('showcase-card__media--missing')">
             </div>
             <div class="showcase-card__label">

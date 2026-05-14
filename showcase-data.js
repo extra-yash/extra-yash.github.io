@@ -10,7 +10,7 @@ const SHOWCASE_DATA = [
         "format": "portrait",
         "cover": "./assets/showcase/covers/world-aids-day-2024.jpg",
         "media": [
-          { "type": "video", "driveId": "placeholder", "vimeoId": "" }
+          { "type": "video", "driveId": "1XZWY8s4u0fpnkih4JPXNpKp47SdFyr2L", "vimeoId": "" }
         ],
         "roles": [
           { "what": "Creative Direction", "who": "Yash" },
