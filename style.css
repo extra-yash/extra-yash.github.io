@@ -1342,6 +1342,8 @@ details[open] .accordion-icon {
 }
 
 .showcase-card__media canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -1383,7 +1385,7 @@ details[open] .accordion-icon {
   left: 0;
   right: 0;
   padding: 16px;
-  background: linear-gradient(to top, rgba(10,10,20,0.85) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(10, 10, 20, 0.85) 0%, transparent 100%);
 }
 
 .showcase-card__title {
@@ -1588,6 +1590,7 @@ details[open] .accordion-icon {
   .showcase-card__expand {
     flex-direction: column;
   }
+
   .showcase-card__expand-left {
     flex: none;
     border-right: none;
@@ -1602,13 +1605,16 @@ details[open] .accordion-icon {
     grid-template-columns: 1fr;
     gap: 8px;
   }
+
   .showcase-client {
     margin-bottom: 56px;
   }
+
   .showcase-card__title {
     font-size: 13px;
     letter-spacing: 0.1em;
   }
+
   .showcase-card__expand-title {
     font-size: clamp(1.6rem, 6vw, 2.4rem);
   }
@@ -1619,6 +1625,7 @@ details[open] .accordion-icon {
     transition: box-shadow 0.25s ease, border-color 0.25s ease;
     border: 1px solid transparent;
   }
+
   .showcase-card:not(.showcase-card--expanded):not(.showcase-card--mobile-open):hover {
     border-color: var(--accent);
     box-shadow: 0 0 0 1px var(--accent);
@@ -1641,6 +1648,7 @@ details[open] .accordion-icon {
   min-height: 260px;
   background: #0a0a0a;
 }
+
 .showcase-card__mob-media-wrap .showcase-card__media-stage {
   width: 100%;
   height: 260px;
@@ -1685,6 +1693,7 @@ details[open] .accordion-icon {
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
 }
+
 .showcase-card__mob-chevron:hover {
   border-color: var(--accent);
   color: var(--accent);

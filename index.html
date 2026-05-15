@@ -588,6 +588,17 @@
         <a href="mailto:hello@extracollective.com" class="footer-email" id="footer-email">hello@extracollective.com</a>
     </footer>
 
+    <script>
+    (function(){
+      var h = location.hash.slice(1);
+      if (h && h !== 'brands' && document.getElementById('panel-' + h)) {
+        var def = document.getElementById('panel-brands');
+        if (def) { def.classList.remove('active'); def.hidden = true; }
+        var t = document.getElementById('panel-' + h);
+        t.classList.add('active'); t.hidden = false;
+      }
+    })();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="dither.js"></script>
     <script src="fluid.js"></script>

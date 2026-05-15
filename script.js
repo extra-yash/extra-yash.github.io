@@ -122,15 +122,26 @@ let showcaseActivated = false;
 
 // ─── INIT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  DitherBG.init();
+  // Resolve the active tab from the hash BEFORE initialising DitherBG,
+  // so the background starts in the correct colour and never flashes brands-red.
+  const hashTab = window.location.hash.replace('#', '');
+  const initTab = (hashTab && TAB_COLORS[hashTab]) ? hashTab : 'brands';
+  const initColors = TAB_COLORS[initTab];
+  DitherBG.init({ color: initColors.wave, bgColor: initColors.bg });
+
   initCursor();
+
+  // Render showcase cards BEFORE initTabs so that when initTabs dispatches
+  // the showcaseActivated event (on hash-reload), the card images already
+  // exist in the DOM and showcase-dither.js can process them immediately.
+  if (typeof initShowcase === 'function') initShowcase();
+  if (typeof initShowcaseCards === 'function') initShowcaseCards();
+  if (typeof initShowcaseAnimations === 'function') initShowcaseAnimations();
+
   initTabs();
   initProcessTabs();
   initScrollGuidance();
   initMasteryHover();
-  initShowcase();
-  if (typeof initShowcaseCards === 'function') initShowcaseCards();
-  if (typeof initShowcaseAnimations === 'function') initShowcaseAnimations();
 
   // Re-enable CMS load when ready
   // loadPortfolio();
@@ -406,8 +417,12 @@ function initCursor() {
     return;
   }
 
+  // Hide until the first mousemove so the cursor doesn't snap from (0,0) on reload.
+  cursor.style.opacity = '0';
+
   // Use transform for positioning — runs on GPU compositor, zero layout lag.
   document.addEventListener('mousemove', e => {
+    cursor.style.opacity = '1';
     cursor.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
   });
 

@@ -610,7 +610,16 @@ const DitherBG = (() => {
   }
 
   // ─── PUBLIC API ───────────────────────────────────────────────────────────
-  function init() {
+  function init(options) {
+    // Allow caller to set the starting colour so there's no first-frame flash.
+    if (options && options.color) {
+      targetColor = hexToVec3(options.color);
+      currentColor = [...targetColor];
+    }
+    if (options && options.bgColor) {
+      targetBgColor = hexToVec3(options.bgColor);
+      currentBgColor = [...targetBgColor];
+    }
     canvas = document.createElement('canvas');
     canvas.id = 'dither-bg';
     canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block;pointer-events:none';
