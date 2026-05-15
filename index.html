@@ -49,38 +49,43 @@
             <img src="./assets/EXTRA LOGO LIGHT.svg" alt="Extra Collective" height="28">
         </a>
 
+        <div class="tab-cell">
+            <div class="tab-nav" role="tablist" aria-label="Audience tabs">
+                <button class="tab-btn active" data-tab="brands" role="tab" aria-selected="true"
+                    id="tab-brands" aria-controls="panel-brands">BUILD A BRAND</button>
+                <button class="tab-btn" data-tab="agencies" role="tab" aria-selected="false"
+                    id="tab-agencies" aria-controls="panel-agencies">EXTEND YOUR TEAM</button>
+                <button class="tab-btn" data-tab="creatives" role="tab" aria-selected="false"
+                    id="tab-creatives" aria-controls="panel-creatives">JOIN THE COLLECTIVE</button>
+            </div>
+        </div>
 
-        <div class="tab-nav" role="tablist" aria-label="Audience tabs">
-            <button class="tab-btn active" data-tab="brands" role="tab" aria-selected="true" id="tab-brands"
-                aria-controls="panel-brands">
-                BUILD A BRAND
-            </button>
-            <button class="tab-btn" data-tab="agencies" role="tab" aria-selected="false" id="tab-agencies"
-                aria-controls="panel-agencies">
-                EXTEND YOUR TEAM
-            </button>
-            <button class="tab-btn" data-tab="creatives" role="tab" aria-selected="false" id="tab-creatives"
-                aria-controls="panel-creatives">
-                JOIN THE COLLECTIVE
-            </button>
+        <div class="nav-showcase">
+            <button class="nav-pill-btn" data-tab="showcase" id="nav-showcase">SHOWCASE</button>
         </div>
-        <div class="nav-links">
-            <button class="nav-link-btn" data-tab="showcase" id="nav-showcase">SHOWCASE</button>
-            <button class="nav-link-btn" data-tab="origins" id="nav-origins">WHY IS EXTRA</button>
+
+        <div class="nav-origins">
+            <button class="nav-pill-btn" data-tab="origins" id="nav-origins">WHY IS EXTRA</button>
         </div>
+
     </nav>
+
+    <main class="main-window" id="main-window">
 
     <!-- ═══════════════════════════════════════════════════
          TAB 01 — FOR BRANDS
          ═══════════════════════════════════════════════════ -->
     <section class="tab-panel active" id="panel-brands" role="tabpanel" aria-labelledby="tab-brands">
 
+        <div class="snap-section" data-snap="hero">
         <!-- Hero -->
         <header class="hero-section">
             <h1 class="display-heading"><span class="hero-title-wrapper"><span class="hero-the">THE</span>Unbound</span><br>Creative<br>Collective.</h1>
             <p class="hero-sub">Helping brands launch, scale, and evolve, without agency overhead.</p>
         </header>
+        </div>
 
+        <div class="snap-section" data-snap="how-we-work">
         <section class="content-section" aria-labelledby="brands-model-heading">
             <h2 class="section-label" id="brands-model-heading" data-text="HOW WE WORK">HOW WE WORK</h2>
 
@@ -111,9 +116,11 @@
                 </article>
             </div>
         </section>
+        </div>
 
 
 
+        <div class="snap-section" data-snap="what-we-master">
         <!-- What We Master -->
         <section class="content-section mastery-section" aria-labelledby="brands-mastery-heading">
             <h2 class="section-label" id="brands-mastery-heading" data-text="WHAT WE MASTER">WHAT WE MASTER</h2>
@@ -256,7 +263,9 @@
                 </div>
             </div>
         </section>
+        </div>
 
+        <div class="snap-section" data-snap="the-difference">
         <!-- Comparison -->
         <section class="content-section comparison-section" aria-labelledby="comparison-heading">
             <h2 class="section-label" id="comparison-heading" data-text="THE DIFFERENCE">THE DIFFERENCE</h2>
@@ -281,12 +290,15 @@
                 </div>
             </div>
         </section>
+        </div>
 
+        <div class="snap-section" data-snap="cta">
         <!-- CTA Strip -->
         <div class="cta-strip" id="brands-cta-strip">
             <p class="cta-strip-text">The cost of being ignored<br>exceeds the cost of getting it right.</p>
             <a href="mailto:hello@extracollective.com" class="cta-btn cta-btn--dark" id="brands-cta-bottom">Let's Talk
                 About Your Needs →</a>
+        </div>
         </div>
 
     </section>
@@ -296,13 +308,16 @@
          ═══════════════════════════════════════════════════ -->
     <section class="tab-panel" id="panel-agencies" role="tabpanel" aria-labelledby="tab-agencies" hidden>
 
+        <div class="snap-section" data-snap="hero">
         <!-- Hero -->
         <header class="hero-section">
             <h1 class="display-heading">Extra<br>Plugs In.</h1>
             <p class="hero-sub">Specialist capability, delivered into your workflow. Seamless to your process, invisible
                 to your client.</p>
         </header>
+        </div>
 
+        <div class="snap-section" data-snap="how-it-works">
         <!-- How the Partnership Works -->
         <section class="content-section" aria-labelledby="agencies-model-heading">
             <h2 class="section-label" id="agencies-model-heading" data-text="HOW IT WORKS">HOW IT WORKS</h2>
@@ -327,9 +342,11 @@
                 </article>
             </div>
         </section>
+        </div>
 
 
 
+        <div class="snap-section" data-snap="what-we-master">
         <!-- What We Master -->
         <section class="content-section mastery-section" aria-labelledby="agencies-mastery-heading">
             <h2 class="section-label" id="agencies-mastery-heading" data-text="WHAT WE MASTER">WHAT WE MASTER</h2>
@@ -464,28 +481,35 @@
                 </div>
             </div>
         </section>
+        </div>
 
+        <div class="snap-section" data-snap="cta">
         <!-- CTA Strip -->
         <div class="cta-strip" id="agencies-cta-strip">
             <p class="cta-strip-text">An Extra team or two,<br>whenever you need.</p>
             <a href="mailto:hello@extracollective.com" class="cta-btn cta-btn--dark" id="agencies-cta-bottom">Let's Talk
                 About Your Needs →</a>
         </div>
+        </div>
 
     </section>
+
 
     <!-- ═══════════════════════════════════════════════════
          TAB 03 — FOR CREATIVES
          ═══════════════════════════════════════════════════ -->
     <section class="tab-panel" id="panel-creatives" role="tabpanel" aria-labelledby="tab-creatives" hidden>
 
+        <div class="snap-section" data-snap="hero">
         <!-- Hero -->
         <header class="hero-section">
             <h1 class="display-heading">Extra<br>Works<br>For You.</h1>
             <p class="hero-sub">We exist to bring more work to skilled individuals like
                 you and get you earning extra.</p>
         </header>
+        </div>
 
+        <div class="snap-section" data-snap="four-pillars">
         <!-- The Four Pillars -->
         <section class="content-section" aria-labelledby="creatives-pillars-heading">
             <h2 class="section-label" id="creatives-pillars-heading" data-text="THE FOUR PILLARS">THE FOUR PILLARS</h2>
@@ -516,7 +540,9 @@
                 </article>
             </div>
         </section>
+        </div>
 
+        <div class="snap-section" data-snap="honest-criteria">
         <!-- Who We're Looking For -->
         <section class="content-section" aria-labelledby="creatives-criteria-heading">
             <h2 class="section-label" id="creatives-criteria-heading" data-text="THE HONEST CRITERIA">THE HONEST
@@ -533,14 +559,17 @@
                 </div>
             </article>
         </section>
+        </div>
 
 
 
+        <div class="snap-section" data-snap="cta">
         <!-- CTA Strip -->
         <div class="cta-strip" id="creatives-cta-strip">
             <p class="cta-strip-text">The Collective is hungry for minds like yours.<br>Let's work together.</p>
             <a href="mailto:hello@extracollective.com?subject=Partnership%20Enquiry%20%E2%80%94%20Extra%20Collective"
                 class="cta-btn cta-btn--dark" id="creatives-cta-bottom">Tell Us About Your Work →</a>
+        </div>
         </div>
 
     </section>
@@ -549,24 +578,31 @@
     <!-- ═══════ TAB 04 — SHOWCASE ═══════════════════════ -->
     <section class="tab-panel" id="panel-showcase" role="tabpanel" aria-labelledby="nav-showcase" hidden>
 
+        <div class="snap-section" data-snap="hero">
         <header class="hero-section">
             <h1 class="display-heading">The<br>Work.</h1>
             <p class="hero-sub">Selected projects from the Extra Collective and its partners.</p>
         </header>
+        </div>
 
+        <div class="snap-section" data-snap="work">
         <section class="content-section" aria-label="Showcase — selected work">
             <div id="showcase-root"></div>
         </section>
+        </div>
 
     </section>
 
     <!-- ═══════ TAB 05 — WHY IS EXTRA (ORIGINS) ════════ -->
     <section class="tab-panel" id="panel-origins" role="tabpanel" aria-labelledby="nav-origins" hidden>
 
+        <div class="snap-section" data-snap="hero">
         <header class="hero-section origins-hero">
             <h1 class="display-heading origins-heading">The Future<br>Of Creative<br>Work Is Not<br>Where You Are.</h1>
         </header>
+        </div>
 
+        <div class="snap-section" data-snap="story">
         <section class="content-section origins-content" aria-label="Origins of Extra">
             <div class="origins-prose">
                 <p class="origins-body">In 2020, the studios went dark. As an Art Director, I watched the lockdowns arrive and take everything physical with them; the spaces, the equipment, the infrastructure we had all quietly assumed was needed. What we found on the other side was fascinating. Videos were shot at home, with whatever we could reach for. Proposals sketched by hand. Storyboards built without the comfort of a proper desk. What felt lost in structure was exceeded in energy. The constraint didn't diminish the work. It clarified it. It revealed the essential.</p>
@@ -575,8 +611,11 @@
                 <p class="origins-closing">Extra is what happens when the right people stop waiting for the right conditions.</p>
             </div>
         </section>
+        </div>
 
     </section>
+
+    </main>
 
     <!-- ═════ FOOTER ═════ -->
     <footer class="site-footer" role="contentinfo">

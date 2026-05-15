@@ -28,6 +28,8 @@ const DitherBG = (() => {
   const WAVE_AMPLITUDE = 0.9;
   const COLOR_NUM = 3.0;   // tonal steps in the dither
   const CELL_SIZE = 15.0;  // grid pitch in px — controls symbol density
+  document.documentElement.style.setProperty('--dither-cell', CELL_SIZE + 'px');
+  document.documentElement.style.setProperty('--grid-margin', (CELL_SIZE * 2) + 'px');
   const STAMP_SIZE = 20.0;  // symbol size within each cell (≤ CELL_SIZE)
   const CURSOR_VOID_PX = 70.0;      // inner void radius — fully clear (px)
   const CURSOR_VOID_FALLOFF = 140.0; // falloff width beyond void — symbols fade in over this (px)
@@ -365,8 +367,10 @@ const DitherBG = (() => {
   const WAVE_SCALE = 0.25;
 
   function resize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    if (!canvas) return;
+    const host = canvas.parentElement || document.getElementById('main-window') || document.documentElement;
+    const w = host.clientWidth || window.innerWidth;
+    const h = host.clientHeight || window.innerHeight;
     canvas.width = w;
     canvas.height = h;
     // Don't call gl.viewport here — it's set per-pass in render()
@@ -579,14 +583,16 @@ const DitherBG = (() => {
         : [];
       if (els.length) {
         let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+        const canvasOrigin = canvas.getBoundingClientRect(); // canvas position in viewport
         els.forEach(el => {
           const r = el.getBoundingClientRect();
-          x1 = Math.min(x1, r.left);
-          y1 = Math.min(y1, r.top);
-          x2 = Math.max(x2, r.right);
-          y2 = Math.max(y2, r.bottom);
+          // Convert from viewport-relative to canvas-relative
+          x1 = Math.min(x1, r.left   - canvasOrigin.left);
+          y1 = Math.min(y1, r.top    - canvasOrigin.top);
+          x2 = Math.max(x2, r.right  - canvasOrigin.left);
+          y2 = Math.max(y2, r.bottom - canvasOrigin.top);
         });
-        // Ellipse centre in GL coords (Y-flipped)
+        // Ellipse centre in GL coords (Y-flipped relative to canvas height)
         const cx = (x1 + x2) / 2;
         const cy = h - (y1 + y2) / 2;
         // x-radius: scaled fraction of half-width (text is centred, not full-width)
@@ -622,8 +628,9 @@ const DitherBG = (() => {
     }
     canvas = document.createElement('canvas');
     canvas.id = 'dither-bg';
-    canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block;pointer-events:none';
-    document.body.prepend(canvas);
+    canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block;pointer-events:none';
+    const container = document.getElementById('main-window') || document.body;
+    container.prepend(canvas);
 
     // alpha:false = compositor copies pixels without blending — faster.
     // Off-cells render #1A1A2E directly via u_bgColor uniform.
@@ -704,12 +711,12 @@ const DitherBG = (() => {
     FluidSim.init(gl, canvas);
 
     resize();
-    window.addEventListener('resize', resize);
 
     // ── Mouse: use raw clientX/clientY — the shader handles the Y-flip ────
     window.addEventListener('mousemove', e => {
-      mouseX = e.clientX;
-      mouseY = e.clientY; // NO JS flip — shader converts to GL space
+      const cr = canvas.getBoundingClientRect();
+      mouseX = e.clientX - cr.left;
+      mouseY = e.clientY - cr.top;  // NO JS flip — shader converts to GL space
     });
 
     // ── Scroll: drive wave parallax offset ————————————————————————
@@ -743,6 +750,6 @@ const DitherBG = (() => {
     cancelAnimationFrame(rafId);
   }
 
-  return { init, setColor, setBgColor, stop, hexToVec3, setColorScale, clearColorScale };
+  return { init, resize, setColor, setBgColor, stop, hexToVec3, setColorScale, clearColorScale };
 })();
 

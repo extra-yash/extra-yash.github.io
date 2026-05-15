@@ -127,7 +127,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const hashTab = window.location.hash.replace('#', '');
   const initTab = (hashTab && TAB_COLORS[hashTab]) ? hashTab : 'brands';
   const initColors = TAB_COLORS[initTab];
+  // 1. Set main-window geometry BEFORE dither canvas is created
+  snapAllToGrid();
+
+  // 2. NOW init dither — resize() reads correct main-window dimensions
   DitherBG.init({ color: initColors.wave, bgColor: initColors.bg });
+
+  // 3. Re-snap after init (canvas is now in DOM, measurements are final)
+  snapAllToGrid();
 
   initCursor();
 
@@ -146,6 +153,182 @@ document.addEventListener('DOMContentLoaded', () => {
   // Re-enable CMS load when ready
   // loadPortfolio();
 });
+
+// ─── GRID SNAP SYSTEM ────────────────────────────────────────────
+function snapAllToGrid() {
+  const mainWindow = document.querySelector('.main-window');
+
+  const cell = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--dither-cell')
+  );
+  const margin = cell * 2; // --grid-margin in px
+
+  if (!cell || cell <= 0) return;
+
+  // ── NAV height ───────────────────────────────────────────────────
+  const nav = document.querySelector('.top-nav');
+  nav.style.height = '';
+  const navSnapped = Math.ceil(nav.getBoundingClientRect().height / cell) * cell;
+  nav.style.height = navSnapped + 'px';
+
+  // ── MAIN WINDOW size ─────────────────────────────────────────────
+  const availableW = window.innerWidth - 2 * margin;
+  const mainW = Math.floor(availableW / cell) * cell;
+  
+  const footerH = cell * 3;
+
+  // Footer geometry
+  const footer = document.querySelector('.site-footer');
+  if (footer) {
+    footer.style.width = mainW + 'px';
+    footer.style.marginLeft = margin + 'px';
+  }
+
+  // Main window height always accounts for footer
+  const remainingH = window.innerHeight - navSnapped - footerH;
+  const mainH = Math.floor(remainingH / cell) * cell;
+
+  if (mainWindow) {
+    mainWindow.style.width = mainW + 'px';
+    mainWindow.style.marginLeft = margin + 'px';
+    mainWindow.style.marginRight = 'auto';
+    mainWindow.style.height = mainH + 'px';
+    mainWindow.style.flex = 'none';
+  }
+
+  // ── SNAP SECTIONS ────────────────────────────────────────────────
+  document.querySelectorAll('.snap-section').forEach(s => {
+    s.style.height = mainH + 'px';
+  });
+
+  // DITHER CANVAS — resize after layout is final
+  if (typeof DitherBG !== 'undefined' && DitherBG.resize) {
+    DitherBG.resize();
+  }
+
+  // Snap pill edges to grid lines — must run after nav height + main window width are set
+}
+
+window.addEventListener('resize', snapAllToGrid);
+
+// ─── FILM STRIP SCROLL ────────────────────────────────────────────
+(function () {
+  let isAnimating = false;
+  let currentSnap = 0;
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function getActivePanel() {
+    return document.querySelector('.tab-panel.active');
+  }
+
+  function getSnapSections() {
+    return Array.from(getActivePanel()?.querySelectorAll('.snap-section') || []);
+  }
+
+  function scrollToSnap(index, duration = 600) {
+    const panel = getActivePanel();
+    if (!panel || isAnimating) return;
+    const sections = getSnapSections();
+    if (!sections[index]) return;
+
+    const targetY = sections[index].offsetTop;
+    const startY = panel.scrollTop;
+    const distance = targetY - startY;
+    if (Math.abs(distance) < 2) return;
+
+    isAnimating = true;
+    currentSnap = index;
+    const start = performance.now();
+
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      panel.scrollTop = startY + distance * easeOutCubic(progress);
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        isAnimating = false;
+        // Restore dither density fade based on section position
+        const sections = getSnapSections();
+        const fraction = sections.length > 1 ? currentSnap / (sections.length - 1) : 0;
+        if (typeof DitherBG !== 'undefined') {
+          DitherBG.setColorScale(1.0 - (1.0 - 0.35) * fraction);
+        }
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function onWheel(e) {
+    if (isAnimating) return;
+    e.preventDefault();
+    const sections = getSnapSections();
+    if (e.deltaY > 0 && currentSnap < sections.length - 1) {
+      scrollToSnap(currentSnap + 1);
+    } else if (e.deltaY < 0 && currentSnap > 0) {
+      scrollToSnap(currentSnap - 1);
+    }
+  }
+
+  const mainWin = document.getElementById('main-window');
+  if (mainWin) {
+    mainWin.addEventListener('wheel', onWheel, { passive: false });
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      const mw = document.getElementById('main-window');
+      if (mw) mw.addEventListener('wheel', onWheel, { passive: false });
+    });
+  }
+
+  // Reset on tab switch — defer until DOM is ready
+  function bindTabResets() {
+    document.querySelectorAll('.tab-btn, .nav-pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentSnap = 0;
+        requestAnimationFrame(() => {
+          const panel = getActivePanel();
+          if (panel) panel.scrollTop = 0;
+        });
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindTabResets);
+  } else {
+    bindTabResets();
+  }
+})();
+
+// ─── TOUCH SUPPORT ────────────────────────────────────────────────
+(function () {
+  let touchStartY = 0;
+
+  function setup() {
+    const mainWindow = document.getElementById('main-window');
+    if (!mainWindow) return;
+
+    mainWindow.addEventListener('touchstart', e => {
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    mainWindow.addEventListener('touchend', e => {
+      const delta = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(delta) < 40) return;
+      mainWindow.dispatchEvent(new WheelEvent('wheel', { deltaY: delta, cancelable: true }));
+    }, { passive: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
+
 
 // ─── TAB SYSTEM ───────────────────────────────────────────────────
 function initTabs() {
@@ -169,8 +352,8 @@ function initTabs() {
     });
   });
 
-  // Nav link buttons (Showcase, Origins) — same system, outside the pill nav
-  document.querySelectorAll('.nav-link-btn').forEach(btn => {
+  // Nav pill buttons (Showcase, Origins) — same tab system, own grid cells
+  document.querySelectorAll('.nav-pill-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
       if (tab === activeTab) return;
@@ -186,6 +369,11 @@ function activateTab(tab, tabs, panels, animate) {
     const isActive = btn.dataset.tab === tab;
     btn.classList.toggle('active', isActive);
     btn.setAttribute('aria-selected', isActive);
+  });
+
+  // Update nav-pill-btn active state
+  document.querySelectorAll('.nav-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
   });
 
   // Update panels
