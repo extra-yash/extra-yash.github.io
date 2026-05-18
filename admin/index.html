@@ -131,6 +131,20 @@
                    text-align: center; }
     .overlay-box p { margin-bottom: 24px; line-height: 1.6; color: var(--muted); }
     .overlay-box .row { justify-content: center; }
+
+    .drag-over {
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .drag-handle {
+      cursor: grab;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 0 6px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .drag-handle:active { cursor: grabbing; }
   </style>
 </head>
 <body>
@@ -151,6 +165,8 @@
     let editingClient  = null;      // { index } or null
     let editingProject = null;      // { clientIndex, projectIndex } or null
     let isUploading  = false;       // Track active uploads
+    let sessionDirty = false;   // true when showcaseData has changes not yet published
+    let editorDirty  = false;   // true when project editor has unsaved field edits
 
     // Part 3 — GitHub API Functions
     async function githubGet(path) {
@@ -216,6 +232,7 @@
         }
       );
       fileSha = result.content.sha;
+      sessionDirty = false;
     }
 
     async function uploadFile(repoPath, file) {
@@ -296,6 +313,59 @@
       sessionStorage.setItem('extra_admin_pat', pat);
       sessionStorage.setItem('extra_admin_data', JSON.stringify(showcaseData));
       sessionStorage.setItem('extra_admin_sha', fileSha);
+      sessionDirty = true;
+    }
+
+    function makeDraggable(container, getArray, onReorder) {
+      let dragSrc = null;
+
+      function handleDragStart(e) {
+        dragSrc = this;
+        this.style.opacity = '0.4';
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', '');
+      }
+      function handleDragEnd() {
+        this.style.opacity = '';
+        container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      }
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+      }
+      function handleDragEnter() {
+        this.classList.add('drag-over');
+      }
+      function handleDragLeave() {
+        this.classList.remove('drag-over');
+      }
+      function handleDrop(e) {
+        e.stopPropagation();
+        if (dragSrc !== this) {
+          const items = [...container.children];
+          const fromIdx = items.indexOf(dragSrc);
+          const toIdx   = items.indexOf(this);
+          if (fromIdx < 0 || toIdx < 0) return;
+          const arr = getArray();
+          const [moved] = arr.splice(fromIdx, 1);
+          arr.splice(toIdx, 0, moved);
+          onReorder();
+        }
+        return false;
+      }
+
+      function attachToDraggable(el) {
+        el.setAttribute('draggable', 'true');
+        el.addEventListener('dragstart',  handleDragStart);
+        el.addEventListener('dragend',    handleDragEnd);
+        el.addEventListener('dragover',   handleDragOver);
+        el.addEventListener('dragenter',  handleDragEnter);
+        el.addEventListener('dragleave',  handleDragLeave);
+        el.addEventListener('drop',       handleDrop);
+      }
+
+      [...container.children].forEach(attachToDraggable);
     }
 
     // Part 8 — Wiring & Navigation
@@ -309,6 +379,87 @@
       if (view === 'projects')  renderProjectList(app, params.clientIndex);
       if (view === 'project')   renderProjectEditor(app, params.clientIndex, params.projectIndex);
     }
+
+function renderPublishBtn(parent, params = {}) {
+  const wrap = document.createElement('div');
+  wrap.style.display = 'flex';
+  wrap.style.alignItems = 'center';
+  wrap.style.gap = '12px';
+
+  const statusText = document.createElement('div');
+  statusText.className = 'status-msg';
+  if (sessionDirty) {
+    statusText.textContent = 'UNPUBLISHED CHANGES';
+    statusText.style.color = 'var(--accent)';
+    statusText.style.opacity = '0.6';
+    statusText.style.fontSize = '10px';
+  }
+  wrap.appendChild(statusText);
+
+  const btn = document.createElement('button');
+  btn.className = 'btn btn--primary';
+  btn.textContent = 'PUBLISH';
+  if (!sessionDirty) btn.style.opacity = '0.4';
+  wrap.appendChild(btn);
+
+  btn.addEventListener('click', () => {
+    // If in project editor with unsaved field edits, warn
+    if (editorDirty) {
+      alert('Save this project first, then publish.');
+      return;
+    }
+    if (!sessionDirty) {
+      alert('Nothing to publish — no changes since last publish.');
+      return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = `
+      <div class="overlay-box">
+        <p>Publish to live site? (~60s to deploy)</p>
+        <div class="row">
+          <button class="btn btn--ghost" id="confirm-cancel">CANCEL</button>
+          <button class="btn btn--primary" id="confirm-publish">CONFIRM</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#confirm-cancel').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('#confirm-publish').addEventListener('click', async () => {
+      overlay.remove();
+      btn.disabled = true;
+      btn.textContent = 'PUBLISHING...';
+      statusText.textContent = '';
+      try {
+        await publishShowcaseData();
+        saveSession();
+        sessionDirty = false;
+        btn.style.opacity = '1';
+        statusText.textContent = 'PUBLISHED ✓ — Live in ~60s';
+        statusText.style.color = 'var(--accent)';
+        statusText.style.opacity = '1';
+        setTimeout(() => {
+          statusText.textContent = 'UNPUBLISHED CHANGES' ; 
+          // re-check — saveSession above re-sets dirty, so clear it again
+          sessionDirty = false;
+          statusText.textContent = '';
+          btn.style.opacity = '0.4';
+        }, 4000);
+      } catch (e) {
+        statusText.textContent = e.message;
+        statusText.style.color = 'var(--danger)';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'PUBLISH';
+      }
+    });
+  });
+
+  parent.appendChild(wrap);
+  return wrap;
+}
 
     function renderHeader(parent, leftContent, rightContent) {
       const header = document.createElement('div');
@@ -382,57 +533,9 @@
       headerRight.style.display = 'flex';
       headerRight.style.alignItems = 'center';
       headerRight.style.gap = '16px';
-      
-      const statusText = document.createElement('div');
-      statusText.className = 'status-msg';
-      headerRight.appendChild(statusText);
 
-      const publishBtn = document.createElement('button');
-      publishBtn.className = 'btn btn--primary';
-      publishBtn.textContent = 'PUBLISH';
-      headerRight.appendChild(publishBtn);
-
+      renderPublishBtn(headerRight);
       renderHeader(app, '✕ SHOWCASE ADMIN', headerRight);
-
-      publishBtn.addEventListener('click', () => {
-        const overlay = document.createElement('div');
-        overlay.className = 'overlay';
-        overlay.innerHTML = `
-          <div class="overlay-box">
-            <p>Publish to live site? (~60s to deploy)</p>
-            <div class="row">
-              <button class="btn btn--ghost" id="confirm-cancel">CANCEL</button>
-              <button class="btn btn--primary" id="confirm-publish">CONFIRM</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(overlay);
-
-        overlay.querySelector('#confirm-cancel').addEventListener('click', () => {
-          overlay.remove();
-        });
-        
-        overlay.querySelector('#confirm-publish').addEventListener('click', async () => {
-          overlay.remove();
-          publishBtn.disabled = true;
-          publishBtn.textContent = 'PUBLISHING...';
-          statusText.textContent = '';
-          
-          try {
-            await publishShowcaseData();
-            saveSession();
-            statusText.textContent = 'PUBLISHED ✓ — Live in ~60 seconds.';
-            statusText.className = 'status-msg status-msg--success';
-            setTimeout(() => { statusText.textContent = ''; }, 4000);
-          } catch (e) {
-            statusText.textContent = e.message;
-            statusText.className = 'status-msg status-msg--error';
-          } finally {
-            publishBtn.disabled = false;
-            publishBtn.textContent = 'PUBLISH';
-          }
-        });
-      });
 
       const content = document.createElement('div');
       content.className = 'admin-content';
@@ -503,10 +606,22 @@
           goBtn.addEventListener('click', () => {
             showView('projects', { clientIndex: idx });
           });
+
+          const delClientBtn = document.createElement('button');
+          delClientBtn.className = 'btn btn--danger';
+          delClientBtn.style.fontSize = '10px';
+          delClientBtn.textContent = 'DELETE';
+          delClientBtn.addEventListener('click', () => {
+            if (!confirm(`Delete client "${client.name}" and ALL their projects?`)) return;
+            showcaseData.splice(idx, 1);
+            saveSession();
+            showView('dashboard');
+          });
           
           item.appendChild(img);
           item.appendChild(body);
           item.appendChild(goBtn);
+          item.appendChild(delClientBtn);
           content.appendChild(item);
         });
       }
@@ -617,6 +732,7 @@
 
     function renderProjectList(app, clientIndex) {
       const client = showcaseData[clientIndex];
+      const isTouchDevice = 'ontouchstart' in window;
 
       const headerLeft = document.createElement('div');
       headerLeft.style.display = 'flex';
@@ -645,7 +761,13 @@
         showView('project', { clientIndex, projectIndex: null });
       });
 
-      renderHeader(app, headerLeft, newProjBtn);
+      const headerRight = document.createElement('div');
+      headerRight.style.display = 'flex';
+      headerRight.style.gap = '12px';
+      headerRight.style.alignItems = 'center';
+      headerRight.appendChild(newProjBtn);
+      renderPublishBtn(headerRight);
+      renderHeader(app, headerLeft, headerRight);
 
       const content = document.createElement('div');
       content.className = 'admin-content';
@@ -660,6 +782,13 @@
           const item = document.createElement('div');
           item.className = 'list-item';
           
+          const handle = document.createElement('div');
+          handle.className = 'drag-handle';
+          handle.title = 'Drag to reorder';
+          handle.textContent = '⠿';
+          handle.style.display = isTouchDevice ? 'none' : 'block';
+          item.appendChild(handle);
+
           const img = document.createElement('img');
           img.className = 'list-item__thumb';
           if (proj.cover) img.src = '../' + proj.cover.replace('./', '');
@@ -692,18 +821,80 @@
           body.appendChild(nameRow);
           body.appendChild(meta);
           
+          const visToggle = document.createElement('button');
+          visToggle.className = 'btn btn--ghost';
+          visToggle.style.fontSize = '16px';
+          visToggle.style.padding = '4px 8px';
+          visToggle.title = proj.visible ? 'Visible — click to hide' : 'Hidden — click to show';
+          visToggle.textContent = proj.visible ? '👁' : '🚫';
+          visToggle.addEventListener('click', () => {
+            proj.visible = !proj.visible;
+            visToggle.textContent = proj.visible ? '👁' : '🚫';
+            visToggle.title = proj.visible ? 'Visible — click to hide' : 'Hidden — click to show';
+            saveSession();
+          });
+
+          if (isTouchDevice && client.projects.length > 1) {
+            const upBtn = document.createElement('button');
+            upBtn.className = 'btn btn--ghost';
+            upBtn.style.fontSize = '12px';
+            upBtn.style.padding = '4px 6px';
+            upBtn.textContent = '↑';
+            upBtn.disabled = pIdx === 0;
+            upBtn.addEventListener('click', () => {
+              client.projects.splice(pIdx - 1, 0, client.projects.splice(pIdx, 1)[0]);
+              saveSession();
+              showView('projects', { clientIndex });
+            });
+
+            const downBtn = document.createElement('button');
+            downBtn.className = 'btn btn--ghost';
+            downBtn.style.fontSize = '12px';
+            downBtn.style.padding = '4px 6px';
+            downBtn.textContent = '↓';
+            downBtn.disabled = pIdx === client.projects.length - 1;
+            downBtn.addEventListener('click', () => {
+              client.projects.splice(pIdx + 1, 0, client.projects.splice(pIdx, 1)[0]);
+              saveSession();
+              showView('projects', { clientIndex });
+            });
+
+            item.appendChild(upBtn);
+            item.appendChild(downBtn);
+          }
+
           const editBtn = document.createElement('button');
           editBtn.className = 'btn btn--ghost';
           editBtn.textContent = 'EDIT';
           editBtn.addEventListener('click', () => {
             showView('project', { clientIndex, projectIndex: pIdx });
           });
+
+          const delBtn = document.createElement('button');
+          delBtn.className = 'btn btn--danger';
+          delBtn.style.fontSize = '10px';
+          delBtn.textContent = 'DELETE';
+          delBtn.addEventListener('click', () => {
+            if (!confirm(`Delete "${proj.title}"? This cannot be undone.`)) return;
+            client.projects.splice(pIdx, 1);
+            saveSession();
+            showView('projects', { clientIndex });
+          });
           
           item.appendChild(img);
           item.appendChild(body);
+          item.appendChild(visToggle);
           item.appendChild(editBtn);
+          item.appendChild(delBtn);
           content.appendChild(item);
         });
+
+        if (!isTouchDevice && client.projects && client.projects.length > 1) {
+          makeDraggable(content, () => client.projects, () => {
+            saveSession();
+            showView('projects', { clientIndex });
+          });
+        }
       }
 
       app.appendChild(content);
@@ -727,7 +918,13 @@
       backBtn.textContent = '← PROJECTS';
       backBtn.addEventListener('click', () => showView('projects', { clientIndex }));
       
-      renderHeader(app, headerLeft, backBtn);
+      const headerRight = document.createElement('div');
+      headerRight.style.display = 'flex';
+      headerRight.style.gap = '12px';
+      headerRight.style.alignItems = 'center';
+      headerRight.appendChild(backBtn);
+      renderPublishBtn(headerRight);
+      renderHeader(app, headerLeft, headerRight);
 
       const content = document.createElement('div');
       content.className = 'admin-content';
@@ -818,6 +1015,13 @@
       const mediaList = content.querySelector('#media-list');
       const rolesList = content.querySelector('#roles-list');
 
+      function markEditorDirty() { editorDirty = true; }
+      [titleInput, idInput, formatSelect, summaryInput, detailInput].forEach(el => {
+        el.addEventListener('input', markEditorDirty);
+        el.addEventListener('change', markEditorDirty);
+      });
+      visibleCheck.addEventListener('change', markEditorDirty);
+
       let manualId = !isNew;
       titleInput.addEventListener('input', () => {
         if (!manualId) idInput.value = generateId(titleInput.value);
@@ -862,11 +1066,38 @@
           typeLabel.className = 'media-item__type';
           typeLabel.textContent = m.type;
 
+          const isTouchDevice = 'ontouchstart' in window;
           const upDown = document.createElement('div');
-          upDown.style.color = 'var(--muted)';
-          upDown.style.fontSize = '12px';
-          upDown.style.paddingTop = '2px';
-          upDown.textContent = '[↑↓]';
+          if (isTouchDevice) {
+            upDown.style.display = 'flex';
+            upDown.style.flexDirection = 'column';
+            upDown.style.gap = '2px';
+
+            const up = document.createElement('button');
+            up.className = 'btn btn--ghost';
+            up.style.fontSize = '10px'; up.style.padding = '2px 5px';
+            up.textContent = '↑'; up.disabled = mIdx === 0;
+            up.addEventListener('click', () => {
+              proj.media.splice(mIdx - 1, 0, proj.media.splice(mIdx, 1)[0]);
+              renderMedia();
+            });
+
+            const dn = document.createElement('button');
+            dn.className = 'btn btn--ghost';
+            dn.style.fontSize = '10px'; dn.style.padding = '2px 5px';
+            dn.textContent = '↓'; dn.disabled = mIdx === proj.media.length - 1;
+            dn.addEventListener('click', () => {
+              proj.media.splice(mIdx + 1, 0, proj.media.splice(mIdx, 1)[0]);
+              renderMedia();
+            });
+
+            upDown.appendChild(up);
+            upDown.appendChild(dn);
+          } else {
+            upDown.className = 'drag-handle';
+            upDown.title = 'Drag to reorder';
+            upDown.textContent = '⠿';
+          }
 
           const inputs = document.createElement('div');
           inputs.style.flex = '1';
@@ -923,6 +1154,22 @@
                   }
                 }
               }
+            });
+            inputs.querySelector('.media-drive').addEventListener('paste', async e => {
+              await new Promise(r => setTimeout(r, 0)); // let paste content land
+              const el = e.target;
+              const stripped = extractDriveId(el.value);
+              if (stripped !== el.value) el.value = stripped;
+              m.driveId = stripped;
+              // Show ID confirmation badge
+              let badge = el.parentElement.querySelector('.drive-id-badge');
+              if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'drive-id-badge';
+                badge.style.cssText = 'font-size:9px;color:var(--accent);letter-spacing:0.1em;opacity:0.7;margin-left:4px;';
+                el.parentElement.appendChild(badge);
+              }
+              badge.textContent = stripped ? `ID: ${stripped.slice(0,12)}…` : '';
             });
             inputs.querySelector('.media-vimeo').addEventListener('input', e => m.vimeoId = e.target.value);
           } else {
@@ -981,6 +1228,10 @@
           mItem.appendChild(remBtn);
           mediaList.appendChild(mItem);
         });
+
+        if (!('ontouchstart' in window) && proj.media.length > 1) {
+          makeDraggable(mediaList, () => proj.media, renderMedia);
+        }
       };
 
       const renderRoles = () => {
@@ -1031,11 +1282,13 @@
 
       content.querySelector('#proj-discard').addEventListener('click', () => {
         if (confirm('Discard changes?')) {
+          editorDirty = false;
           showView('projects', { clientIndex });
         }
       });
 
       content.querySelector('#proj-save').addEventListener('click', () => {
+        editorDirty = false;
         if (!titleInput.value.trim()) return alert('Title required');
 
         proj.title = titleInput.value.trim();
@@ -1063,6 +1316,7 @@
       pat = savedPat;
       showcaseData = JSON.parse(sessionStorage.getItem('extra_admin_data') || '[]');
       fileSha = sessionStorage.getItem('extra_admin_sha') || '';
+      sessionDirty = true; // restored session may be ahead of last publish
       showView('dashboard');
     } else {
       showView('login');

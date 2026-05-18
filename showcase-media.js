@@ -85,6 +85,9 @@ function buildMediaStage(project) {
     });
 
   const stage = document.createElement('div');
+  const FORMAT_RATIOS = { portrait: '2 / 3', landscape: '16 / 9', square: '1 / 1' };
+  stage.style.aspectRatio = FORMAT_RATIOS[project.format] || '16 / 9';
+  stage.style.width = '100%';
   stage.className = 'showcase-card__media-stage';
 
   if (items.length === 0) {
@@ -100,7 +103,7 @@ function buildMediaStage(project) {
   let nav = null;
   if (items.length > 1) {
     nav = buildMediaNav(items.length);
-    stage.appendChild(nav);
+    viewport.appendChild(nav);
   }
 
   renderItem(viewport, items[0]);

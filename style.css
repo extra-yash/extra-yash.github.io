@@ -1502,33 +1502,28 @@ details[open] .accordion-icon {
   flex: 1;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  background: #0a0a0a;
 }
 
 .showcase-card__media-stage {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
-  background: #0a0a0a;
+  /* height is driven by aspect-ratio set via JS */
 }
 
 .showcase-card__media-stage::after {
-  content: '+';
-  font-family: var(--font-body);
-  font-size: 20px;
-  color: var(--extra-contrast);
-  opacity: 0.15;
+  display: none;
 }
 
 .showcase-card__media-viewport {
   width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #0a0a0a;
   flex: 1;
   min-height: 0;
+  position: relative;
+  overflow: hidden;
 }
 
 .showcase-media-iframe {
@@ -1539,41 +1534,51 @@ details[open] .accordion-icon {
 }
 
 .showcase-media-image {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  width: 100%;
+  height: 100%;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .showcase-media-nav {
-  flex: 0 0 auto;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--card-border);
-  background: var(--card-bg);
+  justify-content: space-between;
+  padding: 0 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.showcase-card__media-viewport:hover .showcase-media-nav {
+  opacity: 1;
 }
 
 .showcase-media-prev,
 .showcase-media-next {
-  background: none;
-  border: none;
+  pointer-events: auto;
+  background: rgba(10, 10, 10, 0.55);
+  border: 1px solid rgba(255, 255, 240, 0.12);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--extra-light);
   font-family: var(--font-body);
   font-size: 14px;
-  opacity: 0.4;
-  cursor: none;
-  padding: 4px 8px;
-  transition: opacity 0.2s ease;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  flex-shrink: 0;
 }
 
 .showcase-media-prev:hover,
 .showcase-media-next:hover {
-  opacity: 1;
+  background: rgba(10, 10, 10, 0.85);
+  border-color: var(--accent);
   color: var(--accent);
 }
 
@@ -1582,8 +1587,12 @@ details[open] .accordion-icon {
   font-size: 10px;
   letter-spacing: 0.15em;
   color: var(--extra-light);
-  opacity: 0.35;
+  opacity: 0.45;
   user-select: none;
+  pointer-events: none;
+  background: rgba(10,10,10,0.5);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 @media (max-width: 767px) {
