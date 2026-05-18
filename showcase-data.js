@@ -2,7 +2,7 @@ const SHOWCASE_DATA = [
   {
     "id": "unaids",
     "name": "UNAIDS",
-    "logo": "./assets/showcase/logos/unaids.svg",
+    "logo": "./assets/showcase/logos/unaids.png",
     "projects": [
       {
         "id": "UNAIDS-EXPLAINER-2025",
@@ -12,7 +12,7 @@ const SHOWCASE_DATA = [
         "media": [
           {
             "type": "video",
-            "driveId": "https://drive.google.com/file/d/1XZWY8s4u0fpnkih4JPXNpKp47SdFyr2L/view?usp=sharing",
+            "driveId": "1XZWY8s4u0fpnkih4JPXNpKp47SdFyr2L",
             "vimeoId": ""
           }
         ],
@@ -31,33 +31,33 @@ const SHOWCASE_DATA = [
         "visible": true
       },
       {
-        "id": "prevention-reimagined",
-        "title": "Prevention Reimagined",
-        "format": "landscape",
-        "cover": "./assets/showcase/covers/prevention-reimagined.jpg",
+        "id": "Donation-Campaign",
+        "title": "Donation Campaign",
+        "format": "square",
+        "cover": "./assets/showcase/covers/unaids-Donation-Campaign-cover.png",
         "media": [
           {
             "type": "video",
-            "driveId": "placeholder",
+            "driveId": "1g3KVFn34kgf1x9Eb0m-8HXKVL9SRRxzU",
             "vimeoId": ""
-          },
-          {
-            "type": "image",
-            "src": "placeholder"
           }
         ],
         "roles": [
           {
-            "what": "Strategy",
+            "what": "Editing",
             "who": "Yash"
           },
           {
-            "what": "Art Direction",
+            "what": "Motion Graphics",
             "who": "Yash"
+          },
+          {
+            "what": "Footage",
+            "who": "UNAIDS"
           }
         ],
-        "summary": "Reframing HIV prevention for a new generation.",
-        "detail": "A multi-platform content series developed in partnership with the UNAIDS communications team.",
+        "summary": "Awareness campaign to increase donations.",
+        "detail": "A multi-platform reel developed in partnership with the UNAIDS communications team.",
         "visible": true
       }
     ]
@@ -65,7 +65,7 @@ const SHOWCASE_DATA = [
   {
     "id": "swa",
     "name": "Sanitation and Water for All",
-    "logo": "./assets/showcase/logos/swa.svg",
+    "logo": "./assets/showcase/logos/swa.jpg",
     "projects": [
       {
         "id": "access-now",
@@ -123,5 +123,11 @@ const SHOWCASE_DATA = [
         "visible": true
       }
     ]
+  },
+  {
+    "id": "danish-refugee-council",
+    "name": "Danish Refugee Council",
+    "logo": "./assets/showcase/logos/danish-refugee-council.png",
+    "projects": []
   }
 ];
