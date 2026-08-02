@@ -45,6 +45,65 @@ body {
   font-size: 14px;
   line-height: 1.6;
   overflow-x: hidden;
+  cursor: none;
+}
+
+/* Ensure no element overrides the hidden cursor */
+*, *::before, *::after {
+  cursor: none !important;
+}
+
+/* ═══════════════════════════════════════
+   CUSTOM CURSOR
+═══════════════════════════════════════ */
+#custom-cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 99999;
+}
+
+.cursor-dot, .cursor-influence {
+  position: absolute;
+  top: 0; left: 0;
+  transform: translate3d(-50%, -50%, 0);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* The neon green dot */
+.cursor-dot {
+  width: 12px;
+  height: 12px;
+  background-color: var(--green);
+  border-radius: 50%;
+  mix-blend-mode: difference;
+  z-index: 2;
+}
+
+/* The true pixelation & dither influence circle */
+.cursor-influence {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  
+  /* Feathered edge */
+  mask-image: radial-gradient(circle, black 15%, transparent 65%);
+  -webkit-mask-image: radial-gradient(circle, black 15%, transparent 65%);
+  
+  /* Bayer Matrix pattern (4x4) embedded as base64 SVG */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' fill='%23000' fill-opacity='0.1'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23000' fill-opacity='0.1'/%3E%3Crect x='2' width='1' height='1' fill='%23000' fill-opacity='0.9'/%3E%3Crect y='2' width='1' height='1' fill='%23000' fill-opacity='0.9'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%23000' fill-opacity='0.3'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%23000' fill-opacity='0.3'/%3E%3Crect x='3' y='1' width='1' height='1' fill='%23000' fill-opacity='0.7'/%3E%3Crect x='1' y='3' width='1' height='1' fill='%23000' fill-opacity='0.7'/%3E%3C/svg%3E");
+  background-size: 8px 8px; /* scale up to make the dither chunky */
+  image-rendering: pixelated; /* ensures chunks stay sharp */
+  
+  mix-blend-mode: hard-light;
+  
+  /* Applies the SVG pixelate filter to the DOM underneath */
+  backdrop-filter: url(#true-pixelate);
+  -webkit-backdrop-filter: url(#true-pixelate);
+  z-index: 1;
 }
 
 a { color: inherit; text-decoration: none; }

@@ -69,3 +69,32 @@ updateNav();
 // ═══════════════════════════════════════
 // (handled via CSS .logos-track:hover selector)
 // No extra JS needed.
+
+// ═══════════════════════════════════════
+// CUSTOM CURSOR
+// ═══════════════════════════════════════
+const cursorDot = document.querySelector('.cursor-dot');
+const cursorInfluence = document.querySelector('.cursor-influence');
+
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+let currentX = mouseX;
+let currentY = mouseY;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+const renderCursor = () => {
+  // Add a very subtle spring/easing effect (0.15 interpolation)
+  currentX += (mouseX - currentX) * 0.15;
+  currentY += (mouseY - currentY) * 0.15;
+
+  if (cursorDot && cursorInfluence) {
+    cursorDot.style.transform = `translate3d(calc(${currentX}px - 50%), calc(${currentY}px - 50%), 0)`;
+    cursorInfluence.style.transform = `translate3d(calc(${currentX}px - 50%), calc(${currentY}px - 50%), 0)`;
+  }
+  requestAnimationFrame(renderCursor);
+};
+requestAnimationFrame(renderCursor);
