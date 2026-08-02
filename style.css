@@ -241,8 +241,17 @@ img { display: block; }
   margin-bottom: 24px;
 }
 
-/* Consistent line-weight icon system:
-   Bold line-weight 44px SVGs to balance with the display headline */
+/* Pixel icon img tags — exported from @iconify-json/streamline-pixel */
+.icon-px {
+  display: block;
+  width: 44px;
+  height: 44px;
+  image-rendering: pixelated;
+  /* Tint to var(--green) = #27e700 */
+  filter: invert(62%) sepia(89%) saturate(563%) hue-rotate(67deg) brightness(111%) contrast(118%);
+}
+
+/* Legacy inline SVG fallback */
 .service-icon svg {
   width: 44px;
   height: 44px;
