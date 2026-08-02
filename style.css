@@ -74,19 +74,12 @@ img { display: block; }
 .nav-logo {
   display: inline-flex;
   align-items: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.02em;
-  color: var(--white);
-  gap: 1px;
 }
 
-.logo-star {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 3px;
-  line-height: 1;
+.logo-img-nav {
+  height: 28px;
+  width: auto;
+  display: block;
 }
 
 .nav-location {
