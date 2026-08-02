@@ -1,616 +1,230 @@
-<!DOCTYPE html>
-<html lang="en" data-tab="brands">
-
+<!doctype html>
+<html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EXTRA | Average is Invisible</title>
-    <meta name="description"
-        content="Extra is a Creative Collective. We build specialist teams for work that is impossible to ignore.">
-
-    <!-- Space Mono — primary font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Texturina:ital,wght@0,900;1,900&display=swap" rel="stylesheet">
-
-    <!--
-      ═══════════════════════════════════════════════════════════
-      DISPLAY FONT EXPERIMENT ZONE
-      To try a new title font, uncomment one line below and
-      update --font-display in style.css to match.
-      ═══════════════════════════════════════════════════════════
-      <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
-      <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
-      <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
-      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-      ═══════════════════════════════════════════════════════════
-    -->
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extra | The Unbound Creative Collective</title>
+  <meta name="description" content="Extra is a creative collective for culture, identity, and digital experiences.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Extra | The Unbound Creative Collective">
+  <meta property="og:description" content="Extra is a creative collective for culture, identity, and digital experiences.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Extra | The Unbound Creative Collective">
+  <meta name="twitter:description" content="Extra is a creative collective for culture, identity, and digital experiences.">
+  <link rel="canonical" href="https://extracollective.com/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo">
+      <span class="logo-text">extra</span><span class="logo-star">✦</span>
+    </a>
+    <span class="nav-location">MAURITIUS / EVERYWHERE</span>
+  </nav>
 
-
-    <!-- Custom cursor -->
-    <div class="cursor" id="cursor" aria-hidden="true"></div>
-
-    <!-- Scroll Guidance -->
-    <div class="scroll-guidance" id="scroll-guidance" aria-hidden="true">
-        <div class="scroll-line"></div>
-        <span class="scroll-text">SCROLL</span>
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <h1 class="hero-headline">Average<br>is Invisible.</h1>
+    <div class="hero-bottom">
+      <p class="hero-desc">Extra is the unbound creative collective<br>for brands that refuse to blend in.</p>
+      <span class="hero-arrow">↗</span>
     </div>
+  </section>
 
-    <nav class="top-nav" role="navigation" aria-label="Main navigation">
-        <a href="#brands" class="logo" id="brand-logo" aria-label="Extra Collective — Home">
-            <img src="./assets/EXTRA LOGO LIGHT.svg" alt="Extra Collective" height="28">
-        </a>
+  <!-- SECTION 01 — UNBOUND BY DEFAULT -->
+  <section class="section-01" id="services">
+    <div class="s01-left">
+      <span class="section-label">01 / UNBOUND BY DEFAULT</span>
+    </div>
+    <div class="s01-right">
+      <h2 class="s01-heading">Work that cuts through, carries culture, and makes the familiar feel <span class="highlight-strike">impossible to ignore</span>.</h2>
+      <div class="services-grid">
 
-
-        <div class="tab-nav" role="tablist" aria-label="Audience tabs">
-            <button class="tab-btn active" data-tab="brands" role="tab" aria-selected="true" id="tab-brands"
-                aria-controls="panel-brands">
-                BUILD A BRAND
-            </button>
-            <button class="tab-btn" data-tab="agencies" role="tab" aria-selected="false" id="tab-agencies"
-                aria-controls="panel-agencies">
-                EXTEND YOUR TEAM
-            </button>
-            <button class="tab-btn" data-tab="creatives" role="tab" aria-selected="false" id="tab-creatives"
-                aria-controls="panel-creatives">
-                JOIN THE COLLECTIVE
-            </button>
-        </div>
-        <div class="nav-links">
-            <button class="nav-link-btn" data-tab="showcase" id="nav-showcase">SHOWCASE</button>
-            <button class="nav-link-btn" data-tab="origins" id="nav-origins">WHY IS EXTRA</button>
-        </div>
-    </nav>
-
-    <!-- ═══════════════════════════════════════════════════
-         TAB 01 — FOR BRANDS
-         ═══════════════════════════════════════════════════ -->
-    <section class="tab-panel active" id="panel-brands" role="tabpanel" aria-labelledby="tab-brands">
-
-        <!-- Hero -->
-        <header class="hero-section">
-            <h1 class="display-heading"><span class="hero-title-wrapper"><span class="hero-the">THE</span>Unbound</span><br>Creative<br>Collective.</h1>
-            <p class="hero-sub">Helping brands launch, scale, and evolve, without agency overhead.</p>
-        </header>
-
-        <section class="content-section" aria-labelledby="brands-model-heading">
-            <h2 class="section-label" id="brands-model-heading" data-text="HOW WE WORK">HOW WE WORK</h2>
-
-            <div class="card-grid four-col">
-                <article class="info-card frosted-card">
-                    <span class="card-num">01</span>
-                    <h3 class="card-heading">We Talk.</h3>
-                    <p>We dive deep into your brief to understand not just what you need, but why you need it. Strategy
-                        and intent are established here.</p>
-                </article>
-                <article class="info-card frosted-card">
-                    <span class="card-num">02</span>
-                    <h3 class="card-heading">We Build.</h3>
-                    <p>Based on the exact requirements of the brief, we curate a bespoke team from our collective of
-                        specialists. No filler, only capability.</p>
-                </article>
-                <article class="info-card frosted-card">
-                    <span class="card-num">03</span>
-                    <h3 class="card-heading">We Work.</h3>
-                    <p>The team gets to work. Transparent communication, direct access to the creators, and iterative
-                        reviews keep the project perfectly aligned.</p>
-                </article>
-                <article class="info-card frosted-card">
-                    <span class="card-num">04</span>
-                    <h3 class="card-heading">We Deliver.</h3>
-                    <p>Final files, organized logic, and comprehensive documentation. We deliver capability that drops
-                        seamlessly into your ecosystem.</p>
-                </article>
-            </div>
-        </section>
-
-
-
-        <!-- What We Master -->
-        <section class="content-section mastery-section" aria-labelledby="brands-mastery-heading">
-            <h2 class="section-label" id="brands-mastery-heading" data-text="WHAT WE MASTER">WHAT WE MASTER</h2>
-            <div class="mastery-grid">
-                <div class="mastery-item" data-mastery="art-direction">
-                    <h3 class="mastery-title" data-text="Art Direction">Art Direction</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="videography">
-                    <h3 class="mastery-title" data-text="Videography">Videography</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="web-development">
-                    <h3 class="mastery-title" data-text="Web Development">Web Development</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="graphic-design">
-                    <h3 class="mastery-title" data-text="Graphic Design">Graphic Design</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="mobile-development">
-                    <h3 class="mastery-title" data-text="Mobile Development">Mobile Development</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="motion-design">
-                    <h3 class="mastery-title" data-text="Motion Design">Motion Design</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="strategy">
-                    <h3 class="mastery-title" data-text="Strategy">Strategy</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="creative-direction">
-                    <h3 class="mastery-title" data-text="Creative Direction">Creative Direction</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="interior-design">
-                    <h3 class="mastery-title" data-text="Interior Design">Interior Design</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="web-design">
-                    <h3 class="mastery-title" data-text="Web Design">Web Design</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="3d-modelling">
-                    <h3 class="mastery-title" data-text="3D Modelling">3D Modelling</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="virtual-photography">
-                    <h3 class="mastery-title" data-text="Virtual Photography">Virtual Photography</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="architectural-visualisation">
-                    <h3 class="mastery-title" data-text="Architectural Visualisation">Architectural Visualisation</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="social-media-management">
-                    <h3 class="mastery-title" data-text="Social Media Management">Social Media Management</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="photography">
-                    <h3 class="mastery-title" data-text="Photography">Photography</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="branding">
-                    <h3 class="mastery-title" data-text="Branding">Branding</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="video-editing">
-                    <h3 class="mastery-title" data-text="Video Editing">Video Editing</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Comparison -->
-        <section class="content-section comparison-section" aria-labelledby="comparison-heading">
-            <h2 class="section-label" id="comparison-heading" data-text="THE DIFFERENCE">THE DIFFERENCE</h2>
-            <div class="frosted-card comparison-table-wrapper">
-                <div class="comparison-table">
-                    <div class="comp-row comp-header">
-                        <div class="comp-cell traditional">The Traditional Pipeline</div>
-                        <div class="comp-cell extra">The Extra Collective</div>
-                    </div>
-                    <div class="comp-row">
-                        <div class="comp-cell traditional">High fixed overhead costs</div>
-                        <div class="comp-cell extra">Zero overhead, budget goes to craft</div>
-                    </div>
-                    <div class="comp-row">
-                        <div class="comp-cell traditional">Junior staff doing the actual work</div>
-                        <div class="comp-cell extra">Masters on every brief</div>
-                    </div>
-                    <div class="comp-row">
-                        <div class="comp-cell traditional">Slow, bureaucratic processes</div>
-                        <div class="comp-cell extra">Agile, direct access to creators</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Strip -->
-        <div class="cta-strip" id="brands-cta-strip">
-            <p class="cta-strip-text">The cost of being ignored<br>exceeds the cost of getting it right.</p>
-            <a href="mailto:hello@extracollective.com" class="cta-btn cta-btn--dark" id="brands-cta-bottom">Let's Talk
-                About Your Needs →</a>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="12" height="12" fill="#27e700"/><circle cx="22" cy="22" r="6" fill="#27e700"/></svg>
+          </div>
+          <span class="service-cat">01 / Creative &amp; Art Directors</span>
+          <h3 class="service-title">Campaign Direction</h3>
+          <p class="service-desc">Visual identity, concept development.</p>
         </div>
 
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════
-         TAB 02 — FOR AGENCIES
-         ═══════════════════════════════════════════════════ -->
-    <section class="tab-panel" id="panel-agencies" role="tabpanel" aria-labelledby="tab-agencies" hidden>
-
-        <!-- Hero -->
-        <header class="hero-section">
-            <h1 class="display-heading">Extra<br>Plugs In.</h1>
-            <p class="hero-sub">Specialist capability, delivered into your workflow. Seamless to your process, invisible
-                to your client.</p>
-        </header>
-
-        <!-- How the Partnership Works -->
-        <section class="content-section" aria-labelledby="agencies-model-heading">
-            <h2 class="section-label" id="agencies-model-heading" data-text="HOW IT WORKS">HOW IT WORKS</h2>
-            <div class="card-grid three-col">
-                <article class="info-card frosted-card" id="agencies-card-invisible">
-                    <span class="card-num">01</span>
-                    <h3 class="card-heading">Seamless integration.</h3>
-                    <p>We adapt to your existing workflow and tools. Your project owner is our point of contact. The
-                        handoff is clean, the output indistinguishable from in-house.</p>
-                </article>
-                <article class="info-card frosted-card" id="agencies-card-specialist">
-                    <span class="card-num">02</span>
-                    <h3 class="card-heading">Deep specialist capability.</h3>
-                    <p>The disciplines that require significant investment to maintain in-house — we carry them so you
-                        can deploy them when the brief demands it.</p>
-                </article>
-                <article class="info-card frosted-card" id="agencies-card-conflict">
-                    <span class="card-num">03</span>
-                    <h3 class="card-heading">On demand.</h3>
-                    <p>No retainer. No headcount implications. Available when the brief needs it, and absent when it
-                        doesn't.</p>
-                </article>
-            </div>
-        </section>
-
-
-
-        <!-- What We Master -->
-        <section class="content-section mastery-section" aria-labelledby="agencies-mastery-heading">
-            <h2 class="section-label" id="agencies-mastery-heading" data-text="WHAT WE MASTER">WHAT WE MASTER</h2>
-            <div class="mastery-grid">
-                <div class="mastery-item" data-mastery="art-direction">
-                    <h3 class="mastery-title" data-text="Art Direction">Art Direction</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="videography">
-                    <h3 class="mastery-title" data-text="Videography">Videography</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="web-development">
-                    <h3 class="mastery-title" data-text="Web Development">Web Development</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="graphic-design">
-                    <h3 class="mastery-title" data-text="Graphic Design">Graphic Design</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="mobile-development">
-                    <h3 class="mastery-title" data-text="Mobile Development">Mobile Development</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="motion-design">
-                    <h3 class="mastery-title" data-text="Motion Design">Motion Design</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="strategy">
-                    <h3 class="mastery-title" data-text="Strategy">Strategy</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="creative-direction">
-                    <h3 class="mastery-title" data-text="Creative Direction">Creative Direction</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="interior-design">
-                    <h3 class="mastery-title" data-text="Interior Design">Interior Design</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="web-design">
-                    <h3 class="mastery-title" data-text="Web Design">Web Design</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="3d-modelling">
-                    <h3 class="mastery-title" data-text="3D Modelling">3D Modelling</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="virtual-photography">
-                    <h3 class="mastery-title" data-text="Virtual Photography">Virtual Photography</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="architectural-visualisation">
-                    <h3 class="mastery-title" data-text="Architectural Visualisation">Architectural Visualisation</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="social-media-management">
-                    <h3 class="mastery-title" data-text="Social Media Management">Social Media Management</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="photography">
-                    <h3 class="mastery-title" data-text="Photography">Photography</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-                <div class="mastery-item" data-mastery="video-editing">
-                    <h3 class="mastery-title" data-text="Video Editing">Video Editing</h3>
-                    <div class="mastery-hover-images">
-                        <div class="h-img h-img-1 placeholder"></div>
-                        <div class="h-img h-img-2 placeholder"></div>
-                        <div class="h-img h-img-3 placeholder"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Strip -->
-        <div class="cta-strip" id="agencies-cta-strip">
-            <p class="cta-strip-text">An Extra team or two,<br>whenever you need.</p>
-            <a href="mailto:hello@extracollective.com" class="cta-btn cta-btn--dark" id="agencies-cta-bottom">Let's Talk
-                About Your Needs →</a>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="10" cy="10" r="5" fill="#27e700"/><circle cx="22" cy="10" r="5" fill="#27e700"/><circle cx="10" cy="22" r="5" fill="#27e700"/><circle cx="22" cy="22" r="5" fill="#27e700"/></svg>
+          </div>
+          <span class="service-cat">02 / Strategists</span>
+          <h3 class="service-title">Communication Strategy</h3>
+          <p class="service-desc">Messaging, narrative, positioning.</p>
         </div>
 
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════
-         TAB 03 — FOR CREATIVES
-         ═══════════════════════════════════════════════════ -->
-    <section class="tab-panel" id="panel-creatives" role="tabpanel" aria-labelledby="tab-creatives" hidden>
-
-        <!-- Hero -->
-        <header class="hero-section">
-            <h1 class="display-heading">Extra<br>Works<br>For You.</h1>
-            <p class="hero-sub">We exist to bring more work to skilled individuals like
-                you and get you earning extra.</p>
-        </header>
-
-        <!-- The Four Pillars -->
-        <section class="content-section" aria-labelledby="creatives-pillars-heading">
-            <h2 class="section-label" id="creatives-pillars-heading" data-text="THE FOUR PILLARS">THE FOUR PILLARS</h2>
-            <div class="card-grid four-col">
-                <article class="info-card frosted-card" id="creatives-card-freedom">
-                    <span class="card-num pillar-num">01</span>
-                    <h3 class="card-heading">Unbound Freedom.</h3>
-                    <p>Output over attendance. Your deadline is your only constraint. How you reach it is your
-                        structure, your pace, your call.</p>
-                </article>
-                <article class="info-card frosted-card" id="creatives-card-fairness">
-                    <span class="card-num pillar-num">02</span>
-                    <h3 class="card-heading">Radical Fairness.</h3>
-                    <p>The full economics of every brief are visible to you before you commit. What Extra earns, what
-                        you earn, and why. No hidden layers.</p>
-                </article>
-                <article class="info-card frosted-card" id="creatives-card-intent">
-                    <span class="card-num pillar-num">03</span>
-                    <h3 class="card-heading">Absolute Intent.</h3>
-                    <p>We refuse the minimum viable. Every brief accepted through Extra is held to the same standard —
-                        which means the work you produce here is work you can stand behind.</p>
-                </article>
-                <article class="info-card frosted-card" id="creatives-card-consideration">
-                    <span class="card-num pillar-num">04</span>
-                    <h3 class="card-heading">Deep Consideration.</h3>
-                    <p>We build for how things perform in the world, not just how they present. If it isn't grounded, it
-                        isn't finished.</p>
-                </article>
-            </div>
-        </section>
-
-        <!-- Who We're Looking For -->
-        <section class="content-section" aria-labelledby="creatives-criteria-heading">
-            <h2 class="section-label" id="creatives-criteria-heading" data-text="THE HONEST CRITERIA">THE HONEST
-                CRITERIA</h2>
-            <article class="info-card frosted-card"
-                style="width: 100%; max-width: 1200px; padding: 40px; margin: 0 auto;">
-                <div class="prose-block three-col" id="creatives-criteria-text">
-                    <p>Your portfolio gets you in the door. Your workflow keeps you here.</p>
-                    <p>We build project teams fast and hand files between partners constantly. That means clean layers,
-                        organised logic, clear naming — because a sloppy handoff costs everyone time.</p>
-                    <p>We're not looking for generalists hoping to stretch. We're looking for people who've found their
-                        lane
-                        and want to go further in it.</p>
-                </div>
-            </article>
-        </section>
-
-
-
-        <!-- CTA Strip -->
-        <div class="cta-strip" id="creatives-cta-strip">
-            <p class="cta-strip-text">The Collective is hungry for minds like yours.<br>Let's work together.</p>
-            <a href="mailto:hello@extracollective.com?subject=Partnership%20Enquiry%20%E2%80%94%20Extra%20Collective"
-                class="cta-btn cta-btn--dark" id="creatives-cta-bottom">Tell Us About Your Work →</a>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="24" height="24" rx="2" fill="#27e700"/></svg>
+          </div>
+          <span class="service-cat">03 / Graphic &amp; Print Designers</span>
+          <h3 class="service-title">Tactile Impressions</h3>
+          <p class="service-desc">Reports, publications, infographics.</p>
         </div>
 
-    </section>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="#27e700" stroke-width="2" fill="none"/><line x1="4" y1="16" x2="28" y2="16" stroke="#27e700" stroke-width="2"/><ellipse cx="16" cy="16" rx="6" ry="12" stroke="#27e700" stroke-width="2" fill="none"/></svg>
+          </div>
+          <span class="service-cat">06 / Web Designers &amp; Developers</span>
+          <h3 class="service-title">Digital Platforms</h3>
+          <p class="service-desc">Websites, microsites, digital platforms.</p>
+        </div>
 
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><polygon points="16,4 28,28 4,28" fill="#27e700"/><polygon points="16,12 24,24 8,24" fill="#10140e"/></svg>
+          </div>
+          <span class="service-cat">08 / Mobile Developers</span>
+          <h3 class="service-title">Digital Tools</h3>
+          <p class="service-desc">Applications, interactions, useful utilities.</p>
+        </div>
 
-    <!-- ═══════ TAB 04 — SHOWCASE ═══════════════════════ -->
-    <section class="tab-panel" id="panel-showcase" role="tabpanel" aria-labelledby="nav-showcase" hidden>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="10" fill="#27e700"/><circle cx="16" cy="16" r="5" fill="#10140e"/><circle cx="16" cy="16" r="2" fill="#27e700"/></svg>
+          </div>
+          <span class="service-cat">04 / Motion Designers</span>
+          <h3 class="service-title">Motion &amp; Video</h3>
+          <p class="service-desc">Explainers, social content, documentaries.</p>
+        </div>
 
-        <header class="hero-section">
-            <h1 class="display-heading">The<br>Work.</h1>
-            <p class="hero-sub">Selected projects from the Extra Collective and its partners.</p>
-        </header>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="2" y="6" width="28" height="20" rx="2" stroke="#27e700" stroke-width="2" fill="none"/><line x1="2" y1="12" x2="30" y2="12" stroke="#27e700" stroke-width="2"/><rect x="6" y="16" width="8" height="6" rx="1" fill="#27e700"/></svg>
+          </div>
+          <span class="service-cat">07 / Social Media Managers</span>
+          <h3 class="service-title">Content Systems</h3>
+          <p class="service-desc">Content strategy, platform management, rollout.</p>
+        </div>
 
-        <section class="content-section" aria-label="Showcase — selected work">
-            <div id="showcase-root"></div>
-        </section>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="6" y="6" width="20" height="20" rx="4" fill="#27e700"/><rect x="11" y="11" width="10" height="10" rx="2" fill="#10140e"/></svg>
+          </div>
+          <span class="service-cat">09 / 3D &amp; Spatial Designers</span>
+          <h3 class="service-title">Spatial Design</h3>
+          <p class="service-desc">Exhibition, environments, activations.</p>
+        </div>
 
-    </section>
+        <div class="service-card">
+          <div class="service-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="12" r="6" fill="#27e700"/><path d="M6 28c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="#27e700" stroke-width="2" fill="none"/></svg>
+          </div>
+          <span class="service-cat">05 / Photographers</span>
+          <h3 class="service-title">Photography</h3>
+          <p class="service-desc">Editorial, documentary, campaign photography.</p>
+        </div>
 
-    <!-- ═══════ TAB 05 — WHY IS EXTRA (ORIGINS) ════════ -->
-    <section class="tab-panel" id="panel-origins" role="tabpanel" aria-labelledby="nav-origins" hidden>
+      </div>
+    </div>
+  </section>
 
-        <header class="hero-section origins-hero">
-            <h1 class="display-heading origins-heading">The Future<br>Of Creative<br>Work Is Not<br>Where You Are.</h1>
-        </header>
+  <!-- SECTION 02 — REJECT AVERAGE -->
+  <section class="section-02" id="contact-cta">
+    <div class="s02-card">
+      <span class="section-label s02-label">02 / REJECT AVERAGE</span>
+      <h2 class="s02-heading">Make the<br>extra move.</h2>
+      <div class="s02-bottom">
+        <div class="s02-contact">
+          <p class="s02-reach">Reach out when you are ready to start showing up:</p>
+          <a href="mailto:hello@extracollective.com" class="s02-email">hello@extracollective.com</a>
+        </div>
+        <a href="mailto:hello@extracollective.com" class="s02-cta-btn">Explore the portfolio ✦</a>
+      </div>
+    </div>
+  </section>
 
-        <section class="content-section origins-content" aria-label="Origins of Extra">
-            <div class="origins-prose">
-                <p class="origins-body">In 2020, the studios went dark. As an Art Director, I watched the lockdowns arrive and take everything physical with them; the spaces, the equipment, the infrastructure we had all quietly assumed was needed. What we found on the other side was fascinating. Videos were shot at home, with whatever we could reach for. Proposals sketched by hand. Storyboards built without the comfort of a proper desk. What felt lost in structure was exceeded in energy. The constraint didn't diminish the work. It clarified it. It revealed the essential.</p>
-                <p class="origins-body">When I left, this followed into a different kind of work. International contracts with UN agencies, where teams were distributed across cities and time zones, the briefs were complex, and the stakes were real. Sanitation and Water for All. UNAIDS. The DRC. There was no shared office. No single room where everyone gathered to align. There was intent, a clear structure of responsibility, and people who knew exactly what they were there to do. The work landed. The contracts were renewed. Not because they had to, but because the right ingredients had been identified and nothing else turned out to be necessary.</p>
-                <p class="origins-body">Extra was built on that evidence. That geography is a detail. That a physical structure is a habit, not a requirement. That when the intent is clear, the people are right, and the standard is non-negotiable, everything else falls into place.</p>
-                <p class="origins-closing">Extra is what happens when the right people stop waiting for the right conditions.</p>
-            </div>
-        </section>
+  <!-- SECTION 03 — WHY EXTRA -->
+  <section class="section-03" id="why-extra">
+    <span class="section-label">03 / WHY EXTRA</span>
+    <h2 class="s03-heading">The Future of<br>Creative Work is<br>not Where You Are.</h2>
+    <div class="s03-body">
+      <div class="s03-col-left">
+        <p>In 2020, the studios went dark.</p>
+        <p>The spaces, equipment and infrastructure we thought we needed disappeared overnight. The work did not. It became more immediate, more resourceful and more essential.</p>
+      </div>
+      <div class="s03-col-right">
+        <p>Then came international work across cities and time zones: complex briefs for UN agencies, distributed teams and real stakes.</p>
+        <p>There was no shared room; only clear intent, responsibility and people who knew why they were there.</p>
+      </div>
+    </div>
+    <p class="s03-pullquote">EXTRA WAS BUILT ON THAT EVIDENCE: GEOGRAPHY IS A DETAIL. A PHYSICAL STRUCTURE IS A HABIT, NOT A REQUIREMENT.</p>
+    <h2 class="s03-closing">Extra is what happens when the right people <span class="highlight-strike-green">stop waiting for the right conditions</span>.</h2>
+  </section>
 
-    </section>
+  <!-- SECTION 04 — TRUSTED IN THE FIELD -->
+  <section class="section-04" id="trusted">
+    <div class="s04-card">
+      <span class="section-label s04-label">04 / TRUSTED IN THE FIELD</span>
+      <h2 class="s04-heading">Built by masters across disciplines,<br>agencies and continents.</h2>
+      <p class="s04-desc">Members of the collective have worked with, for and within<br>the following brands, institutions and organisations.</p>
+      <div class="logos-marquee-wrap">
+        <div class="logos-marquee">
+          <div class="logos-track">
+            <span class="logo-item">ICB</span>
+            <span class="logo-item logo-w">W</span>
+            <span class="logo-item">BCP BANK<br><small>MAURITIUS</small></span>
+            <span class="logo-item">DRC</span>
+            <span class="logo-item logo-swfa">Sanitation<br><small>and Water for All</small></span>
+            <span class="logo-item">terra</span>
+            <span class="logo-item">air mauritius</span>
+            <span class="logo-item">GALAXY</span>
+            <span class="logo-item">Sun<br><small>resorts</small></span>
+            <!-- duplicate for infinite scroll -->
+            <span class="logo-item">ICB</span>
+            <span class="logo-item logo-w">W</span>
+            <span class="logo-item">BCP BANK<br><small>MAURITIUS</small></span>
+            <span class="logo-item">DRC</span>
+            <span class="logo-item logo-swfa">Sanitation<br><small>and Water for All</small></span>
+            <span class="logo-item">terra</span>
+            <span class="logo-item">air mauritius</span>
+            <span class="logo-item">GALAXY</span>
+            <span class="logo-item">Sun<br><small>resorts</small></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- ═════ FOOTER ═════ -->
-    <footer class="site-footer" role="contentinfo">
-        <span>© EXTRA COLLECTIVE</span>
-        <span class="footer-divider" aria-hidden="true">//</span>
-        <span>EST. 2025</span>
-        <span class="footer-divider" aria-hidden="true">//</span>
-        <span>HERMITAGE, MAURITIUS</span>
-        <a href="mailto:hello@extracollective.com" class="footer-email" id="footer-email">hello@extracollective.com</a>
-    </footer>
+  <!-- SECTION 05 — START SOMETHING EXTRA -->
+  <section class="section-05" id="contact">
+    <div class="s05-card">
+      <span class="section-label s05-label">05 / START SOMETHING EXTRA</span>
+      <div class="s05-main">
+        <h2 class="s05-heading">Let's make bold<br>moves together.</h2>
+        <a href="mailto:hello@extracollective.com" class="s05-arrow">›</a>
+      </div>
+      <div class="s05-footer">
+        <div class="s05-contact-info">
+          <a href="mailto:hello@extracollective.com" class="s05-contact-link">hello@extracollective.com</a>
+          <span class="s05-contact-link">WHATSAPP / 00 230 5 906 7335</span>
+        </div>
+        <div class="s05-socials">
+          <a href="#" class="s05-social-link">Facebook</a>
+          <a href="#" class="s05-social-link">Instagram</a>
+          <a href="#" class="s05-social-link">LinkedIn</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <script>
-    (function(){
-      var h = location.hash.slice(1);
-      if (h && h !== 'brands' && document.getElementById('panel-' + h)) {
-        var def = document.getElementById('panel-brands');
-        if (def) { def.classList.remove('active'); def.hidden = true; }
-        var t = document.getElementById('panel-' + h);
-        t.classList.add('active'); t.hidden = false;
-      }
-    })();
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="dither.js"></script>
-    <script src="fluid.js"></script>
-    <script src="data.js"></script>
-    <script src="showcase-data.js"></script>
-    <script src="showcase.js"></script>
-    <script src="showcase-dither.js"></script>
-    <script src="showcase-media.js"></script>
-    <script src="showcase-cards.js"></script>
-    <script src="showcase-animations.js"></script>
-    <script src="script.js"></script>
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <span class="footer-logo">✦</span>
+    <span class="footer-tagline">AVERAGE IS INVISIBLE</span>
+  </footer>
 
+  <script src="script.js"></script>
 </body>
-
 </html>
