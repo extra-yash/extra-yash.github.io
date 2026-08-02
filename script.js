@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════
 const revealTargets = [
   { selector: '.hero-headline',   delay: 0 },
-  { selector: '.hero-footer',     delay: 1 },
+  { selector: '.hero-desc',       delay: 1 },
   { selector: '.s01-heading',     delay: 0 },
   { selector: '.services-grid',   delay: 1 },
   { selector: '.s02-card',        delay: 0 },

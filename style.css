@@ -169,14 +169,13 @@ img { display: block; }
 
 .hero-footer {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 760px;
   mix-blend-mode: difference;
   z-index: 10;
   pointer-events: none;
@@ -190,7 +189,8 @@ img { display: block; }
   line-height: 1.75;
   text-align: center;
   opacity: 1;
-  flex: 1;
+  max-width: 760px;
+  width: 100%;
 }
 
 /* ═══════════════════════════════════════
@@ -796,10 +796,8 @@ a.s05-info-line:hover { opacity: 1; }
   }
 
   .hero-footer {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-    text-align: left;
+    position: absolute; /* remain absolute */
+    padding: 0 24px; /* give some padding so text doesn't touch edges */
   }
 
   .section-01 { padding: 48px 24px 48px; }
