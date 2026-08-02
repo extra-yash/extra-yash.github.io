@@ -180,36 +180,28 @@ img { display: block; }
    01 / UNBOUND BY DEFAULT
 ═══════════════════════════════════════ */
 .section-01 {
-  padding: 0 48px 80px;
+  padding: 80px 48px;
   display: flex;
   justify-content: center;
 }
 
 .s01-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
   max-width: 1200px;
   width: 100%;
 }
 
-.s01-left {
-  padding: 0;
-  flex: none;
-}
-
-.s01-right {
-  width: 100%;
+.s01-label {
+  margin-bottom: 32px;
 }
 
 .s01-heading {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(28px, 3vw, 44px);
-  line-height: 1.18;
+  font-weight: 900;
+  font-size: clamp(40px, 5.5vw, 76px);
+  line-height: 1.05;
   color: var(--white);
-  letter-spacing: -0.025em;
-  margin-bottom: 40px;
+  letter-spacing: -0.035em;
+  margin-bottom: 56px;
 }
 
 /* "impossible to ignore" — purple text + purple underline (exactly as original) */
