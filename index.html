@@ -22,7 +22,6 @@
        CUSTOM CURSOR
   ═══════════════════════════════════════ -->
   <div id="custom-cursor">
-    <div class="cursor-influence"></div>
     <div class="cursor-dot"></div>
   </div>
 
@@ -272,22 +271,6 @@
       <span class="footer-tagline">AVERAGE IS INVISIBLE</span>
     </div>
   </footer>
-
-  <!-- ═══════════════════════════════════════
-       SVG FILTERS
-  ═══════════════════════════════════════ -->
-  <svg width="0" height="0" style="position: absolute; display: none;">
-    <filter id="true-pixelate" x="-10%" y="-10%" width="120%" height="120%">
-      <!-- Standard blocky pixelation via dilation -->
-      <feMorphology operator="dilate" radius="3" result="blocky" />
-      <!-- Posterization to quantize colors (true dither aesthetic) -->
-      <feComponentTransfer in="blocky" result="posterized">
-        <feFuncR type="discrete" tableValues="0 0.5 1"/>
-        <feFuncG type="discrete" tableValues="0 0.5 1"/>
-        <feFuncB type="discrete" tableValues="0 0.5 1"/>
-      </feComponentTransfer>
-    </filter>
-  </svg>
 
   <script src="script.js"></script>
 </body>

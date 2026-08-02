@@ -74,7 +74,6 @@ updateNav();
 // CUSTOM CURSOR
 // ═══════════════════════════════════════
 const cursorDot = document.querySelector('.cursor-dot');
-const cursorInfluence = document.querySelector('.cursor-influence');
 
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
@@ -86,14 +85,24 @@ document.addEventListener('mousemove', (e) => {
   mouseY = e.clientY;
 });
 
+// Add hover effect for links and buttons
+const interactiveElements = document.querySelectorAll('a, button, input, [role="button"], .hero-arrow');
+interactiveElements.forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    if (cursorDot) cursorDot.classList.add('is-hovering');
+  });
+  el.addEventListener('mouseleave', () => {
+    if (cursorDot) cursorDot.classList.remove('is-hovering');
+  });
+});
+
 const renderCursor = () => {
   // Add a very subtle spring/easing effect (0.15 interpolation)
   currentX += (mouseX - currentX) * 0.15;
   currentY += (mouseY - currentY) * 0.15;
 
-  if (cursorDot && cursorInfluence) {
+  if (cursorDot) {
     cursorDot.style.transform = `translate3d(calc(${currentX}px - 50%), calc(${currentY}px - 50%), 0)`;
-    cursorInfluence.style.transform = `translate3d(calc(${currentX}px - 50%), calc(${currentY}px - 50%), 0)`;
   }
   requestAnimationFrame(renderCursor);
 };
