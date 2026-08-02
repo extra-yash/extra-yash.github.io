@@ -145,6 +145,7 @@ img { display: block; }
    HERO
 ═══════════════════════════════════════ */
 .hero {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -152,7 +153,6 @@ img { display: block; }
   justify-content: center;
   text-align: center;
   padding: 140px 48px 80px;
-  gap: 56px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -168,12 +168,18 @@ img { display: block; }
 }
 
 .hero-footer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 120px;
   width: 100%;
   max-width: 760px;
+  mix-blend-mode: difference;
+  z-index: 10;
+  pointer-events: none;
 }
 
 .hero-desc {
@@ -183,7 +189,7 @@ img { display: block; }
   color: var(--white);
   line-height: 1.75;
   text-align: center;
-  opacity: 0.9;
+  opacity: 1;
   flex: 1;
 }
 
