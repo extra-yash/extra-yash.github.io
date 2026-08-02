@@ -83,9 +83,9 @@ img { display: block; }
 }
 
 .logo-star {
-  color: var(--red);
-  font-size: 12px;
-  margin-left: 2px;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 3px;
   line-height: 1;
 }
 
@@ -154,12 +154,10 @@ img { display: block; }
 }
 
 .hero-arrow {
-  font-family: var(--font-mono);
-  font-size: 18px;
-  color: var(--green);
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
-  margin-top: 2px;
-  line-height: 1;
+  margin-top: 4px;
 }
 
 /* ═══════════════════════════════════════
