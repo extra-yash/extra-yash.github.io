@@ -54,7 +54,6 @@ const updateNav = () => {
       background-color: rgba(16,20,14,0.88);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
     `;
   } else {
     nav.style.cssText = '';
@@ -71,39 +70,71 @@ updateNav();
 // No extra JS needed.
 
 // ═══════════════════════════════════════
-// CUSTOM CURSOR
+// CUSTOM CURSOR (Hardware-accelerated)
 // ═══════════════════════════════════════
 const cursorDot = document.querySelector('.cursor-dot');
 
-let mouseX = window.innerWidth / 2;
-let mouseY = window.innerHeight / 2;
-let currentX = mouseX;
-let currentY = mouseY;
+if (cursorDot) {
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let currentX = mouseX;
+  let currentY = mouseY;
+  let isHovered = false;
+  let currentScale = 1;
+  let isAnimating = false;
 
-document.addEventListener('mousemove', (e) => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
+  const renderCursor = () => {
+    const dx = mouseX - currentX;
+    const dy = mouseY - currentY;
+    const targetScale = isHovered ? 1.75 : 1;
+    const ds = targetScale - currentScale;
 
-// Add hover effect for links and buttons
-const interactiveElements = document.querySelectorAll('a, button, input, [role="button"], .hero-arrow');
-interactiveElements.forEach(el => {
-  el.addEventListener('mouseenter', () => {
-    if (cursorDot) cursorDot.classList.add('is-hovering');
+    currentX += dx * 0.2;
+    currentY += dy * 0.2;
+    currentScale += ds * 0.2;
+
+    cursorDot.style.transform = `translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0) translate(-50%, -50%) scale(${currentScale.toFixed(3)})`;
+
+    // Continue animation loop as long as position or scale is moving
+    if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05 || Math.abs(ds) > 0.005) {
+      requestAnimationFrame(renderCursor);
+    } else {
+      currentX = mouseX;
+      currentY = mouseY;
+      currentScale = targetScale;
+      cursorDot.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%) scale(${currentScale})`;
+      isAnimating = false;
+    }
+  };
+
+  const startAnimation = () => {
+    if (!isAnimating) {
+      isAnimating = true;
+      requestAnimationFrame(renderCursor);
+    }
+  };
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    startAnimation();
+  }, { passive: true });
+
+  const interactiveSelector = 'a, button, input, [role="button"], .hero-arrow';
+
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.closest(interactiveSelector)) {
+      isHovered = true;
+      startAnimation();
+    }
   });
-  el.addEventListener('mouseleave', () => {
-    if (cursorDot) cursorDot.classList.remove('is-hovering');
+
+  document.addEventListener('mouseout', (e) => {
+    const currentTarget = e.target.closest(interactiveSelector);
+    const nextTarget = e.relatedTarget ? e.relatedTarget.closest(interactiveSelector) : null;
+    if (currentTarget && currentTarget !== nextTarget) {
+      isHovered = false;
+      startAnimation();
+    }
   });
-});
-
-const renderCursor = () => {
-  // Add a very subtle spring/easing effect (0.15 interpolation)
-  currentX += (mouseX - currentX) * 0.15;
-  currentY += (mouseY - currentY) * 0.15;
-
-  if (cursorDot) {
-    cursorDot.style.transform = `translate3d(calc(${currentX}px - 50%), calc(${currentY}px - 50%), 0)`;
-  }
-  requestAnimationFrame(renderCursor);
-};
-requestAnimationFrame(renderCursor);
+}
