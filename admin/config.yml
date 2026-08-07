@@ -1,0 +1,113 @@
+backend:
+  name: github
+  repo: "extra-yash/extra-yash.github.io"
+  branch: main
+  base_url: https://sveltia-cms-auth.onepixeltd.workers.dev
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  - name: "projects"
+    label: "Projects"
+    folder: "content/projects"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Slug", name: "slug", widget: "string" }
+      - { label: "Cover Image", name: "cover_image", widget: "image", required: false }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Link", name: "link", widget: "string", required: false }
+      - label: "Engagement Type"
+        name: "engagement_type"
+        widget: "select"
+        options: ["Extra大 Job", "Agency Employee", "Freelance/Contracted"]
+        required: false
+      - label: "Studio/Agency (leave blank if Extra大 Job)"
+        name: "studio"
+        widget: "relation"
+        collection: "studios"
+        search_fields: ["name"]
+        value_field: "name"
+        display_fields: ["name"]
+        required: false
+      - label: "Client"
+        name: "client"
+        widget: "relation"
+        collection: "clients"
+        search_fields: ["name"]
+        value_field: "name"
+        display_fields: ["name"]
+        required: false
+      - label: "Confidential Client (hides client name on the live site)"
+        name: "confidential_client"
+        widget: "boolean"
+        default: false
+      - label: "Collaborators"
+        name: "collaborators"
+        widget: "list"
+        required: false
+        fields:
+          - { label: "Person", name: "person", widget: "relation", collection: "people", search_fields: ["name"], value_field: "name", display_fields: ["name"] }
+          - { label: "Role", name: "role", widget: "relation", collection: "roles", search_fields: ["name"], value_field: "name", display_fields: ["name"] }
+      - label: "Category"
+        name: "category"
+        widget: "relation"
+        collection: "project_tags"
+        search_fields: ["name"]
+        value_field: "name"
+        display_fields: ["name"]
+        multiple: true
+        required: false
+      - label: "Case Study Link"
+        name: "case_study_link"
+        widget: "string"
+        required: false
+      - label: "Featured"
+        name: "featured"
+        widget: "boolean"
+        default: false
+
+  - name: "people"
+    label: "People"
+    folder: "content/people"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "name", widget: "string" }
+
+  - name: "roles"
+    label: "Roles"
+    folder: "content/roles"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Role", name: "name", widget: "string" }
+
+  - name: "clients"
+    label: "Clients"
+    folder: "content/clients"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "name", widget: "string" }
+
+  - name: "studios"
+    label: "Studios"
+    folder: "content/studios"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "name", widget: "string" }
+
+  - name: "project_tags"
+    label: "Project Tags"
+    folder: "content/project_tags"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "name", widget: "string" }
+

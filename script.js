@@ -80,13 +80,13 @@ if (cursorDot) {
   let currentX = mouseX;
   let currentY = mouseY;
   let isHovered = false;
-  let currentScale = 1;
+  let currentScale = 0.5;
   let isAnimating = false;
 
   const renderCursor = () => {
     const dx = mouseX - currentX;
     const dy = mouseY - currentY;
-    const targetScale = isHovered ? 1.75 : 1;
+    const targetScale = isHovered ? 0.875 : 0.5;
     const ds = targetScale - currentScale;
 
     currentX += dx * 0.2;
