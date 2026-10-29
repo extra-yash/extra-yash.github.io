@@ -1054,3 +1054,30 @@ a.s05-info-line:hover { opacity: 0.75; }
   color: var(--green);
 }
 
+
+/* ═══════════════════════════════════════
+   LEGAL PAGES (privacy.html)
+═══════════════════════════════════════ */
+.legal { max-width: 860px; margin: 0 auto; }
+.legal h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--white);
+  margin: 40px 0 14px;
+}
+.legal p, .legal li {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.85);
+}
+.legal p + p { margin-top: 14px; }
+.legal ul { margin: 12px 0 0 20px; }
+.legal li + li { margin-top: 8px; }
+.legal a { color: var(--white); text-decoration: underline; }
+.legal-updated {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+}
